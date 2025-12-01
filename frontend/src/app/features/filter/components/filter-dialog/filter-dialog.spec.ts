@@ -14,7 +14,7 @@ describe('FilterDialog', () => {
 
     fixture = TestBed.createComponent(FilterDialog);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

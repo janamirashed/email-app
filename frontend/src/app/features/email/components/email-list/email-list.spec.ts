@@ -14,7 +14,7 @@ describe('EmailList', () => {
 
     fixture = TestBed.createComponent(EmailList);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

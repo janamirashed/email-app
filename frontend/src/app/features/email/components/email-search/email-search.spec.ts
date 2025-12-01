@@ -14,7 +14,7 @@ describe('EmailSearch', () => {
 
     fixture = TestBed.createComponent(EmailSearch);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

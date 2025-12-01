@@ -14,7 +14,7 @@ describe('Header', () => {
 
     fixture = TestBed.createComponent(Header);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

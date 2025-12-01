@@ -14,7 +14,7 @@ describe('FolderDialog', () => {
 
     fixture = TestBed.createComponent(FolderDialog);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

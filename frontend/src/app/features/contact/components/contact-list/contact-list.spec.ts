@@ -14,7 +14,7 @@ describe('ContactList', () => {
 
     fixture = TestBed.createComponent(ContactList);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

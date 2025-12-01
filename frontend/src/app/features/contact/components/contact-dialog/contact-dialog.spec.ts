@@ -14,7 +14,7 @@ describe('ContactDialog', () => {
 
     fixture = TestBed.createComponent(ContactDialog);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

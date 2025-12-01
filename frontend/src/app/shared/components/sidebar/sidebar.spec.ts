@@ -14,7 +14,7 @@ describe('Sidebar', () => {
 
     fixture = TestBed.createComponent(Sidebar);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

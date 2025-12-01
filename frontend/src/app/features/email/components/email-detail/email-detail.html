@@ -1,1 +1,46 @@
-<p>email-detail works!</p>
+<div class="h-full overflow-y-auto bg-white" *ngIf="email">
+  <div class="flex items-center justify-between p-4 border-b border-gray-200">
+    <h1 class="text-xl font-semibold text-gray-800">{{ email.subject }}</h1>
+    <div class="flex items-center space-x-3 text-gray-400">
+      <button title="Reply"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a2 2 0 012 2v8a2 2 0 01-2 2H3a2 2 0 01-2-2v-8a2 2 0 012-2zm0 0l-4-4m4 4l-4 4"></path></svg></button>
+      <button title="Forward"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg></button>
+      <button title="Archive"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h3"></path></svg></button>
+      <button title="Delete"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+      <button title="More"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg></button>
+    </div>
+  </div>
+
+  <div class="p-4 border-b border-gray-100">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-sm">
+          AJ
+        </div>
+        <div>
+          <span class="font-semibold text-gray-900">{{ email.senderName }}</span>
+          <span class="text-sm text-gray-500">&lt;{{ email.senderEmail }}&gt;</span>
+          <span class="text-sm text-gray-500"> to me</span>
+        </div>
+      </div>
+      <span class="text-xs text-gray-500">{{ email.timestamp }}</span>
+    </div>
+  </div>
+
+  <div class="p-4 text-gray-700 whitespace-pre-line">
+    <ng-container *ngFor="let line of getBodyLines(email.body)">
+        <p [ngClass]="{'ml-4 text-sm': line.startsWith('* ')}">{{ line }}</p>
+    </ng-container>
+  </div>
+
+  <div class="p-4 border-t border-gray-100 mt-4" *ngIf="email.attachments && email.attachments.length > 0">
+    <h3 class="text-sm font-semibold mb-2 text-gray-500">Attachments</h3>
+    <div class="flex flex-wrap gap-2">
+      <ng-container *ngFor="let attachment of email.attachments">
+        <a [href]="attachment.url" class="flex items-center bg-gray-100 text-gray-700 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-200 transition">
+          <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-5a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+          {{ attachment.name }} ({{ attachment.size }})
+        </a>
+      </ng-container>
+    </div>
+  </div>
+</div>
