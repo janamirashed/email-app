@@ -14,10 +14,10 @@ export class ContactListComponent {
   
   // Dummy contact data (matches image)
   contacts: Contact[] = [
-    { id: 1, name: 'Aria Patel', email: 'aria.patel@example.com', avatar: 'https://i.pravatar.cc/150?img=1' },
-    { id: 2, name: 'Ben Carter', email: 'ben.carter@example.com', avatar: 'https://i.pravatar.cc/150?img=2' },
-    { id: 3, name: 'Chloe Davis', email: 'chloe.davis@example.com', avatar: 'https://i.pravatar.cc/150?img=3' },
-    { id: 4, name: 'David Evans', email: 'david.evans@example.com', avatar: 'https://i.pravatar.cc/150?img=4' },
+    { id: 1, name: 'Aria Patel', email: 'aria.patel@example.com'},
+    { id: 2, name: 'Ben Carter', email: 'ben.carter@example.com'},
+    { id: 3, name: 'Chloe Davis', email: 'chloe.davis@example.com'},
+    { id: 4, name: 'David Evans', email: 'david.evans@example.com'},
   ];
 
   onSort(criteria: 'Name' | 'Email' | 'Date Added') {

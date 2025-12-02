@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Attachment } from '../../../../core/models/email.model';
 import { FormsModule } from '@angular/forms';
+import { EmailComposeService } from '../../../../core/services/email-compose.service';
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-email-compose',
   standalone: true,
@@ -9,8 +11,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './email-compose.html',
 })
 export class EmailComposeComponent {
-  isMinimized: boolean = false;
-  isMaximized: boolean = false;
+  
   isComposing: boolean = true; // Simulates the visibility
 
   recipients: string = '';
@@ -22,8 +23,29 @@ export class EmailComposeComponent {
     //{}, {}
   ];
 
+  private composeSubscription!: Subscription ; 
+
+  
+  constructor(private composeService: EmailComposeService) {}
+
+
+  ngOnInit() {
+    
+    this.composeSubscription = this.composeService.isComposing$.subscribe(
+      (isVisible) => {
+        this.isComposing = isVisible;
+        
+      }
+    );
+  }
+
   closeCompose() {
     this.isComposing = false;
-    // Logic to save draft
+    
+  }
+
+  ngOnDestroy() {
+    
+    this.composeSubscription.unsubscribe();
   }
 }

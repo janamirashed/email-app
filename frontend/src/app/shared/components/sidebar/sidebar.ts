@@ -1,7 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Folder } from '../../../core/models/folder.model';
-
+import { EmailComposeService } from '../../../core/services/email-compose.service';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -11,8 +11,13 @@ import { Folder } from '../../../core/models/folder.model';
 })
 export class SidebarComponent {
   // Input to determine the currently active view/route
-  @Input() activeView: 'inbox' | 'contacts' | 'filters' | string = 'inbox'; 
+  @Input() activeView: 'inbox' | 'contacts' | 'filters-rules' | string = 'inbox'; 
+  
+  // OUTPUT: A new EventEmitter to send the requested view change to the parent
+  @Output() viewChange = new EventEmitter<string>();
 
+  constructor(private composeService : EmailComposeService){}
+  
   // System and Custom Folders Data
   systemFolders: Folder[] = [
     { name: 'Inbox', icon: 'inbox', count: 3, type: 'system' },
@@ -29,12 +34,17 @@ export class SidebarComponent {
 
   bottomViews: Folder[] = [
     { name: 'Contacts', icon: 'contacts', type: 'system' },
-    { name: 'Filters & Rules', icon: 'filters', type: 'system' },
+    { name: 'Filters & Rules', icon: 'filters-rules', type: 'system' }, // Renamed to match AppComponent's check
   ];
 
-  // Dummy method to simulate routing
+  // Modified method: It now emits the view name instead of setting local state
   navigateTo(view: string) {
-    this.activeView = view;
-    console.log('Navigating to:', view);
+    // We update the local Input, but more importantly, we notify the parent.
+    this.viewChange.emit(view);
+    console.log('Emitting navigation request to:', view);
+  }
+
+  openCompose() {
+    this.composeService.openCompose();
   }
 }

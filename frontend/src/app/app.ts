@@ -7,6 +7,7 @@ import { EmailDetailComponent } from './features/email/components/email-detail/e
 import { ContactListComponent } from './features/contact/components/contact-list/contact-list';
 import { FilterListComponent } from './features/filter/components/filter-list/filter-list';
 import { EmailComposeComponent } from './features/email/components/email-compose/email-compose';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -24,12 +25,11 @@ import { EmailComposeComponent } from './features/email/components/email-compose
   styleUrl: './app.css'
 })
 export class AppComponent {
-
   activeRoute: string = 'inbox'; 
-  views = ['inbox', 'contact', 'filters-rules'];
-  currentViewIndex = 0;
 
-  constructor() {
-    
+  // This method handles the view change event from the sidebar
+  onViewChange(view: string) {
+    this.activeRoute = view;
+    console.log('Active route changed to:', view);
   }
 }
