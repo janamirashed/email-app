@@ -1,30 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EmailComposeService {
-  
-  private composeOpenedSource = new Subject<void>();
+  private composingSubject = new BehaviorSubject<boolean>(false);
+  isComposing$ = this.composingSubject.asObservable();
 
-  
-  private isComposingSource = new Subject<boolean>();
-
-  
-  composeOpened$ = this.composeOpenedSource.asObservable();
-
-  
-  isComposing$ = this.isComposingSource.asObservable();
-
- 
   openCompose() {
-    this.composeOpenedSource.next();
-    this.isComposingSource.next(true); 
+    this.composingSubject.next(true);
   }
 
-  
   closeCompose() {
-    this.isComposingSource.next(false); 
+    this.composingSubject.next(false);
   }
 }

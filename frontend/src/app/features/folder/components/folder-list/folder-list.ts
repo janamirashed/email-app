@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './folder-list.html',
   styleUrl: './folder-list.css',
 })
-export class FolderList {
+export class FolderListComponent {
 
 }

@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './filter-dialog.html',
   styleUrl: './filter-dialog.css',
 })
-export class FilterDialog {
+export class FilterDialogComponent {
 
 }

@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './folder-dialog.html',
   styleUrl: './folder-dialog.css',
 })
-export class FolderDialog {
+export class FolderDialogComponent {
 
 }

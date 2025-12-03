@@ -4,6 +4,7 @@ import { Attachment } from '../../../../core/models/email.model';
 import { FormsModule } from '@angular/forms';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { Subscription } from 'rxjs';
+import { Output,EventEmitter } from '@angular/core';
 @Component({
   selector: 'app-email-compose',
   standalone: true,
@@ -17,6 +18,8 @@ export class EmailComposeComponent {
   recipients: string = '';
   subject: string = '';
   priority: string = 'Normal';
+
+  @Output() composeChange = new EventEmitter<boolean>();
   
   // Dummy attachments shown in the image
   attachments: Attachment[] = [
@@ -26,7 +29,7 @@ export class EmailComposeComponent {
   private composeSubscription!: Subscription ; 
 
   
-  constructor(private composeService: EmailComposeService) {}
+   constructor(private composeService: EmailComposeService) {} 
 
 
   ngOnInit() {
@@ -41,7 +44,7 @@ export class EmailComposeComponent {
 
   closeCompose() {
     this.isComposing = false;
-    
+    this.composeChange.emit(this.isComposing);
   }
 
   ngOnDestroy() {

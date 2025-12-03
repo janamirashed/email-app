@@ -1,65 +1,22 @@
 <div class="flex h-screen bg-gray-50">
-  <app-sidebar 
-    [activeView]="activeRoute" 
-    (viewChange)="onViewChange($event)">
-  </app-sidebar>
+  <app-sidebar></app-sidebar>
   
   <div class="flex-1 flex flex-col overflow-hidden">
     <app-header></app-header>
     
-    <main class="flex-1 overflow-hidden">
-      <!-- Inbox View -->
-      <div *ngIf="activeRoute === 'inbox'" class="flex h-full">
-        <app-email-list></app-email-list>
-        <app-email-detail></app-email-detail>
+    <main class="flex-1 overflow-hidden flex">
+      <!-- Main content area -->
+      <div [ngClass]="isComposing ? 'flex-1' : 'w-full'" class="overflow-hidden">
+        <router-outlet></router-outlet>
       </div>
       
-      <!-- Starred View -->
-      <div *ngIf="activeRoute === 'starred'" class="flex h-full">
-        <app-email-list></app-email-list>
-        <app-email-detail></app-email-detail>
-      </div>
-      
-      <!-- Sent View -->
-      <div *ngIf="activeRoute === 'sent'" class="flex h-full">
-        <app-email-list></app-email-list>
-        <app-email-detail></app-email-detail>
-      </div>
-      
-      <!-- Drafts View -->
-      <div *ngIf="activeRoute === 'drafts'" class="flex h-full">
-        <app-email-list></app-email-list>
-        <app-email-detail></app-email-detail>
-      </div>
-      
-      <!-- Trash View -->
-      <div *ngIf="activeRoute === 'trash'" class="flex h-full">
-        <app-email-list></app-email-list>
-        <app-email-detail></app-email-detail>
-      </div>
-      
-      <!-- Contacts View -->
-      <div *ngIf="activeRoute === 'contacts'" class="h-full">
-        <app-contact-list></app-contact-list>
-      </div>
-      
-      <!-- Filters & Rules View -->
-      <div *ngIf="activeRoute === 'filters-rules'" class="h-full">
-        <app-filter-list></app-filter-list>
-      </div>
-      
-      <!-- Custom Folders -->
-      <div *ngIf="activeRoute === 'projects'" class="flex h-full">
-        <app-email-list></app-email-list>
-        <app-email-detail></app-email-detail>
-      </div>
-      
-      <div *ngIf="activeRoute === 'personal'" class="flex h-full">
-        <app-email-list></app-email-list>
-        <app-email-detail></app-email-detail>
+      <!-- Compose panel (slides in from right) -->
+      <div 
+        *ngIf="isComposing"
+        class="w-full max-w-xl border-l border-gray-200 bg-white"
+      >
+        <app-email-compose></app-email-compose>
       </div>
     </main>
   </div>
-  
-  <app-email-compose></app-email-compose>
 </div>

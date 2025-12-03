@@ -1,48 +1,54 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+// app/shared/components/sidebar/sidebar.ts
+
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Folder } from '../../../core/models/folder.model';
+import { Router, RouterModule } from '@angular/router'; // Import RouterModule for routerLink in template
+import { Observable, filter } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule ], 
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.css' // Assuming basic styles for fixed width/height
+  styleUrls: ['./sidebar.css']
 })
-export class SidebarComponent {
-  // Input to determine the currently active view/route
-  @Input() activeView: 'inbox' | 'contacts' | 'filters-rules' | string = 'inbox'; 
+export class SidebarComponent implements OnInit {
   
-  // OUTPUT: A new EventEmitter to send the requested view change to the parent
-  @Output() viewChange = new EventEmitter<string>();
+  // 1. Removed activeView property - not needed with routerLinkActive
 
-  constructor(private composeService : EmailComposeService){}
-  
-  // System and Custom Folders Data
-  systemFolders: Folder[] = [
-    { name: 'Inbox', icon: 'inbox', count: 3, type: 'system' },
-    { name: 'Starred', icon: 'star', type: 'system' },
-    { name: 'Sent', icon: 'send', type: 'system' },
-    { name: 'Drafts', icon: 'drafts', type: 'system' },
-    { name: 'Trash', icon: 'trash', type: 'system' },
+  systemFolders = [
+    { name: 'Inbox', icon: 'inbox', count: 12, path: 'inbox' },
+    { name: 'Starred', icon: 'star', count: 3, path: 'starred' },
+    { name: 'Sent', icon: 'send', count: null, path: 'sent' },
+    { name: 'Drafts', icon: 'drafts', count: 2, path: 'drafts' },
+    { name: 'Trash', icon: 'trash', count: 5, path: 'trash' }
   ];
 
-  customFolders: Folder[] = [
-    { name: 'Projects', icon: 'folder', type: 'custom' },
-    { name: 'Personal', icon: 'folder', type: 'custom' },
+  customFolders = [
+    // Note: If custom folders have unique paths, update this model.
+    { name: 'Work', icon: 'folder', path: 'work' }, 
+    { name: 'Personal', icon: 'folder', path: 'personal' } 
   ];
 
-  bottomViews: Folder[] = [
-    { name: 'Contacts', icon: 'contacts', type: 'system' },
-    { name: 'Filters & Rules', icon: 'filters-rules', type: 'system' }, // Renamed to match AppComponent's check
+  bottomViews = [
+    // Renamed icon to path for clarity when used in routerLink
+    { name: 'Contacts', path: 'contacts' }, 
+    { name: 'Filters & Rules', path: 'filters' } 
   ];
 
-  // Modified method: It now emits the view name instead of setting local state
-  navigateTo(view: string) {
-    // We update the local Input, but more importantly, we notify the parent.
-    this.viewChange.emit(view);
-    console.log('Emitting navigation request to:', view);
+  constructor(private router: Router , private composeService: EmailComposeService) {}
+
+  // 2. Removed ngOnInit and router.events subscription - not needed for simple active state management
+
+  ngOnInit() {
+    // You can use ngOnInit for other setup, but not required for basic routing
   }
+
+  // 3. Removed navigateTo method - navigation is handled directly by routerLink in HTML
+
+   
 
   openCompose() {
     this.composeService.openCompose();
