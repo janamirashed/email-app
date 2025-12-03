@@ -1,7 +1,7 @@
 package com.mail.backend.controller;
 
 import com.mail.backend.dto.JWTResponse;
-import com.mail.backend.model.User;
+import com.mail.backend.model.Users;
 import com.mail.backend.service.JWTService;
 import com.mail.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +19,10 @@ public class AccountController {
     private JWTService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<HttpStatus> register(@RequestBody User user) {
-        if(!(userService.existsByUsername(user.getUsername()))) {
-            user.setEmail(user.getUsername()+"@jaryn.com");
-            userService.save(user);
+    public ResponseEntity<HttpStatus> register(@RequestBody Users users) {
+        if(!(userService.existsByUsername(users.getUsername()))) {
+            users.setEmail(users.getUsername()+"@jaryn.com");
+            userService.save(users);
             return new ResponseEntity<>(HttpStatus.CREATED);
         }
 
@@ -30,9 +30,9 @@ public class AccountController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JWTResponse> login(@RequestBody User user) {
-        if((userService.existsByUsername(user.getUsername()))) {
-            String JwtToken=userService.verify(user);
+    public ResponseEntity<JWTResponse> login(@RequestBody Users users) {
+        if((userService.existsByUsername(users.getUsername()))) {
+            String JwtToken=userService.verify(users);
             if(!(JwtToken.equals("Fail"))) {
                 return new ResponseEntity<>(new JWTResponse(JwtToken),HttpStatus.OK);
             }

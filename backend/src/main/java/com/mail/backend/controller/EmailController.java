@@ -93,12 +93,13 @@ public class EmailController {
      */
     @GetMapping("/inbox")
     public ResponseEntity<?> getInbox(
+            @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit,
             Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
-            Map<String, Object> emails = emailService.getInboxEmails(username, page, limit);
+            Map<String, Object> emails = emailService.getInboxEmails(username, page, limit, sortBy);
 
             return new ResponseEntity<>(emails, HttpStatus.OK);
         } catch (IOException e) {
@@ -117,12 +118,13 @@ public class EmailController {
     @GetMapping("/folder/{folder}")
     public ResponseEntity<?> getFolder(
             @PathVariable String folder,
+            @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit,
             Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
-            Map<String, Object> emails = emailService.getEmailsInFolder(username, folder, page, limit);
+            Map<String, Object> emails = emailService.getEmailsInFolder(username, folder, page, limit, sortBy);
 
             return new ResponseEntity<>(emails, HttpStatus.OK);
         } catch (IOException e) {
@@ -165,16 +167,18 @@ public class EmailController {
     @GetMapping("/search")
     public ResponseEntity<?> searchEmails(
             @RequestParam String keyword,
-            @RequestParam(defaultValue = "all") String searchIn,
+            @RequestParam(defaultValue = "all") String searchBy,
+            @RequestParam(required = false) String sortBy,
             Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
-            List<Email> results = emailService.searchEmails(username, keyword, searchIn);
+            List<Email> results = emailService.searchEmails(username, keyword, searchBy, sortBy);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("keyword", keyword);
-            response.put("searchIn", searchIn);
+            response.put("searchBy", searchBy);
+            response.put("sortBy", sortBy);
             response.put("totalResults", results.size());
             response.put("results", results);
 
@@ -194,14 +198,17 @@ public class EmailController {
      * GET /api/email/starred
      */
     @GetMapping("/starred")
-    public ResponseEntity<?> getStarredEmails(Authentication authentication) {
+    public ResponseEntity<?> getStarredEmails(
+            @RequestParam(defaultValue = "date") String sortBy,
+            Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
-            List<Email> emails = emailService.getStarredEmails(username);
+            List<Email> emails = emailService.getStarredEmails(username, sortBy);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("totalStarred", emails.size());
+            response.put("sortBy", sortBy);
             response.put("emails", emails);
 
             return new ResponseEntity<>(response, HttpStatus.OK);

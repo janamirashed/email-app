@@ -1,0 +1,15 @@
+{
+  "messageId" : "1cceee1a",
+  "from" : "bob@jaryn.com",
+  "to" : [ "bob@jaryn.com" ],
+  "subject" : "Weekly Newsletter",
+  "body" : "Here are this week's updates",
+  "timestamp" : [ 2025, 12, 4, 1, 3, 37, 286909300 ],
+  "priority" : 4,
+  "folder" : "sent",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

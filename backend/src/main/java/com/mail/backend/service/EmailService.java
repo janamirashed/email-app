@@ -1,12 +1,15 @@
 package com.mail.backend.service;
 
+import com.mail.backend.dps.strategy.*;
 import com.mail.backend.model.Email;
 import com.mail.backend.repository.EmailRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.dialect.function.array.JsonArrayViaElementArgumentReturnTypeResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -97,14 +100,27 @@ public class EmailService {
     }
 
     // GET INBOX EMAILS - Paginated
-    public Map<String, Object> getInboxEmails(String username, int page, int limit) throws IOException {
+    public Map<String, Object> getInboxEmails(String username, int page, int limit, String sortBy) throws IOException {
         List<Email> emails = emailRepository.listEmailsInFolder(username, "inbox");
+
+        //Apply Sorting
+        if(sortBy != null && !sortBy.isEmpty()) {
+            SortStrategy strategy = getSortStrategy(sortBy);
+            emails = strategy.sort(emails);
+        }
         return paginate(emails, page, limit, "inbox");
     }
 
     // GET EMAILS FROM ANY FOLDER - Paginated
-    public Map<String, Object> getEmailsInFolder(String username, String folder, int page, int limit) throws IOException {
+    public Map<String, Object> getEmailsInFolder(String username, String folder, int page, int limit, String sortBy) throws IOException {
         List<Email> emails = emailRepository.listEmailsInFolder(username, folder);
+
+        //Apply Sorting
+        if (sortBy != null && !sortBy.isEmpty()) {
+            SortStrategy strategy = getSortStrategy(sortBy);
+            emails = strategy.sort(emails);
+        }
+
         return paginate(emails, page, limit, folder);
     }
 
@@ -119,27 +135,20 @@ public class EmailService {
     }
 
     // SEARCH EMAILS
-    public List<Email> searchEmails(String username, String keyword, String searchIn) throws IOException {
-        List<Email> allEmails = emailRepository.getAllEmails(username);
-        String lowerKeyword = keyword.toLowerCase();
 
-        return allEmails.stream()
-                .filter(email -> {
-                    switch (searchIn.toLowerCase()) {
-                        case "subject":
-                            return email.getSubject().toLowerCase().contains(lowerKeyword);
-                        case "body":
-                            return email.getBody().toLowerCase().contains(lowerKeyword);
-                        case "sender":
-                            return email.getFrom().toLowerCase().contains(lowerKeyword);
-                        case "all":
-                        default:
-                            return email.getSubject().toLowerCase().contains(lowerKeyword)
-                                    || email.getBody().toLowerCase().contains(lowerKeyword)
-                                    || email.getFrom().toLowerCase().contains(lowerKeyword);
-                    }
-                })
-                .collect(Collectors.toList());
+    public List<Email> searchEmails(String username, String keyword, String searchBy, String sortBy) throws IOException {
+        List<Email> allEmails = emailRepository.getAllEmails(username);
+
+        // Apply search strategy
+        SearchStrategy searchStrategy = getSearchStrategy(searchBy);
+        List<Email> results = searchStrategy.search(allEmails, keyword);
+
+        // Apply sorting strategy if specified
+        if (sortBy != null && !sortBy.isEmpty()) {
+            SortStrategy sortStrategy = getSortStrategy(sortBy);
+            results = sortStrategy.sort(results);
+        }
+        return results;
     }
 
     // MARK AS READ
@@ -233,12 +242,20 @@ public class EmailService {
         log.info("Trash cleanup completed for {}", username);
     }
 
-    // GET STARRED EMAILS
-    public List<Email> getStarredEmails(String username) throws IOException {
+    // GET STARRED EMAILS + sorting
+    public List<Email> getStarredEmails(String username, String sortBy) throws IOException {
         List<Email> allEmails = emailRepository.getAllEmails(username);
-        return allEmails.stream()
+        List<Email> starred = allEmails.stream()
                 .filter(Email::isStarred)
                 .collect(Collectors.toList());
+
+        // Apply sorting
+        if (sortBy != null && !sortBy.isEmpty()) {
+            SortStrategy strategy = getSortStrategy(sortBy);
+            starred = strategy.sort(starred);
+        }
+
+        return starred;
     }
 
     // GET UNREAD EMAIL COUNT
@@ -287,4 +304,36 @@ public class EmailService {
 
         return response;
     }
+
+    //Strategy Pattern--Sorting
+    private SortStrategy getSortStrategy(String sortBy) {
+        if(sortBy==null || sortBy.isEmpty()) {
+            return new SortByDateStrategy(); // <- Default Sort strategy;
+        }
+        return switch (sortBy.toLowerCase()){
+            case "date" -> new SortByDateStrategy();
+            case "importance", "priority" -> new SortByImportanceStrategy();
+            default -> new SortByDateStrategy();
+        };
+    }
+
+    //Strategy Pattern--Searching
+    private SearchStrategy getSearchStrategy(String searchBy) {
+        if(searchBy==null || searchBy.isEmpty()) {
+            return new SearchAllStrategy(); // <- Default Search strategy;
+        }
+        return switch (searchBy.toLowerCase()){
+            case "sender" -> new SearchBySenderStrategy();
+            case "subject"-> new SearchBySubjectStrategy();
+            case "receiver", "receivers", "to" -> new SearchByReceiverStrategy();
+            case "all"  -> new SearchAllStrategy();
+            case "body" -> new SearchByBodyStrategy();
+            default -> new SearchAllStrategy();
+        };
+    }
+
+
+
+
+
 }

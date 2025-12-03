@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './header.css' // Assuming basic styles for width/flex
 })
 export class HeaderComponent {
-  // Placeholder for current user initials
+  // Placeholder for current users initials
   userInitials: string = 'MR';
   // Placeholder for search term
   searchTerm: string = '';

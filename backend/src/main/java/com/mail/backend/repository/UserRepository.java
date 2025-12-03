@@ -1,13 +1,13 @@
 package com.mail.backend.repository;
 
-import com.mail.backend.model.User;
+import com.mail.backend.model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User,Integer> {
+public interface UserRepository extends JpaRepository<Users,Integer> {
 
-    User findByUsername(String username);
+    Users findByUsername(String username);
 
-    User findByEmail(String email);
+    Users findByEmail(String email);
 
     Boolean existsByUsername(String username);
 

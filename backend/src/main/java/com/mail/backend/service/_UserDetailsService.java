@@ -1,6 +1,6 @@
 package com.mail.backend.service;
 
-import com.mail.backend.model.User;
+import com.mail.backend.model.Users;
 import com.mail.backend.model.UserPrincipal;
 import com.mail.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +17,12 @@ public class _UserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepo.findByUsername(username);
+        Users users = userRepo.findByUsername(username);
 
-        if (user == null) {
+        if (users == null) {
             throw new UsernameNotFoundException(username+" not found");
         }
 
-        return new UserPrincipal(user);
+        return new UserPrincipal(users);
     }
 }

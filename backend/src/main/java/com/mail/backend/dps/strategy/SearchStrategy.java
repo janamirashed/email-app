@@ -1,9 +1,8 @@
 package com.mail.backend.dps.strategy;
 
 import com.mail.backend.model.Email;
-
 import java.util.List;
 
-public interface SortStrategy {
-    List<Email> sort(List<Email> emails);
+public interface SearchStrategy {
+    List<Email> search(List<Email> emails, String keyword);
 }

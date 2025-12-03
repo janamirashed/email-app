@@ -1,7 +1,7 @@
 package com.mail.backend.service;
 
 
-import com.mail.backend.model.User;
+import com.mail.backend.model.Users;
 import com.mail.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,11 +23,11 @@ public class UserService {
     @Autowired
     private JWTService jwtService;
 
-    public User findByUsername(String username) {
+    public Users findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    public User findByEmail(String email) {
+    public Users findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
@@ -39,15 +39,15 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public User save(User user) {
-        user.setPassword(PasswordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+    public Users save(Users users) {
+        users.setPassword(PasswordEncoder.encode(users.getPassword()));
+        return userRepository.save(users);
     }
 
-    public String verify(User user) {
-            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+    public String verify(Users users) {
+            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(users.getUsername(), users.getPassword()));
         if (authentication.isAuthenticated()) {
-            return jwtService.generateToken(user.getUsername());
+            return jwtService.generateToken(users.getUsername());
         } else {
             return "fail";
         }

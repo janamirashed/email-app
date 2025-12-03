@@ -1,0 +1,15 @@
+{
+  "messageId" : "d751e364",
+  "from" : "bob@jaryn.com",
+  "to" : [ "bob@jaryn.com" ],
+  "subject" : "Meeting Tomorrow",
+  "body" : "Don't forget about our 3 PM meeting",
+  "timestamp" : [ 2025, 12, 4, 1, 3, 28, 624400500 ],
+  "priority" : 3,
+  "folder" : "sent",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}
