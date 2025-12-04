@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200/")
 @RequestMapping("/account")
 public class AccountController {
     @Autowired
@@ -43,6 +44,12 @@ public class AccountController {
         }
         System.out.println("Invalid Credentials2");
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    @GetMapping("/token/isExpired")
+    public ResponseEntity<Boolean> isTokenExpired(@RequestParam String token) {
+            return new ResponseEntity<>(jwtService.isTokenExpired(token), HttpStatus.OK);
+
     }
 
 }
