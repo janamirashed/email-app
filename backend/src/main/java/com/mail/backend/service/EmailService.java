@@ -1,15 +1,14 @@
 package com.mail.backend.service;
 
+import com.mail.backend.dps.builder.EmailBuilder;
 import com.mail.backend.dps.strategy.*;
 import com.mail.backend.model.Email;
 import com.mail.backend.repository.EmailRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.dialect.function.array.JsonArrayViaElementArgumentReturnTypeResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,22 +22,30 @@ public class EmailService {
 
     // SEND EMAIL - Save to sent folder and create copy in recipient's inbox
     // Frontend handles sending to one recipient at a time
-    public String sendEmail(String username, Email email) throws IOException {
+    public String sendEmail(String username, Email emailRequest) throws IOException {
         // Validate
-        if (email.getTo() == null || email.getTo().isEmpty()) {
+        if (emailRequest.getTo() == null || emailRequest.getTo().isEmpty()) {
             throw new IllegalArgumentException("Recipients list cannot be empty");
         }
-        if (email.getSubject() == null || email.getSubject().trim().isEmpty()) {
+        if (emailRequest.getSubject() == null || emailRequest.getSubject().trim().isEmpty()) {
             throw new IllegalArgumentException("Subject cannot be empty");
         }
 
         // Generate unique messageId
         String messageId = generateMessageId();
-        email.setMessageId(messageId);
-        email.setFrom(username + "@jaryn.com");
-        email.setTimestamp(LocalDateTime.now());
-        email.setFolder("sent");
-        email.setDraft(false);
+
+        // Build the email using Builder Pattern
+        Email email = Email.builder()
+                .messageId(messageId)
+                .from(username + "@jaryn.com")
+                .to(emailRequest.getTo())
+                .subject(emailRequest.getSubject())
+                .body(emailRequest.getBody())
+                .timestamp(LocalDateTime.now())
+                .priority(emailRequest.getPriority() != null ? emailRequest.getPriority() : 3)
+                .attachments(emailRequest.getAttachments())
+                .inSent()
+                .build();
 
         // Save to sender's sent folder
         emailRepository.saveEmail(username, email);
@@ -47,17 +54,19 @@ public class EmailService {
         // Send to recipient (one at a time, frontend handles iteration)
         String recipient = email.getTo().get(0); // Frontend sends to single recipient
         try {
-            // Create copy for recipient's inbox
-            Email recipientCopy = new Email();
-            recipientCopy.setMessageId(messageId);
-            recipientCopy.setFrom(email.getFrom());
-            recipientCopy.setTo(email.getTo());
-            recipientCopy.setSubject(email.getSubject());
-            recipientCopy.setBody(email.getBody());
-            recipientCopy.setTimestamp(email.getTimestamp());
-            recipientCopy.setPriority(email.getPriority());
-            recipientCopy.setFolder("inbox");
-            recipientCopy.setAttachments(email.getAttachments());
+            // Create copy for recipient's inbox using Builder Pattern
+            Email recipientCopy = Email.builder()
+                    .messageId(messageId)
+                    .from(email.getFrom())
+                    .to(email.getTo())
+                    .subject(email.getSubject())
+                    .body(email.getBody())
+                    .timestamp(email.getTimestamp())
+                    .priority(email.getPriority())
+                    .attachments(email.getAttachments())
+                    .inInbox()
+                    .markAsUnread()
+                    .build();
 
             // Extract recipient's username from email
             String recipientUsername = extractUsername(recipient);
@@ -72,15 +81,23 @@ public class EmailService {
     }
 
     // SAVE DRAFT
-    public String saveDraft(String username, Email email) throws IOException {
+    public String saveDraft(String username, Email emailRequest) throws IOException {
         String messageId = generateMessageId();
-        email.setMessageId(messageId);
-        email.setFrom(username + "@jaryn.com");
-        email.setTimestamp(LocalDateTime.now());
-        email.setFolder("drafts");
-        email.setDraft(true);
 
-        emailRepository.saveEmail(username, email);
+        // Build draft using Builder Pattern
+        Email draft = Email.builder()
+                .messageId(messageId)
+                .from(username + "@jaryn.com")
+                .to(emailRequest.getTo())
+                .subject(emailRequest.getSubject())
+                .body(emailRequest.getBody())
+                .timestamp(LocalDateTime.now())
+                .priority(emailRequest.getPriority())
+                .attachments(emailRequest.getAttachments())
+                .inDrafts()
+                .build();
+
+        emailRepository.saveEmail(username, draft);
         log.info("Draft {} saved by {}", messageId, username);
         return messageId;
     }
@@ -103,7 +120,7 @@ public class EmailService {
     public Map<String, Object> getInboxEmails(String username, int page, int limit, String sortBy) throws IOException {
         List<Email> emails = emailRepository.listEmailsInFolder(username, "inbox");
 
-        //Apply Sorting
+        // Apply Sorting
         if(sortBy != null && !sortBy.isEmpty()) {
             SortStrategy strategy = getSortStrategy(sortBy);
             emails = strategy.sort(emails);
@@ -115,7 +132,7 @@ public class EmailService {
     public Map<String, Object> getEmailsInFolder(String username, String folder, int page, int limit, String sortBy) throws IOException {
         List<Email> emails = emailRepository.listEmailsInFolder(username, folder);
 
-        //Apply Sorting
+        // Apply Sorting
         if (sortBy != null && !sortBy.isEmpty()) {
             SortStrategy strategy = getSortStrategy(sortBy);
             emails = strategy.sort(emails);
@@ -135,7 +152,6 @@ public class EmailService {
     }
 
     // SEARCH EMAILS
-
     public List<Email> searchEmails(String username, String keyword, String searchBy, String sortBy) throws IOException {
         List<Email> allEmails = emailRepository.getAllEmails(username);
 
@@ -154,32 +170,52 @@ public class EmailService {
     // MARK AS READ
     public void markAsRead(String username, String messageId) throws IOException {
         Email email = getEmail(username, messageId);
-        email.setRead(true);
-        emailRepository.saveEmail(username, email);
+
+        // Use Builder Pattern to create modified email
+        Email updatedEmail = email.toBuilder()
+                .markAsRead()
+                .build();
+
+        emailRepository.saveEmail(username, updatedEmail);
         log.info("Email {} marked as read by {}", messageId, username);
     }
 
     // MARK AS UNREAD
     public void markAsUnread(String username, String messageId) throws IOException {
         Email email = getEmail(username, messageId);
-        email.setRead(false);
-        emailRepository.saveEmail(username, email);
+
+        // Use Builder Pattern to create modified email
+        Email updatedEmail = email.toBuilder()
+                .markAsUnread()
+                .build();
+
+        emailRepository.saveEmail(username, updatedEmail);
         log.info("Email {} marked as unread by {}", messageId, username);
     }
 
     // STAR EMAIL
     public void starEmail(String username, String messageId) throws IOException {
         Email email = getEmail(username, messageId);
-        email.setStarred(true);
-        emailRepository.saveEmail(username, email);
+
+        // Use Builder Pattern to create modified email
+        Email updatedEmail = email.toBuilder()
+                .star()
+                .build();
+
+        emailRepository.saveEmail(username, updatedEmail);
         log.info("Email {} starred by {}", messageId, username);
     }
 
     // UNSTAR EMAIL
     public void unstarEmail(String username, String messageId) throws IOException {
         Email email = getEmail(username, messageId);
-        email.setStarred(false);
-        emailRepository.saveEmail(username, email);
+
+        // Use Builder Pattern to create modified email
+        Email updatedEmail = email.toBuilder()
+                .unstar()
+                .build();
+
+        emailRepository.saveEmail(username, updatedEmail);
         log.info("Email {} unstarred by {}", messageId, username);
     }
 
@@ -187,6 +223,18 @@ public class EmailService {
     public void moveEmail(String username, String messageId, String toFolder) throws IOException {
         Email email = getEmail(username, messageId);
         String fromFolder = email.getFolder();
+
+        // Use Builder Pattern to update folder
+        Email updatedEmail = email.toBuilder()
+                .folder(toFolder)
+                .build();
+
+        // If moving to trash, set deletedAt
+        if (toFolder.equals("trash")) {
+            updatedEmail = updatedEmail.toBuilder()
+                    .deletedAt(LocalDateTime.now())
+                    .build();
+        }
 
         emailRepository.moveEmail(username, messageId, fromFolder, toFolder);
         log.info("Email {} moved from {} to {}", messageId, fromFolder, toFolder);
@@ -199,8 +247,13 @@ public class EmailService {
 
         if (!currentFolder.equals("trash")) {
             emailRepository.moveEmail(username, messageId, currentFolder, "trash");
-            email.setDeletedAt(LocalDateTime.now());
-            emailRepository.saveEmail(username, email);
+
+            // Use Builder Pattern to mark as deleted
+            Email trashedEmail = email.toBuilder()
+                    .inTrash()
+                    .build();
+
+            emailRepository.saveEmail(username, trashedEmail);
             log.info("Email {} moved to trash by {}", messageId, username);
         }
     }
@@ -305,10 +358,10 @@ public class EmailService {
         return response;
     }
 
-    //Strategy Pattern--Sorting
+    // Strategy Pattern - Sorting
     private SortStrategy getSortStrategy(String sortBy) {
         if(sortBy==null || sortBy.isEmpty()) {
-            return new SortByDateStrategy(); // <- Default Sort strategy;
+            return new SortByDateStrategy(); // Default Sort strategy
         }
         return switch (sortBy.toLowerCase()){
             case "date" -> new SortByDateStrategy();
@@ -317,10 +370,10 @@ public class EmailService {
         };
     }
 
-    //Strategy Pattern--Searching
+    // Strategy Pattern - Searching
     private SearchStrategy getSearchStrategy(String searchBy) {
         if(searchBy==null || searchBy.isEmpty()) {
-            return new SearchAllStrategy(); // <- Default Search strategy;
+            return new SearchAllStrategy(); // Default Search strategy
         }
         return switch (searchBy.toLowerCase()){
             case "sender" -> new SearchBySenderStrategy();
@@ -331,9 +384,4 @@ public class EmailService {
             default -> new SearchAllStrategy();
         };
     }
-
-
-
-
-
 }
