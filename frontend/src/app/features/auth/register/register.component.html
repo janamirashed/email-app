@@ -1,0 +1,94 @@
+<div class="min-h-screen flex bg-white">
+  <!-- Left Side: Form -->
+  <div
+    class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white w-full lg:w-1/2 xl:w-5/12">
+    <div class="mx-auto w-full max-w-sm lg:w-96">
+      <div>
+        <div class="h-12 w-12 bg-indigo-600 rounded-lg flex items-center justify-center">
+          <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+        </div>
+        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+          Create your account
+        </h2>
+        <p class="mt-2 text-sm text-gray-600">
+          Already have an account?
+          <a routerLink="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign in
+          </a>
+        </p>
+      </div>
+
+      <div class="mt-8">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage"
+          class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+          {{ errorMessage }}
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="space-y-6">
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700">
+              Username
+            </label>
+            <div class="mt-1 flex rounded-md shadow-sm">
+              <input id="username" name="username" type="text" required [(ngModel)]="username"
+                class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Choose a username" />
+              <span
+                class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                @jaryn.com
+              </span>
+            </div>
+            <p class="mt-1 text-xs text-gray-500">At least 3 characters, letters, numbers, and underscores only</p>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <div class="mt-1">
+              <input id="password" name="password" type="password" required [(ngModel)]="password"
+                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Choose a strong password" />
+            </div>
+            <p class="mt-1 text-xs text-gray-500">At least 8 characters with uppercase, lowercase, and a number</p>
+          </div>
+
+          <div>
+            <button type="submit" [disabled]="isLoading"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <span *ngIf="!isLoading">Create Account</span>
+              <span *ngIf="isLoading" class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                  </path>
+                </svg>
+                Creating account...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Image -->
+  <div class="hidden lg:block relative w-0 flex-1">
+    <img class="absolute inset-0 h-full w-full object-cover" src="/images/auth_background.png" alt="Background" />
+    <div class="absolute inset-0 bg-indigo-900 opacity-20 mix-blend-multiply"></div>
+    <div class="absolute inset-0 flex flex-col justify-center items-center text-center p-12">
+      <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-lg">
+        Join the Revolution
+      </h1>
+      <p class="mt-6 text-xl text-indigo-100 max-w-lg drop-shadow-md">
+        Create an account today and start organizing your digital life with ease.
+      </p>
+    </div>
+  </div>
+</div>
