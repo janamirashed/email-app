@@ -18,7 +18,7 @@ public class Email {
     private boolean isStarred;
     private boolean isDraft;
     private String folder; // inbox, sent, drafts, trash, or custom folder name
-    private List<Attachment> attachments;
+    private List<AttachmentMetadata> attachments;
     private LocalDateTime deletedAt; // For trash auto-delete after 30 days
 
     public Email() {

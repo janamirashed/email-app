@@ -1,6 +1,6 @@
 package com.mail.backend.dto;
 
-import com.mail.backend.model.Attachment;
+import com.mail.backend.model.AttachmentMetadata;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -19,5 +19,5 @@ public class EmailDTO {
     private boolean isStarred;
     private boolean isDraft;
     private String folder;
-    private List<Attachment> attachments;
+    private List<AttachmentMetadata> attachments;
 }
