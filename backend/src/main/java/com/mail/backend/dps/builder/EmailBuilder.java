@@ -11,8 +11,6 @@ public class EmailBuilder {
     private String messageId;
     private String from;
     private List<String> to;
-    private List<String> cc;
-    private List<String> bcc;
     private String subject;
     private String body;
     private LocalDateTime timestamp;
@@ -27,8 +25,6 @@ public class EmailBuilder {
     public EmailBuilder() {
         // Initialize collections
         this.to = new ArrayList<>();
-        this.cc = new ArrayList<>();
-        this.bcc = new ArrayList<>();
         this.attachments = new ArrayList<>();
 
         // Set defaults
@@ -56,26 +52,6 @@ public class EmailBuilder {
 
     public EmailBuilder to(List<String> recipients) {
         this.to.addAll(recipients);
-        return this;
-    }
-
-    public EmailBuilder cc(String recipient) {
-        this.cc.add(recipient);
-        return this;
-    }
-
-    public EmailBuilder cc(List<String> recipients) {
-        this.cc.addAll(recipients);
-        return this;
-    }
-
-    public EmailBuilder bcc(String recipient) {
-        this.bcc.add(recipient);
-        return this;
-    }
-
-    public EmailBuilder bcc(List<String> recipients) {
-        this.bcc.addAll(recipients);
         return this;
     }
 
