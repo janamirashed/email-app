@@ -1,6 +1,9 @@
 package com.mail.backend.controller;
 
+import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.Email;
+import com.mail.backend.repository.EmailRepository;
+import com.mail.backend.service.AttachmentService;
 import com.mail.backend.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,9 @@ public class EmailController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private AttachmentService attachmentService;
+
     // GET current user's username from JWT token
     private String getCurrentUsername(Authentication authentication) {
         return authentication.getName();
@@ -36,6 +42,30 @@ public class EmailController {
     public ResponseEntity<?> sendEmail(@RequestBody Email email, Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
+
+            /**
+             * ATTACHMENT CHECKS
+             * to check the validity of the attachment id sent.. if it was acknowledged by the attachment service or not
+             * */
+
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Failed to send email");
+
+            for (AttachmentMetadata attachmentMetadata : email.getAttachments()) {
+                if (attachmentMetadata.getFileName() == null)
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+
+                if (attachmentMetadata.getMimeType() == null)
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+
+                if (!attachmentService.isAcknowledged(attachmentMetadata.getId()))
+                    //to check if this attachment was acknowledged by the attachment service through the endpoint
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+            }
+            // if not proceed normally
+
+
             String messageId = emailService.sendEmail(username, email);
 
             Map<String, Object> response = new HashMap<>();
@@ -69,6 +99,28 @@ public class EmailController {
     public ResponseEntity<?> saveDraft(@RequestBody Email email, Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
+            /**
+             * ATTACHMENT CHECKS
+             * to check the validity of the attachment id sent.. if it was acknowledged by the attachment service or not
+             * */
+
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Failed to send email");
+
+            for (AttachmentMetadata attachmentMetadata : email.getAttachments()) {
+                if (attachmentMetadata.getFileName() == null)
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+
+                if (attachmentMetadata.getMimeType() == null)
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+
+                if (!attachmentService.isAcknowledged(attachmentMetadata.getId()))
+                    //to check if this attachment was acknowledged by the attachment service through the endpoint
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+            }
+            // if not proceed normally
+
             String messageId = emailService.saveDraft(username, email);
 
             Map<String, Object> response = new HashMap<>();

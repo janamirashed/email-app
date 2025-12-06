@@ -1,6 +1,6 @@
 package com.mail.backend.dps.builder;
 
-import com.mail.backend.model.Attachment;
+import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.Email;
 
 import java.time.LocalDateTime;
@@ -19,7 +19,7 @@ public class EmailBuilder {
     private boolean isStarred;
     private boolean isDraft;
     private String folder;
-    private List<Attachment> attachments;
+    private List<AttachmentMetadata> attachments;
     private LocalDateTime deletedAt;
 
     public EmailBuilder() {
@@ -160,12 +160,12 @@ public class EmailBuilder {
         return this;
     }
 
-    public EmailBuilder attachment(Attachment attachment) {
+    public EmailBuilder attachment(AttachmentMetadata attachment) {
         this.attachments.add(attachment);
         return this;
     }
 
-    public EmailBuilder attachments(List<Attachment> attachments) {
+    public EmailBuilder attachments(List<AttachmentMetadata> attachments) {
         this.attachments.addAll(attachments);
         return this;
     }
