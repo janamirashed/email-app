@@ -20,6 +20,7 @@ public class EmailService {
     @Autowired
     private EmailRepository emailRepository;
 
+
     // SEND EMAIL - Save to sent folder and create copy in recipient's inbox
     // Frontend handles sending to one recipient at a time
     public String sendEmail(String username, Email emailRequest) throws IOException {
