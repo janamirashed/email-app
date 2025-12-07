@@ -1,4 +1,3 @@
-
 export class Attachment {
     public id : string;
     public mimeType : string;

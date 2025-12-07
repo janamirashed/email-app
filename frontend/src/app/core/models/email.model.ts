@@ -1,14 +1,18 @@
-import {Attachment} from './attachment.model';
+import { Attachment } from './attachment.model';
 
+// Main Email interface - matches backend Email model exactly
 export interface Email {
-  id: number;
-  senderName : string
-  senderEmail : string
+  messageId?: string;
+  from?: string;
+  to: string[];
   subject: string;
   body: string;
-  priority? : number;
-  timestamp: string; // e.g., '10:42 AM' or 'Oct 29, 2023'
-  isRead: boolean;
-  isStarred: boolean;
+  timestamp?: string;
+  priority?: number; // 1-4 (1=Highest, 4=Lowest)
+  isRead?: boolean;
+  isStarred?: boolean;
+  isDraft?: boolean;
+  folder?: string;
   attachments?: Attachment[];
+  deletedAt?: string;
 }
