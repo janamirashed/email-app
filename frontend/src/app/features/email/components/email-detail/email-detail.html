@@ -36,9 +36,9 @@
     <h3 class="text-sm font-semibold mb-2 text-gray-500">Attachments</h3>
     <div class="flex flex-wrap gap-2">
       <ng-container *ngFor="let attachment of email.attachments">
-        <a [href]="attachment.url" class="flex items-center bg-gray-100 text-gray-700 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-200 transition">
+        <a [href]="attachment.fileName" class="flex items-center bg-gray-100 text-gray-700 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-200 transition">
           <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-5a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
-          {{ attachment.name }} ({{ attachment.size }})
+          {{ attachment.fileName }}
         </a>
       </ng-container>
     </div>

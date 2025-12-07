@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EmailList } from './email-list';
+import { EmailListComponent } from './email-list';
 
 describe('EmailList', () => {
-  let component: EmailList;
-  let fixture: ComponentFixture<EmailList>;
+  let component: EmailListComponent;
+  let fixture: ComponentFixture<EmailListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EmailList]
+      imports: [EmailListComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EmailList);
+    fixture = TestBed.createComponent(EmailListComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

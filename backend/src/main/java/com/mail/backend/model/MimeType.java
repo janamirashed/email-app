@@ -1,6 +1,7 @@
 package com.mail.backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum MimeType {
@@ -90,6 +91,20 @@ public enum MimeType {
      * Private constructor to assign the MIME type string.
      * @param type The standard MIME type string.
      */
+
+    @JsonCreator
+    public static MimeType fromValue(String type) {
+        // Iterate over all enum constants
+        for (MimeType mimeType : MimeType.values()) {
+            // Check if the input type string matches the enum's internal type string (case-insensitive)
+            if (mimeType.type.equalsIgnoreCase(type)) {
+                return mimeType;
+            }
+        }
+        // Throw an exception if the value is not recognized
+        throw new IllegalArgumentException("Unknown MimeType value: " + type);
+    }
+
     MimeType(String type) {
         this.type = type;
     }

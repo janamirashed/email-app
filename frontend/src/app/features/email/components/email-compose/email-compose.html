@@ -1,11 +1,11 @@
 
 <div *ngIf="isComposing" class="fixed inset-0 z-50 pointer-events-none">
   <div class="absolute bottom-0 right-10 w-full max-w-lg bg-white rounded-lg shadow-2xl pointer-events-auto">
-    
+
     <div class="flex justify-between items-center p-3 bg-gray-100 border-b border-gray-200 rounded-t-lg">
       <h2 class="text-sm font-semibold text-gray-800">New Message</h2>
       <div class="flex space-x-2 text-gray-500">
-        
+
         <button title="Close" (click)="closeCompose()"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
       </div>
     </div>
@@ -19,7 +19,7 @@
             <button>Bcc</button>
         </div> -->
       </div>
-      
+
       <div class="flex border-b border-gray-200 pb-2">
         <label class="text-sm text-gray-500 w-12 pt-1">Subject </label>
         <input type="text" [(ngModel)]="subject" placeholder=" Subject" class="flex-1 focus:outline-none text-gray-800 text-sm">
@@ -40,8 +40,8 @@
     <div class="flex flex-wrap gap-2 px-4 pb-4">
       <ng-container *ngFor="let attachment of attachments">
         <div class="flex items-center text-sm py-1 px-2 rounded-full"
-          [ngClass]="attachment.name.endsWith('.pdf') ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
-          <span>{{ attachment.name }}</span>
+          [ngClass]="attachment.fileName.endsWith('.pdf') ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
+          <span>{{ attachment.fileName }}</span>
           <button class="ml-1 text-gray-600 hover:text-gray-900 leading-none">x</button>
         </div>
       </ng-container>
@@ -49,8 +49,9 @@
 
     <div class="flex justify-between items-center p-3 bg-gray-50 rounded-b-lg">
       <div class="flex items-center space-x-3">
-        <button class="bg-indigo-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-indigo-700 transition">Send</button>
-        <button title="Attach File" class="text-gray-500 hover:text-gray-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg></button>
+        <button class="bg-indigo-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-indigo-700 transition" (click)="sendMail()">Send</button>
+        <input type="file" #FileInput class="display-none" (change) ="updateFiles($event)" multiple>
+        <button title="Attach File" (click)= "FileInput.click()" class="text-gray-500 hover:text-gray-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg></button>
         <!-- <button title="Format" class="text-gray-500 hover:text-gray-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11v8a1 1 0 001 1h8a1 1 0 001-1v-8m-9 0V5a1 1 0 011-1h6a1 1 0 011 1v6m-9 0h9"></path></svg></button> -->
         </div>
       <span class="text-xs text-gray-500 italic">Draft saved</span>

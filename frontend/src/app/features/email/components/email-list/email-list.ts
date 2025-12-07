@@ -11,8 +11,8 @@ import { Email } from '../../../../core/models/email.model';
 })
 export class EmailListComponent {
   totalEmails = 2345;
-  
-  // Dummy data 
+
+  // Dummy data
   emails: Email[] = [
     { id: 1, senderName: 'Yousef Walid', senderEmail: 'ledo.@example.com', subject: 'i am an addict', body: 'cannot stop playing fc 25 ', timestamp: '10:42 AM', isRead: false, isStarred: false },
     { id: 2, senderName: 'Nour Atawy', senderEmail: 'nelatawy.@example.com', subject: 'my life is a mess', body: 'welcome to team ?', timestamp: '3:15 AM', isRead: true, isStarred: false },
@@ -28,7 +28,7 @@ export class EmailListComponent {
 
   selectedEmailId: number = 1; // Default selected email
    currentFolder = 'inbox';
-   
+
   selectEmail(email: Email) {
     this.selectedEmailId = email.id;
     // call a service to load detail component
