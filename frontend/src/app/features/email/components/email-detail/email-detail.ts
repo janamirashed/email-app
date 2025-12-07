@@ -1,46 +1,178 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Email} from '../../../../core/models/email.model';
-import { Attachment } from '../../../../core/models/attachment.model';
+import { ActivatedRoute } from '@angular/router';
+import { EmailService } from '../../../../core/services/email.service';
 
 @Component({
   selector: 'app-email-detail',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './email-detail.html',
+  styleUrl: './email-detail.css'
 })
-export class EmailDetail implements OnChanges {
-  // Simulating input from the list component
-  @Input() emailId: number = 1;
+export class EmailDetailComponent implements OnInit {
+  email: any = null;
+  messageId: string = '';
+  isLoading: boolean = false;
+  errorMessage: string = '';
 
-  // Placeholder for the full email data
-  email: Email | null = null;
+  constructor(
+    private emailService: EmailService,
+    private route: ActivatedRoute
+  ) {}
 
-  // Dummy Email Data (matches image)
-  private dummyEmailData: Email[] = [
-    {
-      id: 1,
-      senderName : 'Alex J',
-      senderEmail: 'alex.j@example.com',
-      subject: 'Project Update & Next Steps',
-      priority : 2,
-      body: "Hi team, \n\nHere's the latest update on the project. I've attached the revised timeline for your review. Please let me know if you have any feedback by EOD tomorrow.\n\nKey highlights:\n\n* Phase 1 is 90% complete.\n* User testing for Phase 2 will begin next Monday.\n* We are on track to meet the Q4 launch deadline.\n\nPlease review the attached document for a detailed breakdown of tasks and deadlines.\n\nThanks,\nAlex",
-      timestamp: 'Oct 29, 2023, 10:42 AM',
-      isRead: true,
-      isStarred: false,
-      attachments: [{id : "", fileName: 'Revised_Timeline.pdf', mimeType: 'application/json'}]
+  ngOnInit() {
+    // Get messageId from route params or query params
+    this.route.queryParams.subscribe(params => {
+      this.messageId = params['messageId'];
+      if (this.messageId) {
+        this.loadEmail();
+      }
+    });
+
+    // Alternative: Get from route params
+    this.route.params.subscribe(params => {
+      if (params['messageId']) {
+        this.messageId = params['messageId'];
+        this.loadEmail();
+      }
+    });
+  }
+
+  // Load email from backend
+  loadEmail() {
+    if (!this.messageId) {
+      this.errorMessage = 'No email selected';
+      return;
     }
-  ];
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['emailId']) {
-      // In a real app, this would call a service to fetch the email by ID
-      this.email = this.dummyEmailData.find(e => e.id === this.emailId) || null;
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.emailService.getEmail(this.messageId).subscribe({
+      next: (response) => {
+        this.email = response;
+        this.isLoading = false;
+        console.log('Email loaded:', this.email);
+      },
+      error: (error) => {
+        console.error('Failed to load email:', error);
+        this.errorMessage = 'Failed to load email. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Mark email as read
+  markAsRead() {
+    if (!this.messageId) return;
+
+    this.emailService.markAsRead(this.messageId).subscribe({
+      next: () => {
+        this.email.isRead = true;
+        console.log('Email marked as read');
+      },
+      error: (error) => {
+        console.error('Failed to mark as read:', error);
+      }
+    });
+  }
+
+  // Mark email as unread
+  markAsUnread() {
+    if (!this.messageId) return;
+
+    this.emailService.markAsUnread(this.messageId).subscribe({
+      next: () => {
+        this.email.isRead = false;
+        console.log('Email marked as unread');
+      },
+      error: (error) => {
+        console.error('Failed to mark as unread:', error);
+      }
+    });
+  }
+
+  // Star email
+  starEmail() {
+    if (!this.messageId) return;
+
+    this.emailService.starEmail(this.messageId).subscribe({
+      next: () => {
+        this.email.isStarred = true;
+        console.log('Email starred');
+      },
+      error: (error) => {
+        console.error('Failed to star email:', error);
+      }
+    });
+  }
+
+  // Unstar email
+  unstarEmail() {
+    if (!this.messageId) return;
+
+    this.emailService.unstarEmail(this.messageId).subscribe({
+      next: () => {
+        this.email.isStarred = false;
+        console.log('Email unstarred');
+      },
+      error: (error) => {
+        console.error('Failed to unstar email:', error);
+      }
+    });
+  }
+
+  // Move email to folder
+  moveToFolder(folderName: string) {
+    if (!this.messageId) return;
+
+    this.emailService.moveEmail(this.messageId, folderName).subscribe({
+      next: () => {
+        this.email.folder = folderName;
+        console.log('Email moved to:', folderName);
+      },
+      error: (error) => {
+        console.error('Failed to move email:', error);
+      }
+    });
+  }
+
+  // Delete email
+  deleteEmail() {
+    if (!this.messageId) return;
+
+    if (confirm('Are you sure you want to delete this email?')) {
+      this.emailService.deleteEmail(this.messageId).subscribe({
+        next: () => {
+          console.log('Email deleted');
+          // Navigate back or close detail view
+          window.history.back();
+        },
+        error: (error) => {
+          console.error('Failed to delete email:', error);
+          this.errorMessage = 'Failed to delete email';
+        }
+      });
     }
   }
 
-  // Helper to format the body content
+  // Format body text (split by newlines)
   getBodyLines(body: string): string[] {
     return body ? body.split('\n') : [];
+  }
+
+  // Format timestamp
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  }
+
+  // Get sender initials for avatar
+  getSenderInitials(): string {
+    if (!this.email?.from) return 'N/A';
+    const parts = this.email.from.split('@')[0].split('.');
+    return parts.map((p: string) => p[0].toUpperCase()).join('').substring(0, 2);
   }
 }

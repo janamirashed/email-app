@@ -1,60 +1,162 @@
-
 <div *ngIf="isComposing" class="fixed inset-0 z-50 pointer-events-none">
   <div class="absolute bottom-0 right-10 w-full max-w-lg bg-white rounded-lg shadow-2xl pointer-events-auto">
 
+    <!-- Header -->
     <div class="flex justify-between items-center p-3 bg-gray-100 border-b border-gray-200 rounded-t-lg">
       <h2 class="text-sm font-semibold text-gray-800">New Message</h2>
-      <div class="flex space-x-2 text-gray-500">
+      <button
+        (click)="closeCompose()"
+        title="Close"
+        class="text-gray-500 hover:text-gray-700 transition"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
 
-        <button title="Close" (click)="closeCompose()"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="px-4 pt-3 bg-red-50 border-b border-red-200">
+      <div class="text-sm text-red-700 flex items-start">
+        <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+        {{ errorMessage }}
       </div>
     </div>
 
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="px-4 pt-3 bg-green-50 border-b border-green-200">
+      <div class="text-sm text-green-700 flex items-start">
+        <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        {{ successMessage }}
+      </div>
+    </div>
+
+    <!-- Form Content -->
     <div class="p-4 space-y-3">
+      <!-- Recipients -->
       <div class="flex border-b border-gray-200 pb-2">
         <label class="text-sm text-gray-500 w-12 pt-1">To</label>
-        <input type="text" [(ngModel)]="recipients" placeholder="Recipients" class="flex-1 focus:outline-none text-gray-800 text-sm">
-        <!-- <div class="text-sm text-gray-500 flex space-x-3">
-            <button>Cc</button>
-            <button>Bcc</button>
-        </div> -->
+        <input
+          type="text"
+          [(ngModel)]="recipients"
+          placeholder="email1@test.com, email2@test.com"
+          [disabled]="isLoading"
+          class="flex-1 focus:outline-none text-gray-800 text-sm disabled:bg-gray-50 disabled:text-gray-500"
+        >
       </div>
 
+      <!-- Subject -->
       <div class="flex border-b border-gray-200 pb-2">
-        <label class="text-sm text-gray-500 w-12 pt-1">Subject </label>
-        <input type="text" [(ngModel)]="subject" placeholder=" Subject" class="flex-1 focus:outline-none text-gray-800 text-sm">
+        <label class="text-sm text-gray-500 w-12 pt-1">Subject</label>
+        <input
+          type="text"
+          [(ngModel)]="subject"
+          placeholder="Email subject"
+          [disabled]="isLoading"
+          class="flex-1 focus:outline-none text-gray-800 text-sm disabled:bg-gray-50 disabled:text-gray-500"
+        >
       </div>
 
-      <!-- <div class="flex border-b border-gray-200 pb-2">
-        <label class="text-sm text-gray-500 w-12 pt-1">Priority </label>
-        <select [(ngModel)]="priority" class="flex-1 focus:outline-none text-gray-800 text-sm appearance-none bg-white">
-          <option value="Normal">Normal</option>
-          <option value="High">High</option>
-          <option value="Low">Low</option>
+      <!-- Priority -->
+      <div class="flex border-b border-gray-200 pb-2">
+        <label class="text-sm text-gray-500 w-12 pt-1">Priority</label>
+        <select
+          [(ngModel)]="priority"
+          [disabled]="isLoading"
+          class="flex-1 focus:outline-none text-gray-800 text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
+        >
+          <option [value]="1">High</option>
+          <option [value]="2">Medium-High</option>
+          <option [value]="3">Normal</option>
+          <option [value]="4">Low</option>
         </select>
-      </div> -->
+      </div>
 
-      <textarea rows="6" placeholder="Compose your email..." class="w-full focus:outline-none text-gray-800 text-sm resize-none"></textarea>
+      <!-- Body -->
+      <textarea
+        rows="6"
+        [(ngModel)]="body"
+        placeholder="Compose your email..."
+        [disabled]="isLoading"
+        class="w-full focus:outline-none text-gray-800 text-sm resize-none border border-gray-200 rounded p-2 disabled:bg-gray-50 disabled:text-gray-500"
+      ></textarea>
     </div>
 
-    <div class="flex flex-wrap gap-2 px-4 pb-4">
-      <ng-container *ngFor="let attachment of attachments">
-        <div class="flex items-center text-sm py-1 px-2 rounded-full"
-          [ngClass]="attachment.fileName.endsWith('.pdf') ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
-          <span>{{ attachment.fileName }}</span>
-          <button class="ml-1 text-gray-600 hover:text-gray-900 leading-none">x</button>
+    <!-- Attachments Display -->
+    <div *ngIf="attachments.length > 0" class="flex flex-wrap gap-2 px-4 pb-4">
+      <ng-container *ngFor="let attachment of attachments; let i = index">
+        <div
+          class="flex items-center text-sm py-1 px-2 rounded-full bg-blue-100 text-blue-800"
+        >
+          <span class="truncate max-w-xs">{{ attachment.fileName }}</span>
+          <button
+            (click)="removeAttachment(i)"
+            [disabled]="isLoading"
+            class="ml-1 text-blue-600 hover:text-blue-900 leading-none disabled:opacity-50"
+          >
+            ✕
+          </button>
         </div>
       </ng-container>
     </div>
 
-    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-b-lg">
-      <div class="flex items-center space-x-3">
-        <button class="bg-indigo-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-indigo-700 transition" (click)="sendMail()">Send</button>
-        <input type="file" #FileInput class="display-none" (change) ="updateFiles($event)" multiple>
-        <button title="Attach File" (click)= "FileInput.click()" class="text-gray-500 hover:text-gray-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg></button>
-        <!-- <button title="Format" class="text-gray-500 hover:text-gray-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11v8a1 1 0 001 1h8a1 1 0 001-1v-8m-9 0V5a1 1 0 011-1h6a1 1 0 011 1v6m-9 0h9"></path></svg></button> -->
-        </div>
-      <span class="text-xs text-gray-500 italic">Draft saved</span>
+    <!-- Footer with Actions -->
+    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-b-lg border-t border-gray-200">
+      <div class="flex items-center space-x-2">
+        <!-- Send Button -->
+        <button
+          (click)="sendMail()"
+          [disabled]="isLoading"
+          class="bg-indigo-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+        >
+          <span *ngIf="!isLoading">Send</span>
+          <span *ngIf="isLoading" class="flex items-center">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Sending...
+          </span>
+        </button>
+
+        <!-- Draft Button -->
+        <button
+          (click)="saveDraft()"
+          [disabled]="isLoading"
+          class="bg-gray-300 text-gray-800 text-sm py-2 px-4 rounded-lg hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Draft
+        </button>
+
+        <!-- Attach File Button -->
+        <input
+          type="file"
+          #fileInputRef
+          (change)="updateFiles($event)"
+          [disabled]="isLoading"
+          multiple
+          class="hidden"
+        >
+        <button
+          (click)="fileInputRef.click()"
+          [disabled]="isLoading"
+          title="Attach File"
+          class="text-gray-500 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Draft Status -->
+      <span class="text-xs text-gray-500 italic" *ngIf="!isLoading">
+        {{ successMessage || 'Ready to send' }}
+      </span>
     </div>
 
   </div>

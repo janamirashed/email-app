@@ -1,53 +1,270 @@
-import { Component , OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Email } from '../../../../core/models/email.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EmailService } from '../../../../core/services/email.service';
 
 @Component({
   selector: 'app-email-list',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './email-list.html',
+  styleUrl: './email-list.css'
 })
-export class EmailListComponent {
-  totalEmails = 2345;
+export class EmailListComponent implements OnInit {
+  emails: any[] = [];
+  selectedEmailId: string | null = null;
+  currentFolder: string = 'inbox';
+  currentPage: number = 1;
+  pageSize: number = 20;
+  totalPages: number = 0;
+  totalEmails: number = 0;
 
-  // Dummy data
-  emails: Email[] = [
-    { id: 1, senderName: 'Yousef Walid', senderEmail: 'ledo.@example.com', subject: 'i am an addict', body: 'cannot stop playing fc 25 ', timestamp: '10:42 AM', isRead: false, isStarred: false },
-    { id: 2, senderName: 'Nour Atawy', senderEmail: 'nelatawy.@example.com', subject: 'my life is a mess', body: 'welcome to team ?', timestamp: '3:15 AM', isRead: true, isStarred: false },
-    { id: 3, senderName: 'jana Rashed', senderEmail: 'newsletter@design.com', subject: 'maybe something nice ??', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-    { id: 4, senderName: 'Saudox', senderEmail: 'newsletter@design.com', subject: 'get a life brother', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-    { id: 5, senderName: 'Yousef Walid', senderEmail: 'newsletter@design.com', subject: 'clipBorad isn\'t clipboarding', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-    { id: 6, senderName: 'Nour Atawy', senderEmail: 'newsletter@design.com', subject: 'did you see that database performance?, i was salivating brotha', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-    { id: 7, senderName: 'Saudox', senderEmail: 'newsletter@design.com', subject: 'My name is skyler white yo', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-    { id: 8, senderName: 'Saudox', senderEmail: 'newsletter@design.com', subject: 'My husband name is walter white YO', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-    { id: 9, senderName: 'jana rashed', senderEmail: 'newsletter@design.com', subject: 'sheet 7 is online 😁', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-    { id: 10, senderName: 'ismael yamany', senderEmail: 'newsletter@design.com', subject: 'ngl gmail is overrated af', body: '', timestamp: 'Yesterday', isRead: true, isStarred: true },
-  ];
+  isLoading: boolean = false;
+  errorMessage: string = '';
 
-  selectedEmailId: number = 1; // Default selected email
-   currentFolder = 'inbox';
+  sortBy: string = 'date';
+  selectedEmails: Set<string> = new Set();
+  Math = Math; // Add this so template can use Math.min()
 
-  selectEmail(email: Email) {
-    this.selectedEmailId = email.id;
-    // call a service to load detail component
-    console.log('Selected email:', email.id);
-  }
-
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private emailService: EmailService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnInit() {
-    // Get the current route to determine which folder we're in
+    // Get current folder from route
     this.route.url.subscribe(urlSegments => {
       this.currentFolder = urlSegments[0]?.path || 'inbox';
-      this.loadEmailsForFolder();
+      this.currentPage = 1;
+      this.selectedEmails.clear();
+      this.loadEmails();
     });
   }
 
-  loadEmailsForFolder() {
-    // Load emails based on this.currentFolder
-    // This is where you'd filter your emails based on the folder
-    console.log('Loading emails for:', this.currentFolder);
+  // Load emails for current folder
+  loadEmails() {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    if (this.currentFolder === 'starred') {
+      this.loadStarredEmails();
+    } else {
+      this.loadFolderEmails();
+    }
+  }
+
+  // Load emails from specific folder
+  private loadFolderEmails() {
+    this.emailService.getEmailsInFolder(
+      this.currentFolder,
+      this.currentPage,
+      this.pageSize,
+      this.sortBy
+    ).subscribe({
+      next: (response) => {
+        this.emails = response.content || [];
+        this.totalPages = response.totalPages || 0;
+        this.totalEmails = response.totalEmails || 0;
+        this.isLoading = false;
+        console.log('Emails loaded:', this.emails);
+      },
+      error: (error) => {
+        console.error('Failed to load emails:', error);
+        this.errorMessage = 'Failed to load emails. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Load starred emails
+  private loadStarredEmails() {
+    this.emailService.getStarredEmails(this.sortBy).subscribe({
+      next: (response) => {
+        this.emails = response.emails || [];
+        this.totalEmails = response.totalStarred || 0;
+        this.totalPages = 1; // Starred emails not paginated
+        this.isLoading = false;
+        console.log('Starred emails loaded:', this.emails);
+      },
+      error: (error) => {
+        console.error('Failed to load starred emails:', error);
+        this.errorMessage = 'Failed to load emails. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Select/deselect email
+  selectEmail(email: any) {
+    this.selectedEmailId = email.messageId;
+    // Navigate to detail view with messageId as query param
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { messageId: email.messageId },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  // Toggle email selection (checkbox)
+  toggleEmailSelection(emailId: string, event: Event) {
+    event.stopPropagation();
+    if (this.selectedEmails.has(emailId)) {
+      this.selectedEmails.delete(emailId);
+    } else {
+      this.selectedEmails.add(emailId);
+    }
+  }
+
+  // Select all emails on page
+  selectAllEmails(event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      this.emails.forEach(email => {
+        this.selectedEmails.add(email.messageId);
+      });
+    } else {
+      this.selectedEmails.clear();
+    }
+  }
+
+  // Check if all emails are selected
+  areAllSelected(): boolean {
+    return this.emails.length > 0 && this.selectedEmails.size === this.emails.length;
+  }
+
+  // Bulk move selected emails
+  bulkMove(toFolder: string) {
+    if (this.selectedEmails.size === 0) {
+      alert('Please select emails to move');
+      return;
+    }
+
+    const messageIds = Array.from(this.selectedEmails);
+    this.emailService.bulkMove(messageIds, toFolder).subscribe({
+      next: () => {
+        console.log(`Moved ${messageIds.length} emails to ${toFolder}`);
+        this.selectedEmails.clear();
+        this.loadEmails();
+      },
+      error: (error) => {
+        console.error('Failed to move emails:', error);
+        this.errorMessage = 'Failed to move emails';
+      }
+    });
+  }
+
+  // Bulk delete selected emails
+  bulkDelete() {
+    if (this.selectedEmails.size === 0) {
+      alert('Please select emails to delete');
+      return;
+    }
+
+    if (confirm(`Delete ${this.selectedEmails.size} email(s)?`)) {
+      const messageIds = Array.from(this.selectedEmails);
+      this.emailService.bulkDelete(messageIds).subscribe({
+        next: () => {
+          console.log(`Deleted ${messageIds.length} emails`);
+          this.selectedEmails.clear();
+          this.loadEmails();
+        },
+        error: (error) => {
+          console.error('Failed to delete emails:', error);
+          this.errorMessage = 'Failed to delete emails';
+        }
+      });
+    }
+  }
+
+  // Star selected emails
+  starSelected() {
+    if (this.selectedEmails.size === 0) return;
+
+    this.selectedEmails.forEach(messageId => {
+      this.emailService.starEmail(messageId).subscribe({
+        next: () => {
+          const email = this.emails.find(e => e.messageId === messageId);
+          if (email) email.isStarred = true;
+        },
+        error: (error) => console.error('Failed to star email:', error)
+      });
+    });
+
+    this.selectedEmails.clear();
+  }
+
+  // Mark selected as read
+  markSelectedAsRead() {
+    if (this.selectedEmails.size === 0) return;
+
+    this.selectedEmails.forEach(messageId => {
+      this.emailService.markAsRead(messageId).subscribe({
+        next: () => {
+          const email = this.emails.find(e => e.messageId === messageId);
+          if (email) email.isRead = true;
+        },
+        error: (error) => console.error('Failed to mark as read:', error)
+      });
+    });
+
+    this.selectedEmails.clear();
+  }
+
+  // Sort emails
+  changeSortBy(newSort: string) {
+    this.sortBy = newSort;
+    this.currentPage = 1;
+    this.loadEmails();
+  }
+
+  // Pagination - Next page
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.selectedEmails.clear();
+      this.loadEmails();
+    }
+  }
+
+  // Pagination - Previous page
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.selectedEmails.clear();
+      this.loadEmails();
+    }
+  }
+
+  // Format date
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else if (date.getFullYear() === today.getFullYear()) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } else {
+      return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: 'numeric' });
+    }
+  }
+
+  // Get sender display name
+  getSenderName(email: any): string {
+    if (email.from) {
+      return email.from.split('@')[0];
+    }
+    return 'Unknown';
+  }
+
+  // Check if email has attachments
+  hasAttachments(email: any): boolean {
+    return email.attachments && email.attachments.length > 0;
   }
 }
