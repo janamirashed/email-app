@@ -49,9 +49,10 @@ export class LoginComponent {
         this.isLoading = false;
 
         // Store authentication token/data
-        if (response.token) {
+        if (response.Token) {
           console.log('Storing token in localStorage');
-          localStorage.setItem('authToken', response.token);
+          console.log(response.Token);
+          localStorage.setItem('authToken', response.Token);
         }
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('currentUser', this.username);
