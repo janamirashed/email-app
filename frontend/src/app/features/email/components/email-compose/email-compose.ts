@@ -86,7 +86,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
     let email: any = {
       from: localStorage.getItem("currentUser"),
-      to: this.recipients.split(","),
+      to: this.recipients.split(", "),
       subject: this.subject,
       body: this.body,
       attachments: attachments

@@ -44,11 +44,6 @@ public class EmailController {
         try {
             String username = getCurrentUsername(authentication);
 
-            /**
-             * ATTACHMENT CHECKS
-             * to check the validity of the attachment id sent.. if it was acknowledged by the attachment service or not
-             * */
-
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
             error.put("error", "Failed to send email");
