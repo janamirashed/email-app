@@ -28,9 +28,10 @@ public class AttachmentRepository {
     private ObjectMapper objectMapper;
 
     public Long saveAttachment(AttachmentMetadata data, InputStream in){
-        Path dir =  Path.of(attachmentRoot, data.getId() + "." + MimeType.toFileExtension(data.getMimeType()));
         long size = 0L;
         try{
+            Files.createDirectories(Paths.get(attachmentRoot));
+            Path dir =  Path.of(attachmentRoot, data.getId() + "." + MimeType.toFileExtension(data.getMimeType()));
             OutputStream out = new FileOutputStream(dir.toFile());
             size = in.transferTo(out);
         }catch(Exception e){
