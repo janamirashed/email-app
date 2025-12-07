@@ -88,7 +88,7 @@ export class EmailComposeComponent {
       attachments : attachments
     };
       await new Promise(resolve => setTimeout(resolve, 3000));
-      this.emailService.sendMail(email);
+      this.emailService.sendEmail(email);
       console.log("message sent");
   }
 

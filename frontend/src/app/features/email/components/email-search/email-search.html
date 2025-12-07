@@ -1,1 +1,157 @@
-<p>email-search works!</p>
+<div class="h-full flex flex-col p-6 bg-gray-50">
+  <h1 class="text-3xl font-extrabold text-gray-900 mb-8 border-b pb-3">Search Emails</h1>
+
+  <!-- Search Form -->
+  <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+    <div class="space-y-4">
+      <!-- Search Keyword -->
+      <div>
+        <label for="searchKeyword" class="block text-sm font-medium text-gray-700 mb-1">
+          Search for
+        </label>
+        <input
+          id="searchKeyword"
+          type="text"
+          [(ngModel)]="searchKeyword"
+          (keyup.enter)="performSearch()"
+          placeholder="Enter keywords to search..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+      </div>
+
+      <!-- Search In -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Search in</label>
+        <div class="flex flex-wrap gap-2">
+          <button
+            (click)="searchBy = 'all'"
+            [ngClass]="searchBy === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-4 py-2 rounded-lg hover:bg-indigo-700 hover:text-white transition"
+          >
+            All Fields
+          </button>
+          <button
+            (click)="searchBy = 'subject'"
+            [ngClass]="searchBy === 'subject' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-4 py-2 rounded-lg hover:bg-indigo-700 hover:text-white transition"
+          >
+            Subject
+          </button>
+          <button
+            (click)="searchBy = 'sender'"
+            [ngClass]="searchBy === 'sender' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-4 py-2 rounded-lg hover:bg-indigo-700 hover:text-white transition"
+          >
+            Sender
+          </button>
+          <button
+            (click)="searchBy = 'receiver'"
+            [ngClass]="searchBy === 'receiver' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-4 py-2 rounded-lg hover:bg-indigo-700 hover:text-white transition"
+          >
+            Receiver
+          </button>
+          <button
+            (click)="searchBy = 'body'"
+            [ngClass]="searchBy === 'body' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-4 py-2 rounded-lg hover:bg-indigo-700 hover:text-white transition"
+          >
+            Body
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex space-x-3">
+        <button
+          (click)="performSearch()"
+          [disabled]="!searchKeyword.trim() || isSearching"
+          class="flex-1 bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span *ngIf="!isSearching">Search</span>
+          <span *ngIf="isSearching" class="flex items-center justify-center">
+            <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Searching...
+          </span>
+        </button>
+        <button
+          (click)="clearSearch()"
+          class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Results -->
+  <div *ngIf="hasSearched" class="bg-white rounded-lg shadow-md flex-1 overflow-hidden flex flex-col">
+    <!-- Results Header -->
+    <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">
+          Search Results
+        </h2>
+        <p class="text-sm text-gray-500">
+          Found {{ searchResults.length }} email(s) matching "{{ searchKeyword }}"
+        </p>
+      </div>
+
+      <!-- Sort Dropdown -->
+      <div class="relative group">
+        <button class="flex items-center px-3 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+          </svg>
+          Sort
+        </button>
+        <div class="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+          <button (click)="changeSortBy('date')" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Sort by Date</button>
+          <button (click)="changeSortBy('importance')" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Sort by Priority</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results List -->
+    <div class="overflow-y-auto flex-1">
+      <ng-container *ngIf="searchResults.length === 0">
+        <div class="flex flex-col items-center justify-center h-full text-gray-400">
+          <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <p class="text-lg">No emails found</p>
+          <p class="text-sm mt-2">Try different search terms</p>
+        </div>
+      </ng-container>
+
+      <ng-container *ngFor="let email of searchResults">
+        <div
+          (click)="selectEmail(email)"
+          [ngClass]="{
+            'bg-indigo-50 border-l-4 border-indigo-600': email.messageId === selectedEmailId,
+            'bg-white hover:bg-gray-50 border-l-4 border-transparent': email.messageId !== selectedEmailId,
+            'font-semibold text-gray-900': !email.isRead,
+            'font-normal text-gray-700': email.isRead
+          }"
+          class="flex items-center p-4 cursor-pointer transition-colors border-b border-gray-100"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start">
+              <span class="text-sm truncate mr-2">{{ email.senderName }}</span>
+              <span class="text-xs text-gray-500 whitespace-nowrap">{{ email.timestamp }}</span>
+            </div>
+            <div class="text-sm font-medium truncate mt-1">
+              {{ email.subject }}
+            </div>
+            <div class="text-xs text-gray-500 truncate mt-1">
+              {{ email.body }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Email} from '../../../../core/models/email.model';
-import { Attachment } from '../../../../core/models/attachment.model';
+import { Email } from '../../../../core/models/email.model';
+import { EmailService } from '../../../../core/services/email.service';
 
 @Component({
   selector: 'app-email-detail',
@@ -9,34 +9,94 @@ import { Attachment } from '../../../../core/models/attachment.model';
   imports: [CommonModule],
   templateUrl: './email-detail.html',
 })
-export class EmailDetail implements OnChanges {
-  // Simulating input from the list component
-  @Input() emailId: number = 1;
+export class EmailDetailComponent implements OnChanges {
+  @Input() emailId: string = '';
 
-  // Placeholder for the full email data
   email: Email | null = null;
+  isLoading = false;
+  error = '';
 
-  // Dummy Email Data (matches image)
-  private dummyEmailData: Email[] = [
-    {
-      id: 1,
-      senderName : 'Alex J',
-      senderEmail: 'alex.j@example.com',
-      subject: 'Project Update & Next Steps',
-      priority : 2,
-      body: "Hi team, \n\nHere's the latest update on the project. I've attached the revised timeline for your review. Please let me know if you have any feedback by EOD tomorrow.\n\nKey highlights:\n\n* Phase 1 is 90% complete.\n* User testing for Phase 2 will begin next Monday.\n* We are on track to meet the Q4 launch deadline.\n\nPlease review the attached document for a detailed breakdown of tasks and deadlines.\n\nThanks,\nAlex",
-      timestamp: 'Oct 29, 2023, 10:42 AM',
-      isRead: true,
-      isStarred: false,
-      attachments: [{id : "", fileName: 'Revised_Timeline.pdf', mimeType: 'application/json'}]
-    }
-  ];
+  constructor(private emailService: EmailService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['emailId']) {
-      // In a real app, this would call a service to fetch the email by ID
-      this.email = this.dummyEmailData.find(e => e.id === this.emailId) || null;
+    if (changes['emailId'] && this.emailId) {
+      this.loadEmail();
     }
+  }
+
+  loadEmail() {
+    this.isLoading = true;
+    this.error = '';
+
+    this.emailService.getEmail(this.emailId).subscribe({
+      next: (email) => {
+        this.email = email;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading email:', error);
+        this.error = 'Failed to load email';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Email actions
+  replyEmail() {
+    // TODO: Implement reply functionality
+    console.log('Reply to:', this.email);
+  }
+
+  forwardEmail() {
+    // TODO: Implement forward functionality
+    console.log('Forward:', this.email);
+  }
+
+  archiveEmail() {
+    if (this.email) {
+      this.emailService.moveEmail(this.email.messageId, 'archive').subscribe({
+        next: () => {
+          console.log('Email archived');
+          // Emit event to parent component to refresh list
+        },
+        error: (error) => console.error('Error archiving email:', error)
+      });
+    }
+  }
+
+  deleteEmail() {
+    if (this.email && confirm('Move this email to trash?')) {
+      this.emailService.deleteEmail(this.email.messageId).subscribe({
+        next: () => {
+          console.log('Email moved to trash');
+          // Emit event to parent component to refresh list
+        },
+        error: (error) => console.error('Error deleting email:', error)
+      });
+    }
+  }
+
+  starEmail() {
+    if (this.email) {
+      const action = this.email.isStarred
+        ? this.emailService.unstarEmail(this.email.messageId)
+        : this.emailService.starEmail(this.email.messageId);
+
+      action.subscribe({
+        next: () => {
+          if (this.email) {
+            this.email.isStarred = !this.email.isStarred;
+          }
+        },
+        error: (error) => console.error('Error toggling star:', error)
+      });
+    }
+  }
+
+  downloadAttachment(attachment: any) {
+    // Download attachment
+    const url = `http://localhost:8080/attachments/${attachment.id}`;
+    window.open(url, '_blank');
   }
 
   // Helper to format the body content

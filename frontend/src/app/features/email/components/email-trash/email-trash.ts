@@ -12,9 +12,9 @@ import { Email } from '../../../../core/models/email.model';
 })
 export class EmailTrashComponent implements OnInit {
   emails: Email[] = [];
-  selectedEmailId: number | null = null;
-  totalEmails: number = 0;
-  selectedEmails: Set<number> = new Set();
+  selectedEmailId: string | null = null;
+  selectedEmails: Set<string> = new Set();
+
 
   constructor(private emailService: EmailService) {}
 
@@ -31,10 +31,10 @@ export class EmailTrashComponent implements OnInit {
   }
 
   selectEmail(email: Email) {
-    this.selectedEmailId = email.id;
+    this.selectedEmailId = email.messageId;
   }
 
-  toggleEmailSelection(emailId: number, event: Event) {
+  toggleEmailSelection(emailId: string, event: Event) {
     event.stopPropagation();
     if (this.selectedEmails.has(emailId)) {
       this.selectedEmails.delete(emailId);

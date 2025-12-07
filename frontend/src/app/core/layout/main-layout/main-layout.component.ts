@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../../shared/components/header/header';
+import { Header } from '../../../shared/components/header/header';
 import { EmailComposeComponent } from '../../../features/email/components/email-compose/email-compose';
 import { EmailComposeService } from '../../services/email-compose.service';
 
@@ -14,7 +14,7 @@ import { EmailComposeService } from '../../services/email-compose.service';
         CommonModule,
         RouterOutlet,
         SidebarComponent,
-        HeaderComponent,
+        Header,
         EmailComposeComponent
     ],
     templateUrl: './main-layout.component.html'
