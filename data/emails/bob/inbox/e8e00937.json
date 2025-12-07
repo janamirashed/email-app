@@ -1,0 +1,15 @@
+{
+  "messageId" : "e8e00937",
+  "from" : "please@jaryn.com",
+  "to" : [ "bob@jaryn.com", " bruh@jaryn.com" ],
+  "subject" : "MULTIEMAIL",
+  "body" : "I AM TRYING THE 1 TO MANY OPTION",
+  "timestamp" : [ 2025, 12, 7, 22, 38, 17, 373826100 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "starred" : false,
+  "read" : false,
+  "draft" : false
+}

@@ -30,7 +30,7 @@ public class EmailRepository {
     }
 
     // Initialize directory structure
-    private void createDirectories(String username) throws IOException {
+    public void createDirectories(String username) throws IOException {
         String userRoot = msgRoot + "/" + username;
         Files.createDirectories(Paths.get(userRoot, "inbox"));
         Files.createDirectories(Paths.get(userRoot, "sent"));
