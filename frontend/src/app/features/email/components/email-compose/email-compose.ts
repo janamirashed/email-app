@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { AttachmentService } from '../../../../core/services/attachment.service';
-import { Subscription } from 'rxjs';
+import {lastValueFrom, Subscription} from 'rxjs';
 import { Output,EventEmitter } from '@angular/core';
 import {Attachment} from '../../../../core/models/attachment.model';
 import {EmailService} from '../../../../core/services/email.service';
@@ -55,21 +55,40 @@ export class EmailComposeComponent {
     this.selectedFiles = Array.from(fileList);
   }
 
-  sendMail(){
-      let attachment_ids = this.attachmentService.getAttachmentIds(this.selectedFiles.length);
-      this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles);
+  async sendMail(){
 
-      let email = {
-        from : localStorage.getItem("currentUser"),
-        to : this.recipients.split(","),
-        subject : this.subject,
-        body : "test_body",
-        attachments : this.attachments
+
+      let attachment_ids: string[]= []
+      if(this.selectedFiles.length > 0) {
+          attachment_ids = await lastValueFrom(
+            this.attachmentService.getAttachmentIds(this.selectedFiles.length)
+          );
+
       }
+
+      console.log(attachment_ids.length);
+      if(this.selectedFiles.length > 0)
+        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles);
+
+      console.log(attachment_ids.length);
+      let attachments : any[] = [];
       attachment_ids.forEach( (val,idx) => {
-        email.attachments[idx].id = val;
+        let entry = {
+          id : attachment_ids.at(idx),
+          mimeType : this.selectedFiles.at(idx)?.type,
+          fileName : this.selectedFiles.at(idx)?.name
+        }
+        attachments.push(entry);
       });
-      // this.emailService.sendMail(email);
+    let email = {
+      from : localStorage.getItem("currentUser"),
+      to : this.recipients.split(","),
+      subject : this.subject,
+      body : "test_body",
+      attachments : attachments
+    };
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      this.emailService.sendMail(email);
       console.log("message sent");
   }
 

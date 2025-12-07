@@ -49,9 +49,9 @@ public class AttachmentController {
     }
 
     @PutMapping("")
-    public ResponseEntity<?>  saveAttachment(@RequestParam String id, @RequestParam MimeType mimeType, @RequestParam String fileName, HttpServletRequest file){
+    public ResponseEntity<?>  saveAttachment(@RequestParam String id, @RequestParam String mimeType, @RequestParam String fileName, HttpServletRequest file){
         try {
-            if (attachmentService.saveAttachment(id, mimeType, fileName, file.getInputStream()) == null){
+            if (attachmentService.saveAttachment(id, MimeType.fromValue(mimeType), fileName, file.getInputStream()) == null){
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             return new ResponseEntity<>(HttpStatus.OK);

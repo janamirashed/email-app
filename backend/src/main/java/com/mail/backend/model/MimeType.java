@@ -96,12 +96,10 @@ public enum MimeType {
     public static MimeType fromValue(String type) {
         // Iterate over all enum constants
         for (MimeType mimeType : MimeType.values()) {
-            // Check if the input type string matches the enum's internal type string (case-insensitive)
             if (mimeType.type.equalsIgnoreCase(type)) {
                 return mimeType;
             }
         }
-        // Throw an exception if the value is not recognized
         throw new IllegalArgumentException("Unknown MimeType value: " + type);
     }
 
