@@ -175,4 +175,10 @@ export class EmailDetailComponent implements OnInit {
     const parts = this.email.from.split('@')[0].split('.');
     return parts.map((p: string) => p[0].toUpperCase()).join('').substring(0, 2);
   }
+  getRecipients(): string {
+    if (!this.email || !this.email.to || this.email.to.length === 0) {
+      return 'Unknown';
+    }
+    return this.email.to.join(', ');
+  }
 }

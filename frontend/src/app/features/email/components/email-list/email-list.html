@@ -1,229 +1,111 @@
-<div class="h-full flex flex-col bg-white">
-  <!-- Folder Header -->
-  <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
-    <h2 class="text-lg font-semibold text-gray-800 capitalize">{{ currentFolder }}</h2>
-  </div>
+<div class="flex h-full bg-white overflow-hidden">
+  <div class="w-96 flex flex-col border-r border-gray-200 h-full flex-shrink-0 bg-white">
 
-  <!-- Toolbar -->
-  <div class="px-4 py-2 border-b border-gray-200 bg-white">
-    <div class="flex items-center justify-between">
-      <!-- Selection Checkbox & Actions -->
-      <div class="flex items-center space-x-3">
-        <input
-          type="checkbox"
-          [checked]="areAllSelected()"
-          (change)="selectAllEmails($event)"
-          class="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-        >
-
-        <!-- Action Buttons (show when emails selected) -->
-        <div *ngIf="selectedEmails.size > 0" class="flex items-center space-x-2 text-gray-400">
-          <span class="text-xs text-gray-600">{{ selectedEmails.size }} selected</span>
-          <div class="h-6 w-px bg-gray-200"></div>
-
-          <!-- Archive -->
-          <button
-            (click)="bulkMove('archive')"
-            title="Archive"
-            class="hover:text-indigo-600 transition p-1"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h3"></path>
-            </svg>
-          </button>
-
-          <!-- Delete -->
-          <button
-            (click)="bulkDelete()"
-            title="Delete"
-            class="hover:text-red-600 transition p-1"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-            </svg>
-          </button>
-
-          <!-- Mark as Read -->
-          <button
-            (click)="markSelectedAsRead()"
-            title="Mark as read"
-            class="hover:text-indigo-600 transition p-1"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19V5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.331l2.286 1.071c.477.223.645.645.428 1.122L7.612 16m0 0a2 2 0 100 4 2 2 0 000-4zm3.15-8.95a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </button>
-
-          <!-- Star -->
-          <button
-            (click)="starSelected()"
-            title="Star"
-            class="hover:text-yellow-400 transition p-1"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.077 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.077 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.84-.197-1.54-1.118l1.077-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.95-.69l1.077-3.292z"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Default Actions (show when nothing selected) -->
-        <div *ngIf="selectedEmails.size === 0" class="flex items-center space-x-2 text-gray-400">
-          <button
-            title="Refresh"
-            (click)="loadEmails()"
-            class="hover:text-indigo-600 transition p-1"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Email Count & Pagination -->
-      <div class="flex items-center space-x-4">
-        <span class="text-sm text-gray-500">
-          {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, totalEmails) }} of {{ totalEmails | number }}
-        </span>
-        <div class="flex space-x-1">
-          <button
-            (click)="previousPage()"
-            [disabled]="currentPage === 1"
-            class="p-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-          </button>
-          <button
-            (click)="nextPage()"
-            [disabled]="currentPage >= totalPages"
-            class="p-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
+    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-800 capitalize">{{ currentFolder }}</h2>
     </div>
 
-    <!-- Sort Options -->
-    <div class="flex items-center space-x-3 mt-3 text-xs text-gray-500 border-t pt-2">
-      <span class="font-medium">Sort by:</span>
-      <button
-        (click)="changeSortBy('date')"
-        [ngClass]="sortBy === 'date' ? 'font-bold text-indigo-600' : ''"
-        class="hover:text-indigo-600 transition"
-      >
-        Date
-      </button>
-      <button
-        (click)="changeSortBy('importance')"
-        [ngClass]="sortBy === 'importance' ? 'font-bold text-indigo-600' : ''"
-        class="hover:text-indigo-600 transition"
-      >
-        Importance
-      </button>
-      <button
-        (click)="changeSortBy('sender')"
-        [ngClass]="sortBy === 'sender' ? 'font-bold text-indigo-600' : ''"
-        class="hover:text-indigo-600 transition"
-      >
-        Sender
-      </button>
-    </div>
-  </div>
-
-  <!-- Email List -->
-  <div class="flex-1 overflow-y-auto">
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex items-center justify-center h-full">
-      <div class="text-center">
-        <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p class="text-gray-500">Loading emails...</p>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div *ngIf="errorMessage && !isLoading" class="flex items-center justify-center h-full">
-      <div class="text-center">
-        <svg class="h-12 w-12 text-red-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <p class="text-red-500 font-semibold">{{ errorMessage }}</p>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div *ngIf="!isLoading && emails.length === 0 && !errorMessage" class="flex items-center justify-center h-full">
-      <div class="text-center">
-        <svg class="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-        </svg>
-        <p class="text-gray-500 text-lg">No emails in {{ currentFolder }}</p>
-      </div>
-    </div>
-
-    <!-- Email Items -->
-    <ng-container *ngFor="let email of emails">
-      <div
-        (click)="selectEmail(email)"
-        [ngClass]="{
-          'bg-indigo-50 border-l-4 border-indigo-600': email.messageId === selectedEmailId,
-          'bg-white hover:bg-gray-50 border-l-4 border-transparent': email.messageId !== selectedEmailId,
-          'font-semibold text-gray-900': !email.isRead,
-          'font-normal text-gray-700': email.isRead
-        }"
-        class="flex items-center p-3 cursor-pointer transition-colors border-b border-gray-100"
-      >
-        <!-- Checkbox -->
-        <input
-          type="checkbox"
-          [checked]="selectedEmails.has(email.messageId)"
-          (change)="toggleEmailSelection(email.messageId, $event)"
-          (click)="$event.stopPropagation()"
-          class="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mr-3"
-        >
-
-        <!-- Star Icon -->
-        <button
-          (click)="$event.stopPropagation()"
-          [ngClass]="email.isStarred ? 'text-yellow-400' : 'text-gray-400'"
-          class="hover:text-yellow-400 mr-2 p-1"
-          title="Star"
-        >
-          <svg
-            class="w-4 h-4"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            [attr.fill]="email.isStarred ? 'currentColor' : 'none'"
+    <div class="px-4 py-2 border-b border-gray-200 bg-white">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <input
+            type="checkbox"
+            [checked]="areAllSelected()"
+            (change)="selectAllEmails($event)"
+            class="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.077 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.077 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.84-.197-1.54-1.118l1.077-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.95-.69l1.077-3.292z"></path>
-          </svg>
-        </button>
 
-        <!-- Email Content -->
-        <div class="flex-1 min-w-0">
-          <div class="flex justify-between items-center">
-            <span class="text-sm truncate mr-2">{{ getSenderName(email) }}</span>
-            <span class="text-xs text-gray-500 flex-shrink-0">{{ formatDate(email.timestamp) }}</span>
+          <div *ngIf="selectedEmails.size > 0" class="flex items-center space-x-2 text-gray-400">
+            <span class="text-xs text-gray-600 whitespace-nowrap">{{ selectedEmails.size }} selected</span>
+            <div class="h-6 w-px bg-gray-200 mx-2"></div>
+
+            <button (click)="bulkDelete()" title="Delete" class="hover:text-red-600 transition p-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+
+            <button (click)="markSelectedAsRead()" title="Mark as read" class="hover:text-indigo-600 transition p-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19V5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.331l2.286 1.071c.477.223.645.645.428 1.122L7.612 16m0 0a2 2 0 100 4 2 2 0 000-4zm3.15-8.95a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+
+            <button (click)="starSelected()" title="Star" class="hover:text-yellow-400 transition p-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.077 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.077 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.95-.69l1.077-3.292z"></path></svg>
+            </button>
           </div>
-          <div class="text-sm truncate text-gray-600 mt-0.5">
-            {{ email.subject }}
+
+          <div *ngIf="selectedEmails.size === 0" class="flex items-center space-x-2 text-gray-400">
+            <button title="Refresh" (click)="loadEmails()" class="hover:text-indigo-600 transition p-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
           </div>
         </div>
 
-        <!-- Attachment Icon -->
-        <div *ngIf="hasAttachments(email)" class="ml-2 flex-shrink-0">
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path>
-          </svg>
+        <div class="flex items-center space-x-1 ml-2">
+          <button (click)="previousPage()" [disabled]="currentPage === 1" class="p-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          <button (click)="nextPage()" [disabled]="currentPage >= totalPages" class="p-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
         </div>
       </div>
-    </ng-container>
+
+      <div class="flex items-center space-x-3 mt-3 text-xs text-gray-500 border-t pt-2">
+        <span class="font-medium">Sort by:</span>
+        <button (click)="changeSortBy('date')" [ngClass]="sortBy === 'date' ? 'font-bold text-indigo-600' : ''" class="hover:text-indigo-600 transition">Date</button>
+        <button (click)="changeSortBy('priority')" [ngClass]="sortBy === 'priority' ? 'font-bold text-indigo-600' : ''" class="hover:text-indigo-600 transition">Priority</button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto">
+      <div *ngIf="isLoading" class="flex items-center justify-center h-40">
+        <svg class="animate-spin h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      </div>
+
+      <div *ngIf="!isLoading && emails.length === 0" class="flex items-center justify-center h-40 text-gray-500">
+        No emails found.
+      </div>
+
+      <ng-container *ngFor="let email of emails">
+        <div
+          (click)="selectEmail(email)"
+          [ngClass]="{
+            'bg-indigo-50 border-l-4 border-indigo-600': email.messageId === selectedEmailId,
+            'bg-white hover:bg-gray-50 border-l-4 border-transparent': email.messageId !== selectedEmailId,
+            'font-semibold text-gray-900': !email.isRead,
+            'font-normal text-gray-700': email.isRead
+          }"
+          class="flex items-center p-3 cursor-pointer transition-colors border-b border-gray-100"
+        >
+          <input
+            type="checkbox"
+            [checked]="selectedEmails.has(email.messageId)"
+            (change)="toggleEmailSelection(email.messageId, $event)"
+            (click)="$event.stopPropagation()"
+            class="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mr-3"
+          >
+
+          <button (click)="$event.stopPropagation()" class="mr-2 p-1 focus:outline-none">
+            <span [ngClass]="email.isStarred ? 'text-yellow-400' : 'text-gray-300'" class="text-lg leading-none">★</span>
+          </button>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-sm truncate mr-2 font-medium">{{ getParticipant(email) }}</span>              <span class="text-xs text-gray-500 flex-shrink-0">{{ formatDate(email.timestamp) }}</span>
+            </div>
+            <div class="text-sm truncate text-gray-600">
+              {{ email.subject || '(No Subject)' }}
+            </div>
+          </div>
+
+          <div *ngIf="hasAttachments(email)" class="ml-2 flex-shrink-0">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="flex-1 min-w-0 bg-white">
+    <app-email-detail class="h-full block"></app-email-detail>
   </div>
 </div>

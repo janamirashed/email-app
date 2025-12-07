@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject , ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
+import { EmailDetailComponent } from '../email-detail/email-detail';
 
 @Component({
   selector: 'app-email-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EmailDetailComponent],
   templateUrl: './email-list.html',
   styleUrl: './email-list.css'
 })
@@ -24,12 +25,13 @@ export class EmailListComponent implements OnInit {
 
   sortBy: string = 'date';
   selectedEmails: Set<string> = new Set();
-  Math = Math; // Add this so template can use Math.min()
+  Math = Math;
 
   constructor(
     private emailService: EmailService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -67,12 +69,14 @@ export class EmailListComponent implements OnInit {
         this.totalPages = response.totalPages || 0;
         this.totalEmails = response.totalEmails || 0;
         this.isLoading = false;
+        this.cdr.detectChanges();
         console.log('Emails loaded:', this.emails);
       },
       error: (error) => {
         console.error('Failed to load emails:', error);
         this.errorMessage = 'Failed to load emails. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -85,12 +89,14 @@ export class EmailListComponent implements OnInit {
         this.totalEmails = response.totalStarred || 0;
         this.totalPages = 1; // Starred emails not paginated
         this.isLoading = false;
+        this.cdr.detectChanges();
         console.log('Starred emails loaded:', this.emails);
       },
       error: (error) => {
         console.error('Failed to load starred emails:', error);
         this.errorMessage = 'Failed to load emails. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -256,7 +262,14 @@ export class EmailListComponent implements OnInit {
   }
 
   // Get sender display name
-  getSenderName(email: any): string {
+  getParticipant(email: any): string {
+    if (this.currentFolder === 'sent' || this.currentFolder === 'drafts') {
+      if (email.to && email.to.length > 0) {
+        return 'To: ' + email.to.map((addr: string) => addr.split('@')[0]).join(', ');
+      }
+      return 'To: (No Recipients)';
+    }
+
     if (email.from) {
       return email.from.split('@')[0];
     }
