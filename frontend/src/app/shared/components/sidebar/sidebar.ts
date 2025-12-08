@@ -1,22 +1,24 @@
-// app/shared/components/sidebar/sidebar.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router'; // Import RouterModule for routerLink in template
-import { Observable, filter } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
+import {FormsModule} from '@angular/forms';
+
+interface Folder {
+  id: number;
+  name: string;
+  color: string;
+  emailCount: number;
+}
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule ], 
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.css']
 })
 export class SidebarComponent implements OnInit {
-  
-  // 1. Removed activeView property - not needed with routerLinkActive
 
   systemFolders = [
     { name: 'Inbox', icon: 'inbox', count: 12, path: 'inbox' },
@@ -26,29 +28,54 @@ export class SidebarComponent implements OnInit {
     { name: 'Trash', icon: 'trash', count: 5, path: 'trash' }
   ];
 
-  customFolders = [
-    // Note: If custom folders have unique paths, update this model.
-    { name: 'Work', icon: 'folder', path: 'work' }, 
-    { name: 'Personal', icon: 'folder', path: 'personal' } 
+  customFolders: Folder[] = [
+    { id: 1, name: 'Work', color: 'indigo', emailCount: 24 },
+    { id: 2, name: 'Personal', color: 'green', emailCount: 12 }
   ];
 
   bottomViews = [
-    // Renamed icon to path for clarity when used in routerLink
-    { name: 'Contacts', path: 'contacts' }, 
-    { name: 'Filters & Rules', path: 'filters' } 
+    { name: 'Contacts', path: 'contacts' },
+    { name: 'Filters & Rules', path: 'filters' }
   ];
 
-  constructor(private router: Router , private composeService: EmailComposeService) {}
+  showFolders = true;
+  showCreateFolderModal = false;
+  newFolderName = '';
 
-  // 2. Removed ngOnInit and router.events subscription - not needed for simple active state management
+  constructor(private router: Router, private composeService: EmailComposeService) { }
 
-  ngOnInit() {
-    // You can use ngOnInit for other setup, but not required for basic routing
+  ngOnInit() { }
+
+  toggleFolders() {
+    this.showFolders = !this.showFolders;
   }
 
-  // 3. Removed navigateTo method - navigation is handled directly by routerLink in HTML
+  openCreateFolderModal() {
+    this.newFolderName = '';
+    this.showCreateFolderModal = true;
+  }
 
-   
+  closeCreateFolderModal() {
+    this.showCreateFolderModal = false;
+    this.newFolderName = '';
+  }
+
+  createFolder() {
+    if (this.newFolderName.trim()) {
+      const newFolder: Folder = {
+        id: Date.now(),
+        name: this.newFolderName.trim(),
+        color: 'blue',
+        emailCount: 0
+      };
+      this.customFolders.push(newFolder);
+      this.closeCreateFolderModal();
+      console.log('Created folder:', newFolder);
+
+      // Navigate to the new folder
+      this.router.navigate(['/folder', newFolder.name.toLowerCase()]);
+    }
+  }
 
   openCompose() {
     this.composeService.openCompose();

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject , ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
@@ -32,7 +32,7 @@ export class EmailListComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     // Get current folder from route
@@ -40,6 +40,8 @@ export class EmailListComponent implements OnInit {
       this.currentFolder = urlSegments[0]?.path || 'inbox';
       this.currentPage = 1;
       this.selectedEmails.clear();
+      this.isLoading = false; // Reset loading state
+      this.errorMessage = ''; // Clear errors
       this.loadEmails();
     });
   }
@@ -215,6 +217,29 @@ export class EmailListComponent implements OnInit {
     });
 
     this.selectedEmails.clear();
+  }
+
+  // Toggle star for single email
+  toggleStar(email: any, event: Event) {
+    event.stopPropagation();
+
+    if (email.isStarred) {
+      this.emailService.unstarEmail(email.messageId).subscribe({
+        next: () => {
+          email.isStarred = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => console.error('Failed to unstar email:', error)
+      });
+    } else {
+      this.emailService.starEmail(email.messageId).subscribe({
+        next: () => {
+          email.isStarred = true;
+          this.cdr.detectChanges();
+        },
+        error: (error) => console.error('Failed to star email:', error)
+      });
+    }
   }
 
   // Sort emails

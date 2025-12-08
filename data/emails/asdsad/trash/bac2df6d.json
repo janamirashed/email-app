@@ -1,0 +1,15 @@
+{
+  "messageId" : "bac2df6d",
+  "from" : "asdsad@jaryn.com",
+  "to" : [ "aaaaaaaaaa" ],
+  "subject" : "aaaaaaaaaa",
+  "body" : "aaaaaaaaaaaaaaaaa",
+  "timestamp" : [ 2025, 12, 8, 16, 20, 59, 728819900 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "attachments" : [ ],
+  "deletedAt" : [ 2025, 12, 8, 16, 26, 32, 516430800 ],
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

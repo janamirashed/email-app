@@ -1,0 +1,23 @@
+/* Header Component Styles */
+
+/* Action Button Hover Effects */
+.header-action-btn {
+    transition: all var(--transition-base);
+    position: relative;
+}
+
+.header-action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.header-action-btn:active {
+    transform: translateY(0);
+}
+
+.header-action-btn svg {
+    transition: all var(--transition-base);
+}
+
+.header-action-btn:hover svg {
+    transform: rotate(15deg) scale(1.1);
+}

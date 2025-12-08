@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
+import { EmailComposeService } from '../../../../core/services/email-compose.service';
 
 @Component({
   selector: 'app-email-detail',
@@ -18,14 +19,18 @@ export class EmailDetailComponent implements OnInit {
 
   constructor(
     private emailService: EmailService,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    private composeService: EmailComposeService
+  ) { }
 
   ngOnInit() {
     // Get messageId from route params or query params
     this.route.queryParams.subscribe(params => {
       this.messageId = params['messageId'];
       if (this.messageId) {
+        this.isLoading = false; // Reset loading state
+        this.email = null; // Clear previous email
         this.loadEmail();
       }
     });
@@ -34,6 +39,8 @@ export class EmailDetailComponent implements OnInit {
     this.route.params.subscribe(params => {
       if (params['messageId']) {
         this.messageId = params['messageId'];
+        this.isLoading = false; // Reset loading state
+        this.email = null; // Clear previous email
         this.loadEmail();
       }
     });
@@ -48,94 +55,35 @@ export class EmailDetailComponent implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.detectChanges(); // Force change detection
 
     this.emailService.getEmail(this.messageId).subscribe({
       next: (response) => {
         this.email = response;
         this.isLoading = false;
+        this.cdr.detectChanges(); // Force UI update
         console.log('Email loaded:', this.email);
       },
       error: (error) => {
         console.error('Failed to load email:', error);
         this.errorMessage = 'Failed to load email. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges(); // Force UI update
       }
     });
   }
 
-  // Mark email as read
-  markAsRead() {
-    if (!this.messageId) return;
+  // Reply to email
+  replyToEmail() {
+    if (!this.email) return;
 
-    this.emailService.markAsRead(this.messageId).subscribe({
-      next: () => {
-        this.email.isRead = true;
-        console.log('Email marked as read');
-      },
-      error: (error) => {
-        console.error('Failed to mark as read:', error);
-      }
-    });
-  }
+    // Open compose with pre-filled recipient
+    this.composeService.openCompose();
 
-  // Mark email as unread
-  markAsUnread() {
-    if (!this.messageId) return;
-
-    this.emailService.markAsUnread(this.messageId).subscribe({
-      next: () => {
-        this.email.isRead = false;
-        console.log('Email marked as unread');
-      },
-      error: (error) => {
-        console.error('Failed to mark as unread:', error);
-      }
-    });
-  }
-
-  // Star email
-  starEmail() {
-    if (!this.messageId) return;
-
-    this.emailService.starEmail(this.messageId).subscribe({
-      next: () => {
-        this.email.isStarred = true;
-        console.log('Email starred');
-      },
-      error: (error) => {
-        console.error('Failed to star email:', error);
-      }
-    });
-  }
-
-  // Unstar email
-  unstarEmail() {
-    if (!this.messageId) return;
-
-    this.emailService.unstarEmail(this.messageId).subscribe({
-      next: () => {
-        this.email.isStarred = false;
-        console.log('Email unstarred');
-      },
-      error: (error) => {
-        console.error('Failed to unstar email:', error);
-      }
-    });
-  }
-
-  // Move email to folder
-  moveToFolder(folderName: string) {
-    if (!this.messageId) return;
-
-    this.emailService.moveEmail(this.messageId, folderName).subscribe({
-      next: () => {
-        this.email.folder = folderName;
-        console.log('Email moved to:', folderName);
-      },
-      error: (error) => {
-        console.error('Failed to move email:', error);
-      }
-    });
+    // TODO: Pre-fill compose form with email details
+    // This would need to emit data to the compose component
+    console.log('Reply to:', this.email.from);
+    console.log('Subject: Re:', this.email.subject);
   }
 
   // Delete email
@@ -157,11 +105,6 @@ export class EmailDetailComponent implements OnInit {
     }
   }
 
-  // Format body text (split by newlines)
-  getBodyLines(body: string): string[] {
-    return body ? body.split('\n') : [];
-  }
-
   // Format timestamp
   formatDate(dateString: string): string {
     if (!dateString) return '';
@@ -175,6 +118,7 @@ export class EmailDetailComponent implements OnInit {
     const parts = this.email.from.split('@')[0].split('.');
     return parts.map((p: string) => p[0].toUpperCase()).join('').substring(0, 2);
   }
+
   getRecipients(): string {
     if (!this.email || !this.email.to || this.email.to.length === 0) {
       return 'Unknown';

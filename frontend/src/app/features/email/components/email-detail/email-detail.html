@@ -1,57 +1,73 @@
 <div class="h-full flex flex-col bg-white">
-
   <div *ngIf="isLoading" class="h-full flex items-center justify-center">
-    <div class="text-center">
-      <svg class="animate-spin h-10 w-10 text-indigo-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      <p class="text-gray-500">Loading message...</p>
-    </div>
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
   </div>
 
   <div *ngIf="!email && !isLoading" class="h-full flex flex-col items-center justify-center text-gray-400">
-    <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-    <p class="text-lg">Select an email to read</p>
+    <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+    <p class="text-sm">Select an email to read</p>
   </div>
 
   <div *ngIf="email && !isLoading" class="h-full flex flex-col overflow-hidden">
-    <div class="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-      <h1 class="text-xl font-semibold text-gray-800 truncate mr-4">{{ email.subject }}</h1>
-      <div class="flex items-center space-x-3 text-gray-400">
-        <button title="Reply" class="hover:text-gray-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a2 2 0 012 2v8a2 2 0 01-2 2H3a2 2 0 01-2-2v-8a2 2 0 012-2zm0 0l-4-4m4 4l-4 4"></path></svg></button>
-        <button (click)="deleteEmail()" title="Delete" class="hover:text-red-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <h1 class="text-xl font-semibold text-gray-900 truncate">{{ email.subject }}</h1>
+      <div class="flex items-center gap-2">
+        <button (click)="replyToEmail()" title="Reply" class="p-2 rounded hover:bg-indigo-100 text-indigo-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+          </svg>
+        </button>
+        <button (click)="deleteEmail()" title="Delete" class="p-2 rounded hover:bg-red-100">
+          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
     </div>
 
-    <div class="p-4 border-b border-gray-100 flex-shrink-0">
+    <!-- Sender Info -->
+    <div class="px-6 py-4 border-b border-gray-100">
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="h-10 w-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-sm uppercase">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
             {{ getSenderInitials() }}
           </div>
           <div>
-            <span class="font-semibold text-gray-900 block">{{ email.from }}</span>
-            <span class="text-sm text-gray-500">to {{ getRecipients() }}</span>
+            <div class="font-semibold text-gray-900">{{ email.from }}</div>
+            <div class="text-sm text-gray-600">to {{ getRecipients() }}</div>
           </div>
         </div>
-        <span class="text-xs text-gray-500">{{ formatDate(email.timestamp) }}</span>
+        <span class="text-sm text-gray-500">{{ formatDate(email.timestamp) }}</span>
       </div>
     </div>
 
-    <div class="p-6 text-gray-700 whitespace-pre-line flex-1 overflow-y-auto">
-      <ng-container *ngFor="let line of getBodyLines(email.body)">
-        <p [ngClass]="{'ml-4 text-sm text-gray-600 italic': line.startsWith('>')}">{{ line }}</p>
-      </ng-container>
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto px-6 py-6">
+      <div class="prose prose-sm max-w-none whitespace-pre-wrap">
+        {{ email.body }}
+      </div>
     </div>
 
-    <div class="p-4 border-t border-gray-100 bg-gray-50 flex-shrink-0" *ngIf="email.attachments && email.attachments.length > 0">
-      <h3 class="text-sm font-semibold mb-2 text-gray-500">Attachments ({{email.attachments.length}})</h3>
+    <!-- Attachments -->
+    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50"
+      *ngIf="email.attachments && email.attachments.length > 0">
+      <h3 class="text-sm font-semibold text-gray-700 mb-3">Attachments ({{ email.attachments.length }})</h3>
       <div class="flex flex-wrap gap-2">
         <ng-container *ngFor="let attachment of email.attachments">
-          <a [href]="attachment.fileName" class="flex items-center bg-white border border-gray-200 text-gray-700 text-sm py-1.5 px-3 rounded-lg hover:shadow-sm transition">
-            <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-5a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
-            {{ attachment.fileName }}
+          <a [href]="attachment.url || '#'" [download]="attachment.fileName"
+            class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:shadow text-sm">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            <span class="truncate max-w-xs">{{ attachment.fileName }}</span>
           </a>
         </ng-container>
       </div>
