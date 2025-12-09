@@ -1,0 +1,15 @@
+{
+  "messageId" : "72db60eb",
+  "from" : "asdsad@jaryn.com",
+  "to" : [ "important3" ],
+  "subject" : "qqqqq",
+  "body" : "qqqq",
+  "timestamp" : [ 2025, 12, 9, 19, 54, 38, 177266100 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}
