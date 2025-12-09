@@ -142,4 +142,28 @@ public class FolderController {
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    // Get All Folders
+    @GetMapping
+    public ResponseEntity<?> getAllFolders(Authentication authentication) {
+        try {
+            String username = getCurrentUsername(authentication);
+            List<Folder> folders = folderService.getAllFolders(username);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("totalFolders", folders.size());
+            response.put("folders", folders);
+
+            log.info("Retrieved {} folders for user: {}", folders.size(), username);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error("Failed to get folders: {}", e.getMessage());
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Failed to retrieve folders");
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

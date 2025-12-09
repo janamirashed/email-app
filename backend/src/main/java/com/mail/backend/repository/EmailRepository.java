@@ -24,6 +24,10 @@ public class EmailRepository {
 
     private final ObjectMapper objectMapper;
 
+    public String getMsgRoot() {
+        return msgRoot;
+    }
+
     public EmailRepository() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
