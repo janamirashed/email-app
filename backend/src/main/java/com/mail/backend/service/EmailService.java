@@ -347,6 +347,55 @@ public class EmailService {
         log.info("Trash cleanup completed for {}", username);
     }
 
+
+    // Moves email back to the folder it was in before deletion
+    public void restoreEmailFromTrash(String username, String messageId) throws IOException {
+        Email email = getEmail(username, messageId);
+
+        if (email == null) {
+            throw new IOException("Email not found: " + messageId);
+        }
+
+        // Check if email is in trash
+        if (!email.getFolder().equals("trash")) {
+            throw new IOException("Email is not in trash");
+        }
+
+        // Determine restore folder - use originalFolder if available, otherwise default to inbox
+        String restoreFolder = email.getOriginalFolder();
+        if (restoreFolder == null || restoreFolder.isEmpty() || restoreFolder.equals("trash")) {
+            restoreFolder = "inbox"; // Default fallback
+            log.warn("No original folder found for email {}. Restoring to inbox", messageId);
+        }
+
+        log.info("Restoring email {} from trash to original folder: {}", messageId, restoreFolder);
+
+        // Move email back to original folder
+        emailRepository.moveEmail(username, messageId, "trash", restoreFolder);
+
+        // Update the email metadata
+        Email restoredEmail = email.toBuilder()
+                .folder(restoreFolder)
+                .deletedAt(null) // Clear the deletion timestamp
+                .build();
+
+        emailRepository.saveEmail(username, restoredEmail);
+        log.info("Email {} successfully restored to {}", messageId, restoreFolder);
+    }
+
+    // Restores multiple emails to their original folders
+    public void bulkRestoreFromTrash(String username, List<String> messageIds) throws IOException {
+        for (String messageId : messageIds) {
+            try {
+                restoreEmailFromTrash(username, messageId);
+            } catch (IOException e) {
+                log.error("Failed to restore email {}: {}", messageId, e.getMessage());
+                // Continue with next email instead of failing completely
+            }
+        }
+        log.info("Bulk restored {} emails from trash", messageIds.size());
+    }
+
     // GET STARRED EMAILS + sorting
     public List<Email> getStarredEmails(String username, String sortBy) throws IOException {
         List<Email> allEmails = emailRepository.getAllEmails(username);

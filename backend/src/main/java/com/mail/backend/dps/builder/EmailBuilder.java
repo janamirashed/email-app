@@ -19,6 +19,7 @@ public class EmailBuilder {
     private boolean isStarred;
     private boolean isDraft;
     private String folder;
+    private String originalFolder;
     private List<AttachmentMetadata> attachments;
     private LocalDateTime deletedAt;
 
@@ -138,6 +139,11 @@ public class EmailBuilder {
         return this;
     }
 
+    public EmailBuilder originalFolder(String originalFolder) {
+        this.originalFolder = originalFolder;
+        return this;
+    }
+
     public EmailBuilder inInbox() {
         this.folder = "inbox";
         return this;
@@ -155,6 +161,11 @@ public class EmailBuilder {
     }
 
     public EmailBuilder inTrash() {
+        // Save the current folder as original before moving to trash
+        if (this.originalFolder == null && this.folder != null && !this.folder.equals("trash")) {
+            this.originalFolder = this.folder;
+        }
+
         this.folder = "trash";
         this.deletedAt = LocalDateTime.now();
         return this;
@@ -205,6 +216,7 @@ public class EmailBuilder {
         email.setStarred(this.isStarred);
         email.setDraft(this.isDraft);
         email.setFolder(this.folder);
+        email.setOriginalFolder(this.originalFolder);
         email.setAttachments(this.attachments);
         email.setDeletedAt(this.deletedAt);
 
@@ -225,6 +237,7 @@ public class EmailBuilder {
         builder.isStarred = email.isStarred();
         builder.isDraft = email.isDraft();
         builder.folder = email.getFolder();
+        builder.originalFolder = email.getOriginalFolder();
         builder.attachments = new ArrayList<>(email.getAttachments());
         builder.deletedAt = email.getDeletedAt();
         return builder;

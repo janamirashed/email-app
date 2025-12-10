@@ -158,4 +158,16 @@ export class EmailService {
       headers: this.getHeaders()
     });
   }
+
+  restoreEmailFromTrash(messageId: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/${messageId}/restore`, {}, {
+      headers: this.getHeaders()
+    });
+  }
+
+  bulkRestoreFromTrash(messageIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/bulk-restore`, messageIds, {
+      headers: this.getHeaders()
+    });
+  }
 }

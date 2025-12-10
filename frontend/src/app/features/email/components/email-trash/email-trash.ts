@@ -86,10 +86,10 @@ export class EmailTrashComponent implements OnInit {
     }
 
     const messageIds = Array.from(this.selectedEmails);
-    this.emailService.bulkMove(messageIds, 'inbox').subscribe({
+    this.emailService.bulkRestoreFromTrash(messageIds).subscribe({
       next: () => {
-        this.successMessage = `Restored ${messageIds.length} email(s) to inbox`;
-        console.log('Emails restored to inbox');
+        this.successMessage = `Restored ${messageIds.length} email(s) to original folder(s)`;
+        console.log('Emails restored to their original folders');
         this.selectedEmails.clear();
         this.loadTrashEmails();
 

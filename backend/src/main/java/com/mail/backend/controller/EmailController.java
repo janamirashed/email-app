@@ -542,4 +542,32 @@ public class EmailController {
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * BULK RESTORE EMAILS FROM TRASH
+     * POST /api/email/bulk-restore
+     * Body: ["messageId1", "messageId2", ...]
+     * Restores multiple emails from trash to their original folders
+     */
+    @PostMapping("/bulk-restore")
+    public ResponseEntity<?> bulkRestore(
+            @RequestBody List<String> messageIds,
+            Authentication authentication) {
+        try {
+            String username = getCurrentUsername(authentication);
+            emailService.bulkRestoreFromTrash(username, messageIds);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Restored " + messageIds.size() + " emails from trash");
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IOException e) {
+            log.error("Bulk restore failed: {}", e.getMessage());
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Bulk restore failed");
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
