@@ -22,7 +22,6 @@ public class EmailService {
 
 
     // SEND EMAIL - Save to sent folder and create copy in recipient's inbox
-    // Frontend handles sending to one recipient at a time
     public String sendEmail(String username, Email emailRequest) throws IOException {
         // Validate
         if (emailRequest.getTo() == null || emailRequest.getTo().isEmpty()) {
@@ -52,30 +51,31 @@ public class EmailService {
         emailRepository.saveEmail(username, email);
         log.info("Email {} sent by {} to {}", messageId, username, email.getTo());
 
-        // Send to recipient (one at a time, frontend handles iteration)
-        String recipient = email.getTo().get(0); // Frontend sends to single recipient
-        try {
-            // Create copy for recipient's inbox using Builder Pattern
-            Email recipientCopy = Email.builder()
-                    .messageId(messageId)
-                    .from(email.getFrom())
-                    .to(email.getTo())
-                    .subject(email.getSubject())
-                    .body(email.getBody())
-                    .timestamp(email.getTimestamp())
-                    .priority(email.getPriority())
-                    .attachments(email.getAttachments())
-                    .inInbox()
-                    .markAsUnread()
-                    .build();
+        // Loop through all recipients
+        for (String recipient : email.getTo()) {
+            try {
+                // Create copy for recipient's inbox using Builder Pattern
+                Email recipientCopy = Email.builder()
+                        .messageId(messageId)
+                        .from(email.getFrom())
+                        .to(email.getTo())
+                        .subject(email.getSubject())
+                        .body(email.getBody())
+                        .timestamp(email.getTimestamp())
+                        .priority(email.getPriority())
+                        .attachments(email.getAttachments())
+                        .inInbox()
+                        .markAsUnread()
+                        .build();
 
-            // Extract recipient's username from email
-            String recipientUsername = extractUsername(recipient);
-            emailRepository.saveEmail(recipientUsername, recipientCopy);
-            log.info("Email {} delivered to {}", messageId, recipient);
-        } catch (Exception e) {
-            log.error("Failed to deliver email to {}", recipient, e);
-            throw new IOException("Failed to deliver email");
+                String recipientUsername = extractUsername(recipient);
+                emailRepository.saveEmail(recipientUsername, recipientCopy);
+                log.info("Email {} delivered to {}", messageId, recipient);
+
+            } catch (Exception e) {
+                // Continue with next recipient, don't throw
+                log.error("Failed to deliver email to {}: {}", recipient, e.getMessage());
+            }
         }
 
         return messageId;
@@ -238,6 +238,10 @@ public class EmailService {
         }
 
         emailRepository.moveEmail(username, messageId, fromFolder, toFolder);
+
+        // Save the updated email metadata with new folder
+        emailRepository.saveEmail(username, updatedEmail);
+
         log.info("Email {} moved from {} to {}", messageId, fromFolder, toFolder);
     }
 

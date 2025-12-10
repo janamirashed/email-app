@@ -1,0 +1,15 @@
+{
+  "messageId" : "93840a37",
+  "from" : "janarashed@jaryn.com",
+  "to" : [ "user1235" ],
+  "subject" : "open",
+  "body" : "hello i need rest",
+  "timestamp" : [ 2025, 12, 8, 10, 34, 40, 854107900 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "attachments" : [ ],
+  "deletedAt" : [ 2025, 12, 8, 10, 35, 52, 443057000 ],
+  "read" : true,
+  "starred" : false,
+  "draft" : true
+}

@@ -1,0 +1,15 @@
+{
+  "messageId" : "4b900d9d",
+  "from" : "janarashed@jaryn.com",
+  "to" : [ "user1234" ],
+  "subject" : "hello",
+  "body" : "answer",
+  "timestamp" : [ 2025, 12, 8, 10, 37, 37, 434850700 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}
