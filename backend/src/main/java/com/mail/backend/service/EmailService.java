@@ -224,9 +224,15 @@ public class EmailService {
         Email email = getEmail(username, messageId);
         String fromFolder = email.getFolder();
 
+        String originalFolderToSave = email.getOriginalFolder();
+        if (originalFolderToSave == null || originalFolderToSave.isEmpty()) {
+            originalFolderToSave = fromFolder;
+        }
+
         // Use Builder Pattern to update folder
         Email updatedEmail = email.toBuilder()
                 .folder(toFolder)
+                .originalFolder(originalFolderToSave)  // Preserve or set original folder
                 .build();
 
         // If moving to trash, set deletedAt
@@ -241,7 +247,8 @@ public class EmailService {
         // Save the updated email metadata with new folder
         emailRepository.saveEmail(username, updatedEmail);
 
-        log.info("Email {} moved from {} to {}", messageId, fromFolder, toFolder);
+        log.info("Email {} moved from {} to {}, original folder tracked as: {}",
+                messageId, fromFolder, toFolder, originalFolderToSave);
     }
 
     // DELETE EMAIL (Move to trash)
@@ -252,13 +259,20 @@ public class EmailService {
         if (!currentFolder.equals("trash")) {
             emailRepository.moveEmail(username, messageId, currentFolder, "trash");
 
+            String originalFolderToPreserve = email.getOriginalFolder();
+            if (originalFolderToPreserve == null || originalFolderToPreserve.isEmpty()) {
+                originalFolderToPreserve = currentFolder;
+            }
+
             // Use Builder Pattern to mark as deleted
             Email trashedEmail = email.toBuilder()
                     .inTrash()
+                    .originalFolder(originalFolderToPreserve)  // IMPORTANT: Preserve original folder
                     .build();
 
             emailRepository.saveEmail(username, trashedEmail);
-            log.info("Email {} moved to trash by {}", messageId, username);
+            log.info("Email {} moved to trash by {}, will restore to: {}",
+                    messageId, username, originalFolderToPreserve);
         }
     }
 
@@ -377,6 +391,7 @@ public class EmailService {
         Email restoredEmail = email.toBuilder()
                 .folder(restoreFolder)
                 .deletedAt(null) // Clear the deletion timestamp
+                .originalFolder(null) // Clear original folder after restore
                 .build();
 
         emailRepository.saveEmail(username, restoredEmail);
