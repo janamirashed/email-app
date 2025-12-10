@@ -265,8 +265,24 @@ public class EmailService {
     // PERMANENTLY DELETE EMAIL
     public void permanentlyDeleteEmail(String username, String messageId) throws IOException {
         Email email = getEmail(username, messageId);
-        emailRepository.deleteEmail(username, email.getFolder(), messageId);
-        log.info("Email {} permanently deleted by {}", messageId, username);
+
+        if (email == null) {
+            throw new IOException("Email not found: " + messageId);
+        }
+
+        String folder = email.getFolder();
+        if (folder == null || folder.isEmpty()) {
+            folder = "inbox"; // Default fallback
+        }
+
+        boolean deleted = emailRepository.deleteEmail(username, folder, messageId);
+
+        if (!deleted) {
+            log.warn("Failed to permanently delete email {} from folder {}", messageId, folder);
+            throw new IOException("Failed to delete email from file system: " + messageId);
+        }
+
+        log.info("Email {} permanently deleted from folder {}", messageId, folder);
     }
 
     // BULK MOVE EMAILS
@@ -285,7 +301,7 @@ public class EmailService {
     public void bulkDelete(String username, List<String> messageIds) throws IOException {
         for (String messageId : messageIds) {
             try {
-                deleteEmail(username, messageId);
+                deleteEmail(username, messageId);  // Move to trash, NOT permanently delete
             } catch (IOException e) {
                 log.error("Failed to delete email {}", messageId, e);
             }
@@ -293,10 +309,91 @@ public class EmailService {
         log.info("Bulk deleted {} emails", messageIds.size());
     }
 
+    public void bulkPermanentlyDelete(String username, List<String> messageIds) throws IOException {
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (String messageId : messageIds) {
+            try {
+                Email email = getEmail(username, messageId);
+                String folder = email.getFolder();
+
+                boolean deleted = emailRepository.deleteEmail(username, folder, messageId);
+
+                if (deleted) {
+                    successCount++;
+                    log.info("Permanently deleted email {}", messageId);
+                } else {
+                    failureCount++;
+                    log.error("Failed to permanently delete email {}", messageId);
+                }
+
+            } catch (IOException e) {
+                failureCount++;
+                log.error("Failed to permanently delete email {}: {}", messageId, e.getMessage(), e);
+            }
+        }
+
+        log.info("Bulk permanently deleted {} emails - Success: {}, Failures: {}", messageIds.size(), successCount, failureCount);
+
+        if (failureCount > 0) {
+            throw new IOException("Failed to delete " + failureCount + " emails. See logs for details.");
+        }
+    }
+
     // CLEANUP TRASH - Auto delete after 30 days
     public void cleanupTrash(String username) throws IOException {
         emailRepository.cleanupTrash(username);
         log.info("Trash cleanup completed for {}", username);
+    }
+
+
+    // Moves email back to the folder it was in before deletion
+    public void restoreEmailFromTrash(String username, String messageId) throws IOException {
+        Email email = getEmail(username, messageId);
+
+        if (email == null) {
+            throw new IOException("Email not found: " + messageId);
+        }
+
+        // Check if email is in trash
+        if (!email.getFolder().equals("trash")) {
+            throw new IOException("Email is not in trash");
+        }
+
+        // Determine restore folder - use originalFolder if available, otherwise default to inbox
+        String restoreFolder = email.getOriginalFolder();
+        if (restoreFolder == null || restoreFolder.isEmpty() || restoreFolder.equals("trash")) {
+            restoreFolder = "inbox"; // Default fallback
+            log.warn("No original folder found for email {}. Restoring to inbox", messageId);
+        }
+
+        log.info("Restoring email {} from trash to original folder: {}", messageId, restoreFolder);
+
+        // Move email back to original folder
+        emailRepository.moveEmail(username, messageId, "trash", restoreFolder);
+
+        // Update the email metadata
+        Email restoredEmail = email.toBuilder()
+                .folder(restoreFolder)
+                .deletedAt(null) // Clear the deletion timestamp
+                .build();
+
+        emailRepository.saveEmail(username, restoredEmail);
+        log.info("Email {} successfully restored to {}", messageId, restoreFolder);
+    }
+
+    // Restores multiple emails to their original folders
+    public void bulkRestoreFromTrash(String username, List<String> messageIds) throws IOException {
+        for (String messageId : messageIds) {
+            try {
+                restoreEmailFromTrash(username, messageId);
+            } catch (IOException e) {
+                log.error("Failed to restore email {}: {}", messageId, e.getMessage());
+                // Continue with next email instead of failing completely
+            }
+        }
+        log.info("Bulk restored {} emails from trash", messageIds.size());
     }
 
     // GET STARRED EMAILS + sorting
