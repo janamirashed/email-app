@@ -1,0 +1,16 @@
+{
+  "messageId" : "93115fbc",
+  "from" : "ysfw@jaryn.com",
+  "to" : [ "asdsad@jaryn.com" ],
+  "subject" : "are you here 2",
+  "body" : "I think I should be",
+  "timestamp" : [ 2025, 12, 10, 23, 18, 37, 112571900 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

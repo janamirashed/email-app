@@ -1,23 +1,25 @@
 package com.mail.backend.service;
 
+import com.mail.backend.model.SSE;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
 public class JWTService {
+
+    @Autowired
+    private EventService eventService;
 
     private String secretKey;
 
@@ -59,11 +61,18 @@ public class JWTService {
     }
 
     private Claims extractAllClaims(String token) {
+        try
+        {
         return Jwts.parser()
                 .verifyWith(getKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+        }
+        catch (Exception e){
+            eventService.publishEvent(new SSE("Token_Expired",token,new ArrayList<>()));
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {

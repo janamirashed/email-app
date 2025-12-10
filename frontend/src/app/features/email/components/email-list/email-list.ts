@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
+import { EventService } from '../../../../core/services/event-service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 
 @Component({
@@ -29,6 +30,7 @@ export class EmailListComponent implements OnInit {
 
   constructor(
     private emailService: EmailService,
+    private eventService: EventService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
@@ -50,6 +52,16 @@ export class EmailListComponent implements OnInit {
       this.errorMessage = ''; // Clear errors
       this.loadEmails();
       this.cdr.detectChanges(); // Trigger change detection after route change
+
+      this.eventService.getInboxRefresh().subscribe(() => {
+        console.log('Inbox refresh event received from SSE');
+        // Only refresh if we're currently viewing the inbox
+        if (this.currentFolder === 'inbox') {
+          this.loadEmails();
+          this.cdr.detectChanges();
+        }
+      })
+
     });
   }
 

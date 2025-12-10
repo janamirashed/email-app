@@ -1,10 +1,11 @@
 package com.mail.backend.controller;
 
+import com.mail.backend.model.SSE;
 import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.Email;
-import com.mail.backend.repository.EmailRepository;
 import com.mail.backend.service.AttachmentService;
 import com.mail.backend.service.EmailService;
+import com.mail.backend.service.EventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ public class EmailController {
 
     @Autowired
     private AttachmentService attachmentService;
+
+    @Autowired
+    private EventService eventService;
 
     // GET current user's username from JWT token
     private String getCurrentUsername(Authentication authentication) {
@@ -70,6 +74,7 @@ public class EmailController {
             response.put("message", "Email sent successfully");
 
             log.info("Email {} sent successfully", messageId);
+            eventService.publishEvent(new SSE("Sent","",email.getTo()));
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             log.error("Invalid email: {}", e.getMessage());
