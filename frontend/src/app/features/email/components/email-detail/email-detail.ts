@@ -15,7 +15,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class EmailDetailComponent implements OnInit {
   email: any = null;
-  messageId: string = '';
+  messageId: string | null = '';
   isLoading: boolean = false;
   errorMessage: string = '';
 
@@ -43,6 +43,13 @@ export class EmailDetailComponent implements OnInit {
         this.isLoading = false; // Reset loading state
         this.email = null; // Clear previous email
         this.loadEmail();
+      } else {
+        // No messageId - clear the email display
+        this.email = null;
+        this.messageId = null;
+        this.errorMessage = '';
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
 
@@ -154,9 +161,11 @@ export class EmailDetailComponent implements OnInit {
         console.log('Move dialog - Folders API response:', response);
         // Backend returns { success: true, totalFolders: N, folders: [...] }
         // Filter to show only custom folders (system folders are already shown separately)
+        // Also exclude the 'contacts' folder
         const allFolders = response.folders || [];
         this.folders = allFolders.filter((folder: any) =>
-          folder.type === 'CUSTOM' || folder.type === 'custom'
+          (folder.type === 'CUSTOM' || folder.type === 'custom') &&
+          folder.name.toLowerCase() !== 'contacts'
         );
         this.isLoadingFolders = false;
         this.cdr.detectChanges()

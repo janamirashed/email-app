@@ -56,11 +56,12 @@ export class SidebarComponent implements OnInit {
     this.folderService.getAllFolders().subscribe({
       next: (response) => {
         console.log('Sidebar - Folders loaded:', response);
-        // Filter out system folders (inbox, sent, drafts, trash)
+        // Filter out system folders (inbox, sent, drafts, trash) and the contacts folder
         // Only keep custom folders
         const allFolders = response.folders || [];
         this.customFolders = allFolders.filter((folder: any) =>
-          folder.type === 'CUSTOM' || folder.type === 'custom'
+          (folder.type === 'CUSTOM' || folder.type === 'custom') &&
+          folder.name.toLowerCase() !== 'contacts'
         );
         console.log('Sidebar - Custom folders only:', this.customFolders);
         // Manually trigger change detection to avoid ExpressionChangedAfterItHasBeenCheckedError

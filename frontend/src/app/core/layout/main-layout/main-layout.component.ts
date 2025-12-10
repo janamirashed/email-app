@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
 import { HeaderComponent } from '../../../shared/components/header/header';
 import { EmailComposeComponent } from '../../../features/email/components/email-compose/email-compose';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { EmailComposeService } from '../../services/email-compose.service';
 
 @Component({
@@ -15,7 +16,8 @@ import { EmailComposeService } from '../../services/email-compose.service';
         RouterOutlet,
         SidebarComponent,
         HeaderComponent,
-        EmailComposeComponent
+        EmailComposeComponent,
+        ToastComponent
     ],
     templateUrl: './main-layout.component.html'
 })

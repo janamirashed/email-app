@@ -1,0 +1,27 @@
+{
+  "messageId" : "1fa1be71",
+  "from" : "asdsad@jaryn.com",
+  "to" : [ "ysfw@jaryn.com" ],
+  "subject" : "do attachments attach?",
+  "body" : "yes they do",
+  "timestamp" : [ 2025, 12, 10, 13, 22, 58, 838988300 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "attachments" : [ {
+    "id" : "5a450a36-3578-4cef-8c8c-9addcf18506e",
+    "fileName" : "function (2).png",
+    "mimeType" : "image/png"
+  }, {
+    "id" : "002cfc4f-cf23-42ba-ae37-c25117a358a5",
+    "fileName" : "carbon (9) (1).png",
+    "mimeType" : "image/png"
+  }, {
+    "id" : "51ecf434-0c30-4276-aeca-3a7278a2fdca",
+    "fileName" : "function (1).png",
+    "mimeType" : "image/png"
+  } ],
+  "deletedAt" : [ 2025, 12, 10, 14, 12, 14, 605475100 ],
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

@@ -1,11 +1,13 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { AttachmentService } from '../../../../core/services/attachment.service';
 import { EmailService } from '../../../../core/services/email.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { Subscription, lastValueFrom } from 'rxjs';
 import { Attachment } from '../../../../core/models/attachment.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-email-compose',
@@ -32,11 +34,14 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   successMessage: string = '';
 
   private composeSubscription!: Subscription;
+  private composeDataSubscription!: Subscription;
 
   constructor(
     private composeService: EmailComposeService,
     private attachmentService: AttachmentService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit() {
@@ -45,6 +50,23 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         this.isComposing = isVisible;
         if (!isVisible) {
           this.resetForm();
+        }
+      }
+    );
+
+    // Subscribe to compose data to pre-fill form
+    this.composeDataSubscription = this.composeService.composeData$.subscribe(
+      (data) => {
+        if (data) {
+          if (data.recipients) {
+            this.recipients = data.recipients;
+          }
+          if (data.subject) {
+            this.subject = data.subject;
+          }
+          if (data.body) {
+            this.body = data.body;
+          }
         }
       }
     );
@@ -94,7 +116,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
     let email: any = {
       from: localStorage.getItem("currentUser"),
-      to: this.recipients.split(", "),
+      to: this.parseRecipients(this.recipients),
       subject: this.subject,
       body: this.body,
       priority: this.priority,
@@ -105,12 +127,10 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     this.emailService.sendEmail(email).subscribe({
       next: (response) => {
         console.log("Email sent successfully:", response);
-        this.successMessage = 'Email sent successfully!';
         this.isLoading = false;
-
-        setTimeout(() => {
-          this.closeCompose();
-        }, 2000);
+        this.closeCompose();
+        this.notificationService.showSuccess('Email sent successfully!');
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to send email:', error);
@@ -196,6 +216,9 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.composeSubscription) {
       this.composeSubscription.unsubscribe();
+    }
+    if (this.composeDataSubscription) {
+      this.composeDataSubscription.unsubscribe();
     }
   }
 }

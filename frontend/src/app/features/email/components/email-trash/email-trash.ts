@@ -1,11 +1,13 @@
-import {ChangeDetectorRef, Component, inject, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmailService } from '../../../../core/services/email.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { EmailDetailComponent } from '../email-detail/email-detail';
 
 @Component({
   selector: 'app-email-trash',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EmailDetailComponent],
   templateUrl: './email-trash.html',
   styleUrl: './email-trash.css'
 })
@@ -18,11 +20,15 @@ export class EmailTrashComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
-  constructor(private emailService: EmailService,private cdr: ChangeDetectorRef) {}
+  constructor(
+    private emailService: EmailService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit() {
     this.loadTrashEmails();
-
   }
 
   // Load all emails from trash folder
@@ -49,6 +55,12 @@ export class EmailTrashComponent implements OnInit {
   // Select email to view
   selectEmail(email: any) {
     this.selectedEmailId = email.messageId;
+    // Navigate to detail view with messageId as query param
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { messageId: email.messageId },
+      queryParamsHandling: 'merge'
+    });
   }
 
   // Toggle email selection (checkbox)
