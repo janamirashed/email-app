@@ -113,12 +113,18 @@ export class EmailTrashComponent implements OnInit {
 
     if (confirm(`Permanently delete ${this.selectedEmails.size} email(s)? This cannot be undone.`)) {
       const messageIds = Array.from(this.selectedEmails);
-      this.emailService.bulkDelete(messageIds).subscribe({
+      this.isLoading = true;
+
+      this.emailService.permanentlyDeleteEmails(messageIds).subscribe({  // Changed this line
         next: () => {
           this.successMessage = `Permanently deleted ${messageIds.length} email(s)`;
           console.log('Emails permanently deleted');
           this.selectedEmails.clear();
-          this.loadTrashEmails();
+          this.isLoading = false;
+
+          setTimeout(() => {
+            this.loadTrashEmails();
+          }, 500);
 
           setTimeout(() => {
             this.successMessage = '';
@@ -127,12 +133,13 @@ export class EmailTrashComponent implements OnInit {
         error: (error) => {
           console.error('Failed to delete emails:', error);
           this.errorMessage = 'Failed to delete emails';
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }
   }
 
-  // Empty entire trash
   emptyTrash() {
     if (this.emails.length === 0) {
       alert('Trash is already empty');
@@ -141,12 +148,18 @@ export class EmailTrashComponent implements OnInit {
 
     if (confirm('Permanently delete all emails in trash? This cannot be undone.')) {
       const allMessageIds = this.emails.map(e => e.messageId);
-      this.emailService.bulkDelete(allMessageIds).subscribe({
+      this.isLoading = true;
+
+      this.emailService.permanentlyDeleteEmails(allMessageIds).subscribe({  // Changed this line
         next: () => {
           this.successMessage = 'Trash emptied successfully';
           console.log('Trash emptied');
           this.selectedEmails.clear();
-          this.emails = [];
+          this.isLoading = false;
+
+          setTimeout(() => {
+            this.loadTrashEmails();
+          }, 500);
 
           setTimeout(() => {
             this.successMessage = '';
@@ -155,6 +168,8 @@ export class EmailTrashComponent implements OnInit {
         error: (error) => {
           console.error('Failed to empty trash:', error);
           this.errorMessage = 'Failed to empty trash';
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }

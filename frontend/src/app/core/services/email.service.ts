@@ -152,4 +152,10 @@ export class EmailService {
       headers: this.getHeaders()
     });
   }
+
+  permanentlyDeleteEmails(messageIds: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/permanent-delete`, messageIds, {
+      headers: this.getHeaders()
+    });
+  }
 }

@@ -265,8 +265,24 @@ public class EmailService {
     // PERMANENTLY DELETE EMAIL
     public void permanentlyDeleteEmail(String username, String messageId) throws IOException {
         Email email = getEmail(username, messageId);
-        emailRepository.deleteEmail(username, email.getFolder(), messageId);
-        log.info("Email {} permanently deleted by {}", messageId, username);
+
+        if (email == null) {
+            throw new IOException("Email not found: " + messageId);
+        }
+
+        String folder = email.getFolder();
+        if (folder == null || folder.isEmpty()) {
+            folder = "inbox"; // Default fallback
+        }
+
+        boolean deleted = emailRepository.deleteEmail(username, folder, messageId);
+
+        if (!deleted) {
+            log.warn("Failed to permanently delete email {} from folder {}", messageId, folder);
+            throw new IOException("Failed to delete email from file system: " + messageId);
+        }
+
+        log.info("Email {} permanently deleted from folder {}", messageId, folder);
     }
 
     // BULK MOVE EMAILS
@@ -285,12 +301,44 @@ public class EmailService {
     public void bulkDelete(String username, List<String> messageIds) throws IOException {
         for (String messageId : messageIds) {
             try {
-                deleteEmail(username, messageId);
+                deleteEmail(username, messageId);  // Move to trash, NOT permanently delete
             } catch (IOException e) {
                 log.error("Failed to delete email {}", messageId, e);
             }
         }
         log.info("Bulk deleted {} emails", messageIds.size());
+    }
+
+    public void bulkPermanentlyDelete(String username, List<String> messageIds) throws IOException {
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (String messageId : messageIds) {
+            try {
+                Email email = getEmail(username, messageId);
+                String folder = email.getFolder();
+
+                boolean deleted = emailRepository.deleteEmail(username, folder, messageId);
+
+                if (deleted) {
+                    successCount++;
+                    log.info("Permanently deleted email {}", messageId);
+                } else {
+                    failureCount++;
+                    log.error("Failed to permanently delete email {}", messageId);
+                }
+
+            } catch (IOException e) {
+                failureCount++;
+                log.error("Failed to permanently delete email {}: {}", messageId, e.getMessage(), e);
+            }
+        }
+
+        log.info("Bulk permanently deleted {} emails - Success: {}, Failures: {}", messageIds.size(), successCount, failureCount);
+
+        if (failureCount > 0) {
+            throw new IOException("Failed to delete " + failureCount + " emails. See logs for details.");
+        }
     }
 
     // CLEANUP TRASH - Auto delete after 30 days

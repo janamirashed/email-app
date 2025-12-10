@@ -467,6 +467,30 @@ public class EmailController {
     }
 
     /**
+     * PERMANENTLY DELETE EMAILS (from trash)
+     * POST /api/email/permanent-delete
+     * Body: ["messageId1", "messageId2", ...]
+     */
+    @PostMapping("/permanent-delete")
+    public ResponseEntity<?> permanentlyDeleteEmails(@RequestBody List<String> messageIds, Authentication authentication) {
+        String username = getCurrentUsername(authentication);
+
+        for (String messageId : messageIds) {
+            try {
+                emailService.permanentlyDeleteEmail(username, messageId);
+            } catch (IOException e) {
+                log.error("Failed to permanently delete email {}", messageId, e);
+            }
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Permanently deleted " + messageIds.size() + " emails");
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
      * BULK MOVE EMAILS
      * POST /api/email/bulk-move?toFolder=work
      * Body: ["messageId1", "messageId2", ...]
