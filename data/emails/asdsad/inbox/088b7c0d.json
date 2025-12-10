@@ -1,0 +1,15 @@
+{
+  "messageId" : "088b7c0d",
+  "from" : "asdsad@jaryn.com",
+  "to" : [ "b" ],
+  "subject" : "bbbbbbbbbbbbbbb",
+  "body" : "bbbbbbbbbbbbbbbb",
+  "timestamp" : [ 2025, 12, 8, 16, 36, 27, 986398500 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : [ 2025, 12, 8, 16, 36, 45, 29606800 ],
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

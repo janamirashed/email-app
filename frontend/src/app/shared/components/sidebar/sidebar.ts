@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
-import {FormsModule} from '@angular/forms';
+import { FolderService } from '../../../core/services/folder.service';
+import { FormsModule } from '@angular/forms';
 
 interface Folder {
-  id: number;
   name: string;
-  color: string;
-  emailCount: number;
+  count?: number;
 }
 
 @Component({
@@ -28,10 +27,7 @@ export class SidebarComponent implements OnInit {
     { name: 'Trash', icon: 'trash', count: 5, path: 'trash' }
   ];
 
-  customFolders: Folder[] = [
-    { id: 1, name: 'Work', color: 'indigo', emailCount: 24 },
-    { id: 2, name: 'Personal', color: 'green', emailCount: 12 }
-  ];
+  customFolders: Folder[] = [];
 
   bottomViews = [
     { name: 'Contacts', path: 'contacts' },
@@ -40,11 +36,42 @@ export class SidebarComponent implements OnInit {
 
   showFolders = true;
   showCreateFolderModal = false;
+  showRenameFolderModal = false;
   newFolderName = '';
+  renameFolderName = '';
+  renamingFolder = '';
 
-  constructor(private router: Router, private composeService: EmailComposeService) { }
+  constructor(
+    private router: Router,
+    private composeService: EmailComposeService,
+    private folderService: FolderService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.loadCustomFolders();
+  }
+
+  loadCustomFolders() {
+    this.folderService.getAllFolders().subscribe({
+      next: (response) => {
+        console.log('Sidebar - Folders loaded:', response);
+        // Filter out system folders (inbox, sent, drafts, trash)
+        // Only keep custom folders
+        const allFolders = response.folders || [];
+        this.customFolders = allFolders.filter((folder: any) =>
+          folder.type === 'CUSTOM' || folder.type === 'custom'
+        );
+        console.log('Sidebar - Custom folders only:', this.customFolders);
+        // Manually trigger change detection to avoid ExpressionChangedAfterItHasBeenCheckedError
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Sidebar - Failed to load folders:', error);
+        // Silently fail, folders section will just be empty
+      }
+    });
+  }
 
   toggleFolders() {
     this.showFolders = !this.showFolders;
@@ -62,18 +89,76 @@ export class SidebarComponent implements OnInit {
 
   createFolder() {
     if (this.newFolderName.trim()) {
-      const newFolder: Folder = {
-        id: Date.now(),
-        name: this.newFolderName.trim(),
-        color: 'blue',
-        emailCount: 0
-      };
-      this.customFolders.push(newFolder);
-      this.closeCreateFolderModal();
-      console.log('Created folder:', newFolder);
+      console.log('Sidebar - Creating folder:', this.newFolderName.trim());
+      this.folderService.createFolder(this.newFolderName.trim()).subscribe({
+        next: (response) => {
+          console.log('Sidebar - Folder created:', response);
+          this.closeCreateFolderModal();
+          this.loadCustomFolders(); // Reload folders
 
-      // Navigate to the new folder
-      this.router.navigate(['/folder', newFolder.name.toLowerCase()]);
+          // Navigate to the new folder
+          this.router.navigate(['/folder', this.newFolderName.trim()]);
+        },
+        error: (error) => {
+          console.error('Sidebar - Failed to create folder:', error);
+          alert('Failed to create folder: ' + (error.error?.error || 'Unknown error'));
+          this.closeCreateFolderModal();
+        }
+      });
+    }
+  }
+
+  navigateToFolder(folderName: string) {
+    this.router.navigate(['/folder', folderName]);
+  }
+
+  deleteFolder(folderName: string) {
+    if (confirm(`Are you sure you want to delete the folder "${folderName}"?`)) {
+      console.log('Sidebar - Deleting folder:', folderName);
+      this.folderService.deleteFolder(folderName).subscribe({
+        next: (response) => {
+          console.log('Sidebar - Folder deleted:', response);
+          this.loadCustomFolders(); // Reload folders
+          // Navigate to inbox if we're currently viewing the deleted folder
+          if (this.router.url.includes(`/folder/${folderName}`)) {
+            this.router.navigate(['/inbox']);
+          }
+        },
+        error: (error) => {
+          console.error('Sidebar - Failed to delete folder:', error);
+          alert('Failed to delete folder: ' + (error.error?.error || 'Unknown error'));
+        }
+      });
+    }
+  }
+
+  editFolder(folderName: string) {
+    this.renamingFolder = folderName;
+    this.renameFolderName = folderName;
+    this.showRenameFolderModal = true;
+  }
+
+  closeRenameFolderModal() {
+    this.showRenameFolderModal = false;
+    this.renamingFolder = '';
+    this.renameFolderName = '';
+  }
+
+  saveRenameFolder() {
+    if (this.renameFolderName.trim() && this.renamingFolder) {
+      console.log('Sidebar - Renaming folder from', this.renamingFolder, 'to', this.renameFolderName.trim());
+      this.folderService.renameFolder(this.renamingFolder, this.renameFolderName.trim()).subscribe({
+        next: (response) => {
+          console.log('Sidebar - Folder renamed:', response);
+          this.closeRenameFolderModal();
+          this.loadCustomFolders(); // Reload folders
+        },
+        error: (error) => {
+          console.error('Sidebar - Failed to rename folder:', error);
+          alert('Failed to rename folder: ' + (error.error?.error || 'Unknown error'));
+          this.closeRenameFolderModal();
+        }
+      });
     }
   }
 

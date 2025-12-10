@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, inject, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmailService } from '../../../../core/services/email.service';
 
@@ -18,10 +18,11 @@ export class EmailTrashComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
-  constructor(private emailService: EmailService) {}
+  constructor(private emailService: EmailService,private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadTrashEmails();
+
   }
 
   // Load all emails from trash folder
@@ -34,11 +35,13 @@ export class EmailTrashComponent implements OnInit {
         this.emails = response.content || [];
         this.isLoading = false;
         console.log('Trash emails loaded:', this.emails);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load trash emails:', error);
         this.errorMessage = 'Failed to load trash emails';
         this.isLoading = false;
+        this.cdr.detectChanges()
       }
     });
   }

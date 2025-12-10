@@ -58,6 +58,13 @@ export const routes: Routes = [
         canActivate: [AuthGuard]
       },
 
+      // Dynamic folder route for viewing emails in custom folders
+      {
+        path: 'folder/:folderName',
+        component: EmailListComponent,
+        canActivate: [AuthGuard]
+      },
+
       {
         path: 'contacts',
         component: ContactViewComponent,

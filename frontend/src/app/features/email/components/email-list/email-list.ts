@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
@@ -31,18 +31,25 @@ export class EmailListComponent implements OnInit {
     private emailService: EmailService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) { }
 
   ngOnInit() {
     // Get current folder from route
     this.route.url.subscribe(urlSegments => {
-      this.currentFolder = urlSegments[0]?.path || 'inbox';
+      // Check if we're on a /folder/:folderName route
+      if (urlSegments[0]?.path === 'folder' && urlSegments[1]) {
+        this.currentFolder = urlSegments[1].path;
+      } else {
+        this.currentFolder = urlSegments[0]?.path || 'inbox';
+      }
+
       this.currentPage = 1;
       this.selectedEmails.clear();
-      this.isLoading = false; // Reset loading state
       this.errorMessage = ''; // Clear errors
       this.loadEmails();
+      this.cdr.detectChanges(); // Trigger change detection after route change
     });
   }
 
@@ -67,18 +74,19 @@ export class EmailListComponent implements OnInit {
       this.sortBy
     ).subscribe({
       next: (response) => {
-        this.emails = response.content || [];
-        this.totalPages = response.totalPages || 0;
-        this.totalEmails = response.totalEmails || 0;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        console.log('Emails loaded:', this.emails);
+          this.emails = response.content || [];
+          this.totalPages = response.totalPages || 0;
+          this.totalEmails = response.totalEmails || 0;
+          this.isLoading = false;
+          console.log('Emails loaded:', this.emails);
+          this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Failed to load emails:', error);
-        this.errorMessage = 'Failed to load emails. Please try again.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        setTimeout(() => {
+          console.error('Failed to load emails:', error);
+          this.errorMessage = 'Failed to load emails. Please try again.';
+          this.isLoading = false;
+        }, 0);
       }
     });
   }
@@ -87,18 +95,21 @@ export class EmailListComponent implements OnInit {
   private loadStarredEmails() {
     this.emailService.getStarredEmails(this.sortBy).subscribe({
       next: (response) => {
-        this.emails = response.emails || [];
-        this.totalEmails = response.totalStarred || 0;
-        this.totalPages = 1; // Starred emails not paginated
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        console.log('Starred emails loaded:', this.emails);
+        setTimeout(() => {
+          this.emails = response.emails || [];
+          this.totalEmails = response.totalStarred || 0;
+          this.totalPages = 1; // Starred emails not paginated
+          this.isLoading = false;
+          console.log('Starred emails loaded:', this.emails);
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (error) => {
-        console.error('Failed to load starred emails:', error);
-        this.errorMessage = 'Failed to load emails. Please try again.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        setTimeout(() => {
+          console.error('Failed to load starred emails:', error);
+          this.errorMessage = 'Failed to load emails. Please try again.';
+          this.isLoading = false;
+        }, 0);
       }
     });
   }
