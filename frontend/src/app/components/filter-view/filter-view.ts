@@ -7,7 +7,7 @@ import { FilterDialogComponent } from '../../features/filter/components/filter-d
 @Component({
   selector: 'app-filter-view',
   standalone: true,
-  imports: [CommonModule, FilterListComponent, FilterDialogComponent],
+  imports: [CommonModule, FilterListComponent],
   templateUrl: './filter-view.html'
 })
 export class FilterViewComponent {}

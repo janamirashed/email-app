@@ -1,6 +1,5 @@
 package com.mail.backend.service;
 
-import com.mail.backend.dps.builder.EmailBuilder;
 import com.mail.backend.dps.strategy.*;
 import com.mail.backend.model.Email;
 import com.mail.backend.repository.EmailRepository;
@@ -370,7 +369,7 @@ public class EmailService {
         }
         return switch (sortBy.toLowerCase()){
             case "date" -> new SortByDateStrategy();
-            case "importance", "priority" -> new SortByImportanceStrategy();
+            case "priority" -> new SortByPriorityStrategy();
             default -> new SortByDateStrategy();
         };
     }
@@ -386,6 +385,7 @@ public class EmailService {
             case "receiver", "receivers", "to" -> new SearchByReceiverStrategy();
             case "all"  -> new SearchAllStrategy();
             case "body" -> new SearchByBodyStrategy();
+            case "importance" -> new SearchByImportanceStrategy();
             default -> new SearchAllStrategy();
         };
     }

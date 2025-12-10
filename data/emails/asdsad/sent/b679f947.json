@@ -1,0 +1,15 @@
+{
+  "messageId" : "b679f947",
+  "from" : "asdsad@jaryn.com",
+  "to" : [ "ysfw@jaryn.com" ],
+  "subject" : "imp",
+  "body" : "this is very important\n",
+  "timestamp" : [ 2025, 12, 9, 19, 49, 50, 545224600 ],
+  "priority" : 3,
+  "folder" : "sent",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

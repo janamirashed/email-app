@@ -37,7 +37,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     private composeService: EmailComposeService,
     private attachmentService: AttachmentService,
     private emailService: EmailService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.composeSubscription = this.composeService.isComposing$.subscribe(
@@ -53,6 +53,14 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   updateFiles(event: any) {
     const fileList: FileList = event.target.files;
     this.selectedFiles = Array.from(fileList);
+
+    // Create attachment objects for UI display
+    this.attachments = this.selectedFiles.map((file, index) => ({
+      id: '', // Will be populated when sending
+      fileName: file.name,
+      mimeType: file.type,
+      size: file.size
+    }));
   }
 
   // Remove attachment from preview
@@ -89,6 +97,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       to: this.recipients.split(", "),
       subject: this.subject,
       body: this.body,
+      priority: this.priority,
       attachments: attachments
     };
 
