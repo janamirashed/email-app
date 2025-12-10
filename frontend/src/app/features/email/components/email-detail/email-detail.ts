@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { FolderService } from '../../../../core/services/folder.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -32,7 +33,8 @@ export class EmailDetailComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private composeService: EmailComposeService,
     private folderService: FolderService,
-    private http: HttpClient
+    private http: HttpClient,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit() {
@@ -95,13 +97,12 @@ export class EmailDetailComponent implements OnInit {
   replyToEmail() {
     if (!this.email) return;
 
-    // Open compose with pre-filled recipient
-    this.composeService.openCompose();
-
-    // TODO: Pre-fill compose form with email details
-    // This would need to emit data to the compose component
-    console.log('Reply to:', this.email.from);
-    console.log('Subject: Re:', this.email.subject);
+    // Open compose with pre-filled recipient and subject
+    this.composeService.openCompose({
+      recipients: this.email.from,
+      subject: `Re: ${this.email.subject}`,
+      body: ''
+    });
   }
 
   // Delete email
@@ -109,11 +110,13 @@ export class EmailDetailComponent implements OnInit {
     if (!this.messageId) return;
 
     if (confirm('Are you sure you want to delete this email?')) {
+
       this.emailService.deleteEmail(this.messageId).subscribe({
         next: () => {
           console.log('Email deleted');
           // Navigate back or close detail view
           window.history.back();
+          this.cdr.detectChanges()
         },
         error: (error) => {
           console.error('Failed to delete email:', error);
@@ -188,17 +191,17 @@ export class EmailDetailComponent implements OnInit {
     this.emailService.moveEmail(this.messageId, folderName).subscribe({
       next: () => {
         console.log('Email moved to', folderName);
-        this.moveSuccessMessage = `Email moved to ${folderName}`;
+        this.showMoveDialog = false;
+        // Show toast notification
+        this.notificationService.showSuccess(`Email moved to ${folderName}`);
+        // Navigate back after notification appears
         setTimeout(() => {
-          this.showMoveDialog = false;
-          this.moveSuccessMessage = '';
-          // Reload or navigate back
           window.history.back();
-        }, 1500);
+        }, 800);
       },
       error: (error) => {
         console.error('Failed to move email:', error);
-        this.moveErrorMessage = 'Failed to move email';
+        this.notificationService.showError('Failed to move email');
       }
     });
   }

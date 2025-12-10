@@ -136,6 +136,7 @@ export class EmailService {
     });
   }
 
+
   // POST /api/email/bulk-move?toFolder=work
   bulkMove(messageIds: string[], toFolder: string): Observable<any> {
     const params = new HttpParams().set('toFolder', toFolder);

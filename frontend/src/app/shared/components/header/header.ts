@@ -29,7 +29,7 @@ export class HeaderComponent implements OnInit {
     this.userName = currentUser;
 
     // Try to get email from localStorage or construct it
-    this.userEmail = localStorage.getItem('userEmail') || `${currentUser}@example.com`;
+    this.userEmail = `${currentUser}@jaryn.com`;
 
     // Generate initials from username
     if (currentUser) {
