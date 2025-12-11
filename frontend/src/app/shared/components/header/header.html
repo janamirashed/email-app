@@ -1,6 +1,6 @@
 <header class="flex items-center justify-between h-16 bg-white border-b border-gray-200 px-6">
   <!-- Logo -->
-  <div class="text-xl font-bold text-indigo-600">Jaryn</div>
+  <div class="text-xl font-bold text-blue-600">Jaryn</div>
 
   <!-- Search -->
   <div class="flex-1 max-w-2xl mx-8">
@@ -12,7 +12,7 @@
       </svg>
       <input type="text" placeholder="Search emails, contacts, and more..." [(ngModel)]="searchTerm"
         (keyup.enter)="onSearch()"
-        class="w-full pl-12 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+        class="w-full pl-12 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
     </div>
   </div>
 
@@ -20,7 +20,7 @@
   <div class="relative user-menu-container">
     <button (click)="toggleUserMenu($event)"
       class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition">
-      <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+      <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
         {{ userInitials }}
       </div>
       <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +34,7 @@
       <!-- User Info -->
       <div class="px-4 py-3 border-b border-gray-100">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
+          <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
             {{ userInitials }}
           </div>
           <div class="flex-1 min-w-0">
