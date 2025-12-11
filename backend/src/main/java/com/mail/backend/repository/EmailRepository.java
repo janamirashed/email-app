@@ -3,6 +3,7 @@ package com.mail.backend.repository;
 import com.mail.backend.model.Email;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -19,14 +20,10 @@ import java.util.stream.Stream;
 @Repository
 public class EmailRepository {
 
+    @Getter
     @Value("${mail.msg-root:data/emails}")
     private String msgRoot;
-
     private final ObjectMapper objectMapper;
-
-    public String getMsgRoot() {
-        return msgRoot;
-    }
 
     public EmailRepository() {
         this.objectMapper = new ObjectMapper();

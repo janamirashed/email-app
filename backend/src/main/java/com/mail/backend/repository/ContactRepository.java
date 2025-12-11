@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Repository
 public class ContactRepository {
-    @Value("${mail.msg-root:data/emails}")
+    @Value("${mail.contacts-root:data/contacts}")
     private String dataRoot;
     private final ObjectMapper objectMapper;
 
@@ -31,14 +31,14 @@ public class ContactRepository {
     }
 
     private Path getContactsPath(String username){
-        return Paths.get(dataRoot, username, "contacts");
+        return Paths.get(dataRoot, username);
     }
 
     public void saveContact(String username, Contact contact)throws IOException {
         Path contactsDir = getContactsPath(username);
         Files.createDirectories(contactsDir);
         Path contactFile = getContactsPath(username).resolve(contact.getId() + ".json");
-        String json = objectMapper.writeValueAsString(contact);
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contact);
         Files.write(contactFile, json.getBytes());
         log.info("Saved contact {} saved for user {} ", contact.getId(), username);
     }
@@ -83,7 +83,7 @@ public class ContactRepository {
             throw new IOException("Contact not found: " + contactId);
         }
         Files.delete(contactFile);
-        log.info("Deleted contact {} saved for user {} ", contactId, username);
+        log.info("Deleted contact {} for user {} ", contactId, username);
     }
 
     public boolean contactExists(String username, String contactId) throws IOException {

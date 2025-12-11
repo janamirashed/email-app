@@ -1,0 +1,9 @@
+{
+  "id" : "filter-42ba10c3",
+  "name" : "I hate brokely",
+  "property" : "subject",
+  "matcher" : "contains",
+  "value" : "brokely",
+  "action" : "delete",
+  "newFolder" : null
+}

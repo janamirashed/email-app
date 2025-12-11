@@ -19,7 +19,8 @@ public class EmailService {
     @Autowired
     private EmailRepository emailRepository;
 
-
+    @Autowired
+    private FilterService filterService;
     // SEND EMAIL - Save to sent folder and create copy in recipient's inbox
     public String sendEmail(String username, Email emailRequest) throws IOException {
         // Validate
@@ -68,7 +69,7 @@ public class EmailService {
                         .build();
 
                 String recipientUsername = extractUsername(recipient);
-                emailRepository.saveEmail(recipientUsername, recipientCopy);
+                emailRepository.saveEmail(recipientUsername, filterService.applyFilters(recipientUsername, recipientCopy));
                 log.info("Email {} delivered to {}", messageId, recipient);
 
             } catch (Exception e) {
