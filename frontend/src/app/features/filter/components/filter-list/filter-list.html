@@ -25,9 +25,9 @@
         <tbody>
           <ng-container *ngFor="let rule of existingRules">
             <tr class="border-b border-gray-100 hover:bg-gray-50">
-              <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ rule.name }}</td>
-              <td class="px-4 py-3 text-sm text-gray-600">{{ rule.condition }}</td>
-              <td class="px-4 py-3 text-sm text-indigo-600 font-medium">{{ rule.action }}</td>
+              <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ getFilterName(rule) }}</td>
+              <td class="px-4 py-3 text-sm text-gray-600">{{ getFilterCondition(rule) }}</td>
+              <td class="px-4 py-3 text-sm text-indigo-600 font-medium">{{ getFilterAction(rule) }}</td>
               <td class="px-4 py-3 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button (click)="editFilter(rule)" class="text-gray-600 hover:text-indigo-600 text-sm">Edit</button>
@@ -51,23 +51,35 @@
 
   <!-- Create Filter Dialog -->
   <div *ngIf="showCreateDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
-    (click)="closeCreateDialog()">
+       (click)="closeCreateDialog()">
     <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6" (click)="$event.stopPropagation()">
       <h2 class="text-xl font-bold text-gray-900 mb-6">Create New Filter</h2>
 
-      <!-- Conditions -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Filter Name:</label>
+        <div class="flex gap-3">
+          <input
+            type="text"
+            [(ngModel)]="newFilterName"
+            placeholder="e.g. Work emails"
+            class="input flex-1">
+        </div>
+      </div>
+
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-3">When message matches:</label>
         <div class="flex gap-3">
           <select [(ngModel)]="newFilterConditionField" class="input flex-1">
-            <option>Subject</option>
-            <option>From</option>
-            <option>To</option>
+            <option value="subject">Subject</option>
+            <option value="from">From</option>
+            <option value="body">Body</option>
           </select>
           <select [(ngModel)]="newFilterConditionOperator" class="input flex-1">
-            <option>contains</option>
-            <option>is exactly</option>
-            <option>starts with</option>
+            <option value="contains">contains</option>
+            <option value="exactly">is exactly</option>
+            <option value="startswith">starts with</option>
+            <option value="endswith">ends with</option>
+
           </select>
           <input type="text" [(ngModel)]="newFilterConditionValue" placeholder="Value..." class="input flex-1">
         </div>
@@ -78,16 +90,14 @@
         <label class="block text-sm font-medium text-gray-700 mb-3">Then do:</label>
         <div class="flex gap-3">
           <select [(ngModel)]="newFilterAction" class="input flex-1">
-            <option>Move to folder</option>
-            <option>Mark as read</option>
-            <option>Star</option>
-            <option>Delete</option>
+            <option value="move">Move to folder</option>
+            <option value="markread">Mark as read</option>
+            <option value="star">Star</option>
+            <option value="delete">Delete</option>
           </select>
-          <select *ngIf="newFilterAction === 'Move to folder'" [(ngModel)]="newFilterActionValue" class="input flex-1">
+          <select *ngIf="newFilterAction === 'move'" [(ngModel)]="newFilterActionValue" class="input flex-1">
             <option value="">Choose folder...</option>
-            <option>Work</option>
-            <option>Personal</option>
-            <option>Archive</option>
+            <option *ngFor="let folder of folders" [value]="folder.name">{{ folder.name }}</option>
           </select>
         </div>
       </div>
@@ -95,7 +105,72 @@
       <!-- Buttons -->
       <div class="flex justify-end gap-3 pt-4 border-t">
         <button (click)="closeCreateDialog()" class="btn-secondary">Cancel</button>
-        <button (click)="saveFilter()" [disabled]="!newFilterConditionValue.trim()" class="btn-primary">Save
+        <button (click)="saveFilter()"
+          [disabled]="!newFilterConditionValue.trim() || (newFilterAction === 'move' && !newFilterActionValue)"
+          class="btn-primary">Save
+          Filter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Filter Dialog -->
+  <div *ngIf="showEditDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
+    (click)="closeEditDialog()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Edit Filter</h2>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Filter Name:</label>
+        <div class="flex gap-3">
+          <input
+            type="text"
+            [(ngModel)]="newFilterName"
+            placeholder="e.g. Work emails"
+            class="input flex-1">
+        </div>
+      </div>
+      <!-- Conditions -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">When message matches:</label>
+        <div class="flex gap-3">
+          <select [(ngModel)]="newFilterConditionField" class="input flex-1">
+            <option value="subject">Subject</option>
+            <option value="from">From</option>
+            <option value="body">Body</option>
+          </select>
+          <select [(ngModel)]="newFilterConditionOperator" class="input flex-1">
+            <option value="contains">contains</option>
+            <option value="exactly">is exactly</option>
+            <option value="startswith">starts with</option>
+            <option value="endswith">ends with</option>
+          </select>
+          <input type="text" [(ngModel)]="newFilterConditionValue" placeholder="Value..." class="input flex-1">
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Then do:</label>
+        <div class="flex gap-3">
+          <select [(ngModel)]="newFilterAction" class="input flex-1">
+            <option value="move">Move to folder</option>
+            <option value="markread">Mark as read</option>
+            <option value="star">Star</option>
+            <option value="delete">Delete</option>
+          </select>
+          <select *ngIf="newFilterAction === 'move'" [(ngModel)]="newFilterActionValue" class="input flex-1">
+            <option value="">Choose folder...</option>
+            <option *ngFor="let folder of folders" [value]="folder.name">{{ folder.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end gap-3 pt-4 border-t">
+        <button (click)="closeEditDialog()" class="btn-secondary">Cancel</button>
+        <button (click)="updateFilter()"
+          [disabled]="!newFilterConditionValue.trim() || (newFilterAction === 'move' && !newFilterActionValue)"
+          class="btn-primary">Update
           Filter</button>
       </div>
     </div>

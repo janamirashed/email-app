@@ -1,0 +1,9 @@
+{
+  "id" : "filter-83cf1467",
+  "name" : "I love potatoes",
+  "property" : "body",
+  "matcher" : "contains",
+  "value" : "potatoes",
+  "action" : "move",
+  "newFolder" : "love"
+}
