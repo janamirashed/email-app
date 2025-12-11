@@ -1,163 +1,105 @@
-<div *ngIf="isComposing" class="fixed inset-0 z-50 pointer-events-none">
-  <div class="absolute bottom-0 right-10 w-full max-w-lg bg-white rounded-lg shadow-2xl pointer-events-auto">
+<div
+  class="fixed bottom-0 right-6 w-full max-w-lg bg-white rounded-t-xl shadow-2xl border border-gray-200 overflow-hidden z-50 fade-in">
+  <!-- Header -->
+  <div class="flex items-center justify-between px-4 py-3 bg-indigo-600 text-white">
+    <h2 class="text-base font-semibold">New Message</h2>
+    <button (click)="closeCompose()" class="hover:bg-indigo-700 rounded p-1 transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
 
-    <!-- Header -->
-    <div class="flex justify-between items-center p-3 bg-gray-100 border-b border-gray-200 rounded-t-lg">
-      <h2 class="text-sm font-semibold text-gray-800">New Message</h2>
-      <button
-        (click)="closeCompose()"
-        title="Close"
-        class="text-gray-500 hover:text-gray-700 transition"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-    </div>
+  <!-- Error/Success Messages -->
+  <div *ngIf="errorMessage" class="px-4 py-2 bg-red-50 border-b border-red-200 text-sm text-red-700">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="px-4 py-2 bg-green-50 border-b border-green-200 text-sm text-green-700">
+    {{ successMessage }}
+  </div>
 
-    <!-- Error Message -->
-    <div *ngIf="errorMessage" class="px-4 pt-3 bg-red-50 border-b border-red-200">
-      <div class="text-sm text-red-700 flex items-start">
-        <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-        </svg>
-        {{ errorMessage }}
+  <!-- Form -->
+  <div class="p-4 space-y-3 max-h-96 overflow-y-auto">
+    <!-- To -->
+    <div class="relative">
+      <label class="block text-xs font-medium text-gray-700 mb-1">To</label>
+      <input type="text" [(ngModel)]="recipients" placeholder="recipient@example.com" [disabled]="isLoading"
+        (input)="onRecipientInput($event)" (keydown)="handleContactKeyDown($event)" (blur)="closeContactDropdown()"
+        class="input text-sm">
+
+      <!-- Contact Autocomplete Dropdown -->
+      <div *ngIf="showContactDropdown && filteredContacts.length > 0"
+        class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <div *ngFor="let contact of filteredContacts; let i = index" (mousedown)="selectContact(contact)"
+          [ngClass]="{'bg-indigo-50': i === selectedContactIndex, 'hover:bg-gray-50': i !== selectedContactIndex}"
+          class="px-3 py-2 cursor-pointer transition">
+          <div class="font-medium text-sm text-gray-900">{{ contact.name }}</div>
+          <div class="text-xs text-gray-600">{{ contact.email }}</div>
+        </div>
       </div>
     </div>
 
-    <!-- Success Message -->
-    <div *ngIf="successMessage" class="px-4 pt-3 bg-green-50 border-b border-green-200">
-      <div class="text-sm text-green-700 flex items-start">
-        <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-        </svg>
-        {{ successMessage }}
-      </div>
+    <!-- Subject -->
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Subject</label>
+      <input type="text" [(ngModel)]="subject" placeholder="Email subject" [disabled]="isLoading" class="input text-sm">
     </div>
 
-    <!-- Form Content -->
-    <div class="p-4 space-y-3">
-      <!-- Recipients -->
-      <div class="flex border-b border-gray-200 pb-2">
-        <label class="text-sm text-gray-500 w-12 pt-1">To</label>
-        <input
-          type="text"
-          [(ngModel)]="recipients"
-          placeholder="email1@test.com, email2@test.com"
-          [disabled]="isLoading"
-          class="flex-1 focus:outline-none text-gray-800 text-sm disabled:bg-gray-50 disabled:text-gray-500"
-        >
-      </div>
-
-      <!-- Subject -->
-      <div class="flex border-b border-gray-200 pb-2">
-        <label class="text-sm text-gray-500 w-12 pt-1">Subject</label>
-        <input
-          type="text"
-          [(ngModel)]="subject"
-          placeholder="Email subject"
-          [disabled]="isLoading"
-          class="flex-1 focus:outline-none text-gray-800 text-sm disabled:bg-gray-50 disabled:text-gray-500"
-        >
-      </div>
-
-      <!-- Priority -->
-      <div class="flex border-b border-gray-200 pb-2">
-        <label class="text-sm text-gray-500 w-12 pt-1">Priority</label>
-        <select
-          [(ngModel)]="priority"
-          [disabled]="isLoading"
-          class="flex-1 focus:outline-none text-gray-800 text-sm appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
-        >
-          <option [value]="1">High</option>
-          <option [value]="2">Medium-High</option>
-          <option [value]="3">Normal</option>
-          <option [value]="4">Low</option>
-        </select>
-      </div>
-
-      <!-- Body -->
-      <textarea
-        rows="6"
-        [(ngModel)]="body"
-        placeholder="Compose your email..."
-        [disabled]="isLoading"
-        class="w-full focus:outline-none text-gray-800 text-sm resize-none border border-gray-200 rounded p-2 disabled:bg-gray-50 disabled:text-gray-500"
-      ></textarea>
+    <!-- Priority -->
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Priority</label>
+      <select [(ngModel)]="priority" [disabled]="isLoading" class="input text-sm">
+        <option [ngValue]=1>Extreme</option>
+        <option [ngValue]=2>High</option>
+        <option [ngValue]=3>Normal</option>
+        <option [ngValue]=4>Low</option>
+      </select>
     </div>
 
-    <!-- Attachments Display -->
-    <div *ngIf="attachments.length > 0" class="flex flex-wrap gap-2 px-4 pb-4">
+    <!-- Body -->
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Message</label>
+      <textarea rows="6" [(ngModel)]="body" placeholder="Write your message..." [disabled]="isLoading"
+        class="input text-sm resize-none"></textarea>
+    </div>
+
+    <!-- Attachments -->
+    <div *ngIf="attachments.length > 0" class="flex flex-wrap gap-2 pt-2">
       <ng-container *ngFor="let attachment of attachments; let i = index">
-        <div
-          class="flex items-center text-sm py-1 px-2 rounded-full bg-blue-100 text-blue-800"
-        >
+        <div class="flex items-center gap-2 text-xs py-1 px-2 bg-gray-100 rounded">
+          <svg class="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5" />
+          </svg>
           <span class="truncate max-w-xs">{{ attachment.fileName }}</span>
-          <button
-            (click)="removeAttachment(i)"
-            [disabled]="isLoading"
-            class="ml-1 text-blue-600 hover:text-blue-900 leading-none disabled:opacity-50"
-          >
+          <button (click)="removeAttachment(i)" [disabled]="isLoading" class="text-gray-600 hover:text-red-600">
             ✕
           </button>
         </div>
       </ng-container>
     </div>
+  </div>
 
-    <!-- Footer with Actions -->
-    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-b-lg border-t border-gray-200">
-      <div class="flex items-center space-x-2">
-        <!-- Send Button -->
-        <button
-          (click)="sendMail()"
-          [disabled]="isLoading"
-          class="bg-indigo-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-        >
-          <span *ngIf="!isLoading">Send</span>
-          <span *ngIf="isLoading" class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Sending...
-          </span>
-        </button>
+  <!-- Footer -->
+  <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200">
+    <div class="flex items-center gap-2">
+      <button (click)="sendMail()" [disabled]="isLoading" class="btn-primary text-sm">
+        <span *ngIf="!isLoading">Send</span>
+        <span *ngIf="isLoading">Sending...</span>
+      </button>
+      <button (click)="saveDraft()" [disabled]="isLoading" class="btn-secondary text-sm">
+        Draft
+      </button>
 
-        <!-- Draft Button -->
-        <button
-          (click)="saveDraft()"
-          [disabled]="isLoading"
-          class="bg-gray-300 text-gray-800 text-sm py-2 px-4 rounded-lg hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Draft
-        </button>
-
-        <!-- Attach File Button -->
-        <input
-          type="file"
-          #fileInputRef
-          (change)="updateFiles($event)"
-          [disabled]="isLoading"
-          multiple
-          class="hidden"
-        >
-        <button
-          (click)="fileInputRef.click()"
-          [disabled]="isLoading"
-          title="Attach File"
-          class="text-gray-500 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Draft Status -->
-      <span class="text-xs text-gray-500 italic" *ngIf="!isLoading">
-        {{ successMessage || 'Ready to send' }}
-      </span>
+      <!-- Attach File -->
+      <input type="file" #fileInputRef (change)="updateFiles($event)" [disabled]="isLoading" multiple class="hidden">
+      <button (click)="fileInputRef.click()" [disabled]="isLoading" title="Attach"
+        class="p-2 rounded hover:bg-gray-200">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5" />
+        </svg>
+      </button>
     </div>
-
   </div>
 </div>

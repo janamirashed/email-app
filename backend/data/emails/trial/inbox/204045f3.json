@@ -1,0 +1,15 @@
+{
+  "messageId" : "204045f3",
+  "from" : "janarashed@jaryn.com",
+  "to" : [ "trial" ],
+  "subject" : "hdd",
+  "body" : "hello",
+  "timestamp" : [ 2025, 12, 9, 17, 58, 17, 884567800 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

@@ -60,10 +60,4 @@ public class AccountController {
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
-    @GetMapping("/token/isExpired")
-    public ResponseEntity<Boolean> isTokenExpired(@RequestParam String token) {
-            return new ResponseEntity<>(jwtService.isTokenExpired(token), HttpStatus.OK);
-
-    }
-
 }

@@ -1,6 +1,5 @@
 package com.mail.backend.service;
 
-import com.mail.backend.dps.builder.EmailBuilder;
 import com.mail.backend.dps.strategy.*;
 import com.mail.backend.model.Email;
 import com.mail.backend.repository.EmailRepository;
@@ -22,7 +21,6 @@ public class EmailService {
 
 
     // SEND EMAIL - Save to sent folder and create copy in recipient's inbox
-    // Frontend handles sending to one recipient at a time
     public String sendEmail(String username, Email emailRequest) throws IOException {
         // Validate
         if (emailRequest.getTo() == null || emailRequest.getTo().isEmpty()) {
@@ -52,30 +50,31 @@ public class EmailService {
         emailRepository.saveEmail(username, email);
         log.info("Email {} sent by {} to {}", messageId, username, email.getTo());
 
-        // Send to recipient (one at a time, frontend handles iteration)
-        String recipient = email.getTo().get(0); // Frontend sends to single recipient
-        try {
-            // Create copy for recipient's inbox using Builder Pattern
-            Email recipientCopy = Email.builder()
-                    .messageId(messageId)
-                    .from(email.getFrom())
-                    .to(email.getTo())
-                    .subject(email.getSubject())
-                    .body(email.getBody())
-                    .timestamp(email.getTimestamp())
-                    .priority(email.getPriority())
-                    .attachments(email.getAttachments())
-                    .inInbox()
-                    .markAsUnread()
-                    .build();
+        // Loop through all recipients
+        for (String recipient : email.getTo()) {
+            try {
+                // Create copy for recipient's inbox using Builder Pattern
+                Email recipientCopy = Email.builder()
+                        .messageId(messageId)
+                        .from(email.getFrom())
+                        .to(email.getTo())
+                        .subject(email.getSubject())
+                        .body(email.getBody())
+                        .timestamp(email.getTimestamp())
+                        .priority(email.getPriority())
+                        .attachments(email.getAttachments())
+                        .inInbox()
+                        .markAsUnread()
+                        .build();
 
-            // Extract recipient's username from email
-            String recipientUsername = extractUsername(recipient);
-            emailRepository.saveEmail(recipientUsername, recipientCopy);
-            log.info("Email {} delivered to {}", messageId, recipient);
-        } catch (Exception e) {
-            log.error("Failed to deliver email to {}", recipient, e);
-            throw new IOException("Failed to deliver email");
+                String recipientUsername = extractUsername(recipient);
+                emailRepository.saveEmail(recipientUsername, recipientCopy);
+                log.info("Email {} delivered to {}", messageId, recipient);
+
+            } catch (Exception e) {
+                // Continue with next recipient, don't throw
+                log.error("Failed to deliver email to {}: {}", recipient, e.getMessage());
+            }
         }
 
         return messageId;
@@ -225,9 +224,15 @@ public class EmailService {
         Email email = getEmail(username, messageId);
         String fromFolder = email.getFolder();
 
+        String originalFolderToSave = email.getOriginalFolder();
+        if (originalFolderToSave == null || originalFolderToSave.isEmpty()) {
+            originalFolderToSave = fromFolder;
+        }
+
         // Use Builder Pattern to update folder
         Email updatedEmail = email.toBuilder()
                 .folder(toFolder)
+                .originalFolder(originalFolderToSave)  // Preserve or set original folder
                 .build();
 
         // If moving to trash, set deletedAt
@@ -238,7 +243,12 @@ public class EmailService {
         }
 
         emailRepository.moveEmail(username, messageId, fromFolder, toFolder);
-        log.info("Email {} moved from {} to {}", messageId, fromFolder, toFolder);
+
+        // Save the updated email metadata with new folder
+        emailRepository.saveEmail(username, updatedEmail);
+
+        log.info("Email {} moved from {} to {}, original folder tracked as: {}",
+                messageId, fromFolder, toFolder, originalFolderToSave);
     }
 
     // DELETE EMAIL (Move to trash)
@@ -249,21 +259,44 @@ public class EmailService {
         if (!currentFolder.equals("trash")) {
             emailRepository.moveEmail(username, messageId, currentFolder, "trash");
 
+            String originalFolderToPreserve = email.getOriginalFolder();
+            if (originalFolderToPreserve == null || originalFolderToPreserve.isEmpty()) {
+                originalFolderToPreserve = currentFolder;
+            }
+
             // Use Builder Pattern to mark as deleted
             Email trashedEmail = email.toBuilder()
                     .inTrash()
+                    .originalFolder(originalFolderToPreserve)  // IMPORTANT: Preserve original folder
                     .build();
 
             emailRepository.saveEmail(username, trashedEmail);
-            log.info("Email {} moved to trash by {}", messageId, username);
+            log.info("Email {} moved to trash by {}, will restore to: {}",
+                    messageId, username, originalFolderToPreserve);
         }
     }
 
     // PERMANENTLY DELETE EMAIL
     public void permanentlyDeleteEmail(String username, String messageId) throws IOException {
         Email email = getEmail(username, messageId);
-        emailRepository.deleteEmail(username, email.getFolder(), messageId);
-        log.info("Email {} permanently deleted by {}", messageId, username);
+
+        if (email == null) {
+            throw new IOException("Email not found: " + messageId);
+        }
+
+        String folder = email.getFolder();
+        if (folder == null || folder.isEmpty()) {
+            folder = "inbox"; // Default fallback
+        }
+
+        boolean deleted = emailRepository.deleteEmail(username, folder, messageId);
+
+        if (!deleted) {
+            log.warn("Failed to permanently delete email {} from folder {}", messageId, folder);
+            throw new IOException("Failed to delete email from file system: " + messageId);
+        }
+
+        log.info("Email {} permanently deleted from folder {}", messageId, folder);
     }
 
     // BULK MOVE EMAILS
@@ -282,7 +315,7 @@ public class EmailService {
     public void bulkDelete(String username, List<String> messageIds) throws IOException {
         for (String messageId : messageIds) {
             try {
-                deleteEmail(username, messageId);
+                deleteEmail(username, messageId);  // Move to trash, NOT permanently delete
             } catch (IOException e) {
                 log.error("Failed to delete email {}", messageId, e);
             }
@@ -290,10 +323,92 @@ public class EmailService {
         log.info("Bulk deleted {} emails", messageIds.size());
     }
 
+    public void bulkPermanentlyDelete(String username, List<String> messageIds) throws IOException {
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (String messageId : messageIds) {
+            try {
+                Email email = getEmail(username, messageId);
+                String folder = email.getFolder();
+
+                boolean deleted = emailRepository.deleteEmail(username, folder, messageId);
+
+                if (deleted) {
+                    successCount++;
+                    log.info("Permanently deleted email {}", messageId);
+                } else {
+                    failureCount++;
+                    log.error("Failed to permanently delete email {}", messageId);
+                }
+
+            } catch (IOException e) {
+                failureCount++;
+                log.error("Failed to permanently delete email {}: {}", messageId, e.getMessage(), e);
+            }
+        }
+
+        log.info("Bulk permanently deleted {} emails - Success: {}, Failures: {}", messageIds.size(), successCount, failureCount);
+
+        if (failureCount > 0) {
+            throw new IOException("Failed to delete " + failureCount + " emails. See logs for details.");
+        }
+    }
+
     // CLEANUP TRASH - Auto delete after 30 days
     public void cleanupTrash(String username) throws IOException {
         emailRepository.cleanupTrash(username);
         log.info("Trash cleanup completed for {}", username);
+    }
+
+
+    // Moves email back to the folder it was in before deletion
+    public void restoreEmailFromTrash(String username, String messageId) throws IOException {
+        Email email = getEmail(username, messageId);
+
+        if (email == null) {
+            throw new IOException("Email not found: " + messageId);
+        }
+
+        // Check if email is in trash
+        if (!email.getFolder().equals("trash")) {
+            throw new IOException("Email is not in trash");
+        }
+
+        // Determine restore folder - use originalFolder if available, otherwise default to inbox
+        String restoreFolder = email.getOriginalFolder();
+        if (restoreFolder == null || restoreFolder.isEmpty() || restoreFolder.equals("trash")) {
+            restoreFolder = "inbox"; // Default fallback
+            log.warn("No original folder found for email {}. Restoring to inbox", messageId);
+        }
+
+        log.info("Restoring email {} from trash to original folder: {}", messageId, restoreFolder);
+
+        // Move email back to original folder
+        emailRepository.moveEmail(username, messageId, "trash", restoreFolder);
+
+        // Update the email metadata
+        Email restoredEmail = email.toBuilder()
+                .folder(restoreFolder)
+                .deletedAt(null) // Clear the deletion timestamp
+                .originalFolder(null) // Clear original folder after restore
+                .build();
+
+        emailRepository.saveEmail(username, restoredEmail);
+        log.info("Email {} successfully restored to {}", messageId, restoreFolder);
+    }
+
+    // Restores multiple emails to their original folders
+    public void bulkRestoreFromTrash(String username, List<String> messageIds) throws IOException {
+        for (String messageId : messageIds) {
+            try {
+                restoreEmailFromTrash(username, messageId);
+            } catch (IOException e) {
+                log.error("Failed to restore email {}: {}", messageId, e.getMessage());
+                // Continue with next email instead of failing completely
+            }
+        }
+        log.info("Bulk restored {} emails from trash", messageIds.size());
     }
 
     // GET STARRED EMAILS + sorting
@@ -366,7 +481,7 @@ public class EmailService {
         }
         return switch (sortBy.toLowerCase()){
             case "date" -> new SortByDateStrategy();
-            case "importance", "priority" -> new SortByImportanceStrategy();
+            case "priority" -> new SortByPriorityStrategy();
             default -> new SortByDateStrategy();
         };
     }
@@ -382,6 +497,7 @@ public class EmailService {
             case "receiver", "receivers", "to" -> new SearchByReceiverStrategy();
             case "all"  -> new SearchAllStrategy();
             case "body" -> new SearchByBodyStrategy();
+            case "importance" -> new SearchByImportanceStrategy();
             default -> new SearchAllStrategy();
         };
     }

@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmailService } from '../../../../core/services/email.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { EmailDetailComponent } from '../email-detail/email-detail';
 
 @Component({
   selector: 'app-email-trash',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EmailDetailComponent],
   templateUrl: './email-trash.html',
   styleUrl: './email-trash.css'
 })
@@ -18,7 +20,12 @@ export class EmailTrashComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
-  constructor(private emailService: EmailService) {}
+  constructor(
+    private emailService: EmailService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit() {
     this.loadTrashEmails();
@@ -34,11 +41,13 @@ export class EmailTrashComponent implements OnInit {
         this.emails = response.content || [];
         this.isLoading = false;
         console.log('Trash emails loaded:', this.emails);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load trash emails:', error);
         this.errorMessage = 'Failed to load trash emails';
         this.isLoading = false;
+        this.cdr.detectChanges()
       }
     });
   }
@@ -46,6 +55,12 @@ export class EmailTrashComponent implements OnInit {
   // Select email to view
   selectEmail(email: any) {
     this.selectedEmailId = email.messageId;
+    // Navigate to detail view with messageId as query param
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { messageId: email.messageId },
+      queryParamsHandling: 'merge'
+    });
   }
 
   // Toggle email selection (checkbox)
@@ -83,10 +98,10 @@ export class EmailTrashComponent implements OnInit {
     }
 
     const messageIds = Array.from(this.selectedEmails);
-    this.emailService.bulkMove(messageIds, 'inbox').subscribe({
+    this.emailService.bulkRestoreFromTrash(messageIds).subscribe({
       next: () => {
-        this.successMessage = `Restored ${messageIds.length} email(s) to inbox`;
-        console.log('Emails restored to inbox');
+        this.successMessage = `Restored ${messageIds.length} email(s) to original folder(s)`;
+        console.log('Emails restored to their original folders');
         this.selectedEmails.clear();
         this.loadTrashEmails();
 
@@ -110,12 +125,18 @@ export class EmailTrashComponent implements OnInit {
 
     if (confirm(`Permanently delete ${this.selectedEmails.size} email(s)? This cannot be undone.`)) {
       const messageIds = Array.from(this.selectedEmails);
-      this.emailService.bulkDelete(messageIds).subscribe({
+      this.isLoading = true;
+
+      this.emailService.permanentlyDeleteEmails(messageIds).subscribe({  // Changed this line
         next: () => {
           this.successMessage = `Permanently deleted ${messageIds.length} email(s)`;
           console.log('Emails permanently deleted');
           this.selectedEmails.clear();
-          this.loadTrashEmails();
+          this.isLoading = false;
+
+          setTimeout(() => {
+            this.loadTrashEmails();
+          }, 500);
 
           setTimeout(() => {
             this.successMessage = '';
@@ -124,12 +145,13 @@ export class EmailTrashComponent implements OnInit {
         error: (error) => {
           console.error('Failed to delete emails:', error);
           this.errorMessage = 'Failed to delete emails';
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }
   }
 
-  // Empty entire trash
   emptyTrash() {
     if (this.emails.length === 0) {
       alert('Trash is already empty');
@@ -138,12 +160,18 @@ export class EmailTrashComponent implements OnInit {
 
     if (confirm('Permanently delete all emails in trash? This cannot be undone.')) {
       const allMessageIds = this.emails.map(e => e.messageId);
-      this.emailService.bulkDelete(allMessageIds).subscribe({
+      this.isLoading = true;
+
+      this.emailService.permanentlyDeleteEmails(allMessageIds).subscribe({  // Changed this line
         next: () => {
           this.successMessage = 'Trash emptied successfully';
           console.log('Trash emptied');
           this.selectedEmails.clear();
-          this.emails = [];
+          this.isLoading = false;
+
+          setTimeout(() => {
+            this.loadTrashEmails();
+          }, 500);
 
           setTimeout(() => {
             this.successMessage = '';
@@ -152,6 +180,8 @@ export class EmailTrashComponent implements OnInit {
         error: (error) => {
           console.error('Failed to empty trash:', error);
           this.errorMessage = 'Failed to empty trash';
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }

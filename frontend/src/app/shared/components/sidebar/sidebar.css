@@ -1,0 +1,36 @@
+/* Sidebar Styles */
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--transition);
+    cursor: pointer;
+}
+
+.nav-link:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.nav-link.nav-active {
+    background: #eef2ff;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.nav-link svg {
+    flex-shrink: 0;
+}
+
+/* Chevron rotation */
+.rotate-90 {
+    transform: rotate(90deg);
+}

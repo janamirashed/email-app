@@ -1,7 +1,8 @@
-import { Component, OnInit, inject , ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
+import { EventService } from '../../../../core/services/event-service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 
 @Component({
@@ -29,18 +30,38 @@ export class EmailListComponent implements OnInit {
 
   constructor(
     private emailService: EmailService,
+    private eventService: EventService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) { }
 
   ngOnInit() {
     // Get current folder from route
     this.route.url.subscribe(urlSegments => {
-      this.currentFolder = urlSegments[0]?.path || 'inbox';
+      // Check if we're on a /folder/:folderName route
+      if (urlSegments[0]?.path === 'folder' && urlSegments[1]) {
+        this.currentFolder = urlSegments[1].path;
+      } else {
+        this.currentFolder = urlSegments[0]?.path || 'inbox';
+      }
+
       this.currentPage = 1;
       this.selectedEmails.clear();
+      this.errorMessage = ''; // Clear errors
       this.loadEmails();
+      this.cdr.detectChanges(); // Trigger change detection after route change
+
+      this.eventService.getInboxRefresh().subscribe(() => {
+        console.log('Inbox refresh event received from SSE');
+        // Only refresh if we're currently viewing the inbox
+        if (this.currentFolder === 'inbox') {
+          this.loadEmails();
+          this.cdr.detectChanges();
+        }
+      })
+
     });
   }
 
@@ -66,17 +87,27 @@ export class EmailListComponent implements OnInit {
     ).subscribe({
       next: (response) => {
         this.emails = response.content || [];
+
+        // Map backend field names to frontend field names
+        this.emails.forEach((email: any) => {
+          // Backend uses 'starred', frontend uses 'isStarred'
+          email.isStarred = !!email.starred;
+          // Backend uses 'read', frontend uses 'isRead'
+          email.isRead = !!email.read;
+        });
+
         this.totalPages = response.totalPages || 0;
         this.totalEmails = response.totalEmails || 0;
         this.isLoading = false;
-        this.cdr.detectChanges();
         console.log('Emails loaded:', this.emails);
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Failed to load emails:', error);
-        this.errorMessage = 'Failed to load emails. Please try again.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        setTimeout(() => {
+          console.error('Failed to load emails:', error);
+          this.errorMessage = 'Failed to load emails. Please try again.';
+          this.isLoading = false;
+        }, 0);
       }
     });
   }
@@ -85,18 +116,30 @@ export class EmailListComponent implements OnInit {
   private loadStarredEmails() {
     this.emailService.getStarredEmails(this.sortBy).subscribe({
       next: (response) => {
-        this.emails = response.emails || [];
-        this.totalEmails = response.totalStarred || 0;
-        this.totalPages = 1; // Starred emails not paginated
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        console.log('Starred emails loaded:', this.emails);
+        setTimeout(() => {
+          this.emails = response.emails || [];
+
+          // Map backend field names to frontend field names
+          this.emails.forEach((email: any) => {
+            // Backend uses 'starred', frontend uses 'isStarred'
+            email.isStarred = !!email.starred;
+            // Backend uses 'read', frontend uses 'isRead'
+            email.isRead = !!email.read;
+          });
+
+          this.totalEmails = response.totalStarred || 0;
+          this.totalPages = 1; // Starred emails not paginated
+          this.isLoading = false;
+          console.log('Starred emails loaded:', this.emails);
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (error) => {
-        console.error('Failed to load starred emails:', error);
-        this.errorMessage = 'Failed to load emails. Please try again.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        setTimeout(() => {
+          console.error('Failed to load starred emails:', error);
+          this.errorMessage = 'Failed to load emails. Please try again.';
+          this.isLoading = false;
+        }, 0);
       }
     });
   }
@@ -172,8 +215,24 @@ export class EmailListComponent implements OnInit {
       this.emailService.bulkDelete(messageIds).subscribe({
         next: () => {
           console.log(`Deleted ${messageIds.length} emails`);
-          this.selectedEmails.clear();
-          this.loadEmails();
+          // Clear selection if any deleted email was being viewed
+          if (this.selectedEmailId && messageIds.includes(this.selectedEmailId)) {
+            this.selectedEmailId = null;
+            // Remove messageId query param to show 'Select an email to read'
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: {},
+              replaceUrl: true
+            }).then(() => {
+              // Reload emails after navigation completes
+              this.selectedEmails.clear();
+              this.loadEmails();
+            });
+            this.cdr.detectChanges();
+          } else {
+            this.selectedEmails.clear();
+            this.loadEmails();
+          }
         },
         error: (error) => {
           console.error('Failed to delete emails:', error);
@@ -215,6 +274,61 @@ export class EmailListComponent implements OnInit {
     });
 
     this.selectedEmails.clear();
+  }
+
+  // Toggle star for single email
+  toggleStar(email: any, event: Event) {
+    event.stopPropagation();
+
+    if (email.isStarred) {
+      // Unstar the email
+      this.emailService.unstarEmail(email.messageId).subscribe({
+        next: () => {
+          console.log('Email unstarred successfully:', email.messageId);
+
+          // If we're in the starred folder, reload to remove the email from the list
+          if (this.currentFolder === 'starred') {
+            // Clear selection if the unstarred email was being viewed
+            if (this.selectedEmailId === email.messageId) {
+              this.selectedEmailId = null;
+              // Remove messageId query param to show 'Select an email to read'
+              this.router.navigate([], {
+                relativeTo: this.route,
+                queryParams: {},
+                replaceUrl: true
+              }).then(() => {
+                // Reload emails after navigation completes
+                this.loadEmails();
+              });
+              this.cdr.detectChanges();
+            } else {
+              this.loadEmails();
+            }
+          } else {
+            // Otherwise just update the local state
+            email.isStarred = false;
+            this.cdr.detectChanges();
+          }
+        },
+        error: (error) => {
+          console.error('Failed to unstar email:', error);
+          alert('Failed to unstar email. Please try again.');
+        }
+      });
+    } else {
+      // Star the email
+      this.emailService.starEmail(email.messageId).subscribe({
+        next: () => {
+          console.log('Email starred successfully:', email.messageId);
+          email.isStarred = true;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to star email:', error);
+          alert('Failed to star email. Please try again.');
+        }
+      });
+    }
   }
 
   // Sort emails
@@ -279,5 +393,25 @@ export class EmailListComponent implements OnInit {
   // Check if email has attachments
   hasAttachments(email: any): boolean {
     return email.attachments && email.attachments.length > 0;
+  }
+
+  // Get priority color class based on priority level
+  getPriorityColor(priority: number): string {
+    // Priority: 1 = High, 2 = Medium-High, 3 = Normal, 4 = Low, 5 = Very Low
+    if (priority === 1) return 'text-red-500';     // High - Red
+    if (priority === 2) return 'text-orange-500';  // Medium - Orange
+    if (priority === 3) return 'text-gray-400';    // Normal - Gray
+    if (priority === 4) return 'text-blue-400';    // Low - Blue
+    if (priority === 5) return 'text-gray-300';    // Very Low - Light Gray
+    return 'text-gray-400'; // Default
+  }
+
+  // Get priority icon type
+  getPriorityIcon(priority: number): 'high' | 'medium' | 'normal' | 'low' {
+    if (priority === 1) return 'high';
+    if (priority === 2) return 'medium';
+    if (priority === 3) return 'normal';
+    if (priority >= 4) return 'low';
+    return 'normal';
   }
 }

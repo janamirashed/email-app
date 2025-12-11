@@ -1,0 +1,15 @@
+{
+  "messageId" : "c671c453",
+  "from" : "janarashed@jaryn.com",
+  "to" : [ "jana1234" ],
+  "subject" : "open !",
+  "body" : "i am in need of rest",
+  "timestamp" : [ 2025, 12, 8, 10, 34, 2, 277066900 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

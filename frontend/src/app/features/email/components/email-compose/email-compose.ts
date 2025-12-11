@@ -1,10 +1,13 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { AttachmentService } from '../../../../core/services/attachment.service';
 import { EmailService } from '../../../../core/services/email.service';
-import { Subscription, lastValueFrom } from 'rxjs';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { ContactService } from '../../../../core/services/contact.service';
+import { Subscription, lastValueFrom, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Attachment } from '../../../../core/models/attachment.model';
 
 @Component({
@@ -31,13 +34,24 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   successMessage: string = '';
 
+  // Contact Autocomplete
+  filteredContacts: any[] = [];
+  showContactDropdown: boolean = false;
+  selectedContactIndex: number = -1;
+  private contactSearch$ = new Subject<string>();
+
   private composeSubscription!: Subscription;
+  private composeDataSubscription!: Subscription;
+  private contactSearchSubscription!: Subscription;
 
   constructor(
     private composeService: EmailComposeService,
     private attachmentService: AttachmentService,
-    private emailService: EmailService
-  ) {}
+    private emailService: EmailService,
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService,
+    private contactService: ContactService
+  ) { }
 
   ngOnInit() {
     this.composeSubscription = this.composeService.isComposing$.subscribe(
@@ -48,11 +62,55 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         }
       }
     );
+
+    // Subscribe to compose data to pre-fill form
+    this.composeDataSubscription = this.composeService.composeData$.subscribe(
+      (data) => {
+        if (data) {
+          if (data.recipients) {
+            this.recipients = data.recipients;
+          }
+          if (data.subject) {
+            this.subject = data.subject;
+          }
+          if (data.body) {
+            this.body = data.body;
+          }
+        }
+      }
+    );
+
+    // Setup contact search with debouncing
+    this.contactSearchSubscription = this.contactSearch$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(term => {
+        if (term.length < 2) {
+          this.filteredContacts = [];
+          this.showContactDropdown = false;
+          return [];
+        }
+        return this.contactService.searchContacts(term);
+      })
+    ).subscribe(contacts => {
+      this.filteredContacts = contacts.slice(0, 5); // Limit to 5 results
+      this.showContactDropdown = this.filteredContacts.length > 0;
+      this.selectedContactIndex = -1;
+      this.cdr.detectChanges();
+    });
   }
 
   updateFiles(event: any) {
     const fileList: FileList = event.target.files;
     this.selectedFiles = Array.from(fileList);
+
+    // Create attachment objects for UI display
+    this.attachments = this.selectedFiles.map((file, index) => ({
+      id: '', // Will be populated when sending
+      fileName: file.name,
+      mimeType: file.type,
+      size: file.size
+    }));
   }
 
   // Remove attachment from preview
@@ -86,9 +144,10 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
     let email: any = {
       from: localStorage.getItem("currentUser"),
-      to: this.recipients.split(", "),
+      to: this.parseRecipients(this.recipients),
       subject: this.subject,
       body: this.body,
+      priority: this.priority,
       attachments: attachments
     };
 
@@ -96,12 +155,10 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     this.emailService.sendEmail(email).subscribe({
       next: (response) => {
         console.log("Email sent successfully:", response);
-        this.successMessage = 'Email sent successfully!';
         this.isLoading = false;
-
-        setTimeout(() => {
-          this.closeCompose();
-        }, 2000);
+        this.closeCompose();
+        this.notificationService.showSuccess('Email sent successfully!');
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to send email:', error);
@@ -182,11 +239,93 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
     this.isLoading = false;
+    this.showContactDropdown = false;
+    this.filteredContacts = [];
+  }
+
+  // Contact autocomplete handlers
+  onRecipientInput(event: Event) {
+    const input = (event.target as HTMLInputElement).value;
+    // Get the last email being typed (after last comma)
+    const emails = input.split(',');
+    const currentEmail = emails[emails.length - 1].trim();
+
+    if (currentEmail.length >= 2) {
+      this.contactSearch$.next(currentEmail);
+    } else {
+      this.showContactDropdown = false;
+      this.filteredContacts = [];
+    }
+  }
+
+  selectContact(contact: any) {
+    // Get current recipients and split by comma
+    const emails = this.recipients.split(',').map(e => e.trim()).filter(e => e);
+
+    // Remove the last partial email (the one being typed)
+    emails.pop();
+
+    // Add the selected contact's email
+    emails.push(contact.email);
+
+    // Join and add trailing comma for next recipient
+    this.recipients = emails.join(', ') + ', ';
+
+    // Close dropdown
+    this.showContactDropdown = false;
+    this.filteredContacts = [];
+    this.selectedContactIndex = -1;
+
+    this.cdr.detectChanges();
+  }
+
+  handleContactKeyDown(event: KeyboardEvent) {
+    if (!this.showContactDropdown || this.filteredContacts.length === 0) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.selectedContactIndex = Math.min(
+          this.selectedContactIndex + 1,
+          this.filteredContacts.length - 1
+        );
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.selectedContactIndex = Math.max(this.selectedContactIndex - 1, 0);
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (this.selectedContactIndex >= 0) {
+          this.selectContact(this.filteredContacts[this.selectedContactIndex]);
+        }
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.showContactDropdown = false;
+        this.filteredContacts = [];
+        break;
+    }
+    this.cdr.detectChanges();
+  }
+
+  closeContactDropdown() {
+    setTimeout(() => {
+      this.showContactDropdown = false;
+      this.filteredContacts = [];
+      this.cdr.detectChanges();
+    }, 200);
   }
 
   ngOnDestroy() {
     if (this.composeSubscription) {
       this.composeSubscription.unsubscribe();
+    }
+    if (this.composeDataSubscription) {
+      this.composeDataSubscription.unsubscribe();
+    }
+    if (this.contactSearchSubscription) {
+      this.contactSearchSubscription.unsubscribe();
     }
   }
 }

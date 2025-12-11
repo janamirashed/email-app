@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -7,6 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
   http = inject(HttpClient);
+  router = inject(Router);
 
   setToken(token: string) {
     localStorage.setItem('authToken', token);
@@ -26,5 +28,7 @@ export class AuthService {
     localStorage.removeItem('authToken');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('currentUser');
+
   }
+
 }

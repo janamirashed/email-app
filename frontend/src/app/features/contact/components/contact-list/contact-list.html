@@ -1,53 +1,168 @@
-<div class="h-full flex flex-col p-6 bg-gray-50 min-h-screen">
-  <h1 class="text-3xl font-extrabold text-gray-900 mb-8 border-b pb-3">Contacts</h1>
-  
-  <div class="flex justify-between items-center mb-8">
-    <div class="flex-1 max-w-lg relative">
-      <input
-        type="text"
-        placeholder="Search contacts by name or email"
-        [(ngModel)]="searchTerm"
-        class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-      >
-      <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+<div class="h-full p-8 bg-slate-50 overflow-y-auto">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Contacts</h1>
+        <p class="text-sm text-gray-600 mt-1">Manage your email contacts</p>
+      </div>
+      <button (click)="addContact()" class="btn-primary" [disabled]="isLoading">
+        + Add Contact
+      </button>
     </div>
-    <button class="flex items-center bg-indigo-600 text-white rounded-lg px-4 py-2 shadow-lg hover:bg-indigo-700 transition transform hover:scale-105">
-      <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-      Add Contact
-    </button>
-  </div>
-  
-  <div class="flex items-center text-sm text-gray-600 mb-6 space-x-4 border-b pb-2">
-    <span class="text-gray-500 font-medium mr-4">Sort by:</span>
-    <button 
-      (click)="onSort('Name')" 
-      [ngClass]="{'font-bold text-indigo-600 border-b-2 border-indigo-600': sortBy === 'Name'}" 
-      class="hover:text-indigo-600 pb-1 transition duration-150 ease-in-out">
-      Name
-    </button>
-    <button 
-      (click)="onSort('Email')" 
-      [ngClass]="{'font-bold text-indigo-600 border-b-2 border-indigo-600': sortBy === 'Email'}" 
-      class="hover:text-indigo-600 pb-1 transition duration-150 ease-in-out">
-      Email
-    </button>
-    <button 
-      (click)="onSort('Date Added')" 
-      [ngClass]="{'font-bold text-indigo-600 border-b-2 border-indigo-600': sortBy === 'Date Added'}" 
-      class="hover:text-indigo-600 pb-1 transition duration-150 ease-in-out">
-      Date Added
-    </button>
-  </div>
 
-  <div class="flex flex-col">
-    <ng-container *ngFor="let contact of contacts">
-      <div class="flex items-center w-full p-4 border-b border-gray-200 hover:bg-indigo-50/50 rounded-lg transition cursor-pointer">
-        
-        <div class="flex-grow">
-          <div class="font-semibold text-lg text-gray-900">{{ contact.name }}</div>
-          <div class="text-sm text-indigo-600">{{ contact.email }}</div>
+    <!-- Success Message -->
+    @if (successMessage) {
+    <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+      <div class="flex items-center gap-2 text-green-800">
+        <span>✓</span>
+        <span>{{ successMessage }}</span>
+      </div>
+      <button (click)="dismissSuccess()" class="text-green-600 hover:text-green-800">×</button>
+    </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage) {
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
+      <div class="flex items-center gap-2 text-red-800">
+        <span>⚠</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+      <button (click)="dismissError()" class="text-red-600 hover:text-red-800">×</button>
+    </div>
+    }
+
+    <!-- Search -->
+    <div class="mb-6">
+      <input type="text" placeholder="Search contacts..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+        class="input max-w-md">
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading && contacts.length === 0) {
+    <div class="text-center py-20">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent">
+      </div>
+      <p class="mt-4 text-gray-600">Loading contacts...</p>
+    </div>
+    }
+
+    <!-- Contacts List -->
+    @if (!isLoading || contacts.length > 0) {
+    <div class="space-y-3">
+      @for (contact of filteredContacts; track contact.id) {
+      <div (click)="composeEmailTo(contact)"
+        class="card flex items-center justify-between p-4 hover:shadow-md transition group cursor-pointer">
+        <div class="flex items-center gap-4">
+          <div
+            class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+            {{ contact.name.charAt(0) }}
+          </div>
+          <div>
+            <div class="font-semibold text-gray-900">{{ contact.name }}</div>
+            <div class="text-sm text-gray-600">{{ contact.email }}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
+          <button (click)="editContact(contact); $event.stopPropagation()"
+            class="btn-secondary text-sm py-1.5 px-3">Edit</button>
+          <button (click)="deleteContact(contact); $event.stopPropagation()"
+            class="text-red-600 hover:text-red-700 text-sm px-2">Delete</button>
         </div>
       </div>
-    </ng-container>
+      }
+    </div>
+
+    @if (filteredContacts.length === 0 && !searchTerm) {
+    <div class="text-center py-20 text-gray-500">
+      No contacts yet. Add your first contact!
+    </div>
+    }
+
+    @if (filteredContacts.length === 0 && searchTerm) {
+    <div class="text-center py-20 text-gray-500">
+      No contacts found matching "{{ searchTerm }}"
+    </div>
+    }
+    }
   </div>
+
+  <!-- Add Contact Dialog -->
+  @if (showAddDialog) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="cancelDialog()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Add New Contact</h2>
+
+      @if (errorMessage) {
+      <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        {{ errorMessage }}
+      </div>
+      }
+
+      <div class="space-y-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+          <input type="text" [(ngModel)]="newContactName" placeholder="John Doe" class="input" autofocus
+            [disabled]="isLoading">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <input type="email" [(ngModel)]="newContactEmail" placeholder="john@example.com" class="input"
+            (keyup.enter)="saveNewContact()" [disabled]="isLoading">
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="cancelDialog()" class="btn-secondary" [disabled]="isLoading">Cancel</button>
+        <button (click)="saveNewContact()" [disabled]="!newContactName.trim() || !newContactEmail.trim() || isLoading"
+          class="btn-primary">
+          @if (isLoading) {
+          <span>Adding...</span>
+          } @else {
+          <span>Add</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Edit Contact Dialog -->
+  @if (showEditDialog) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="cancelDialog()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Edit Contact</h2>
+
+      @if (errorMessage) {
+      <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        {{ errorMessage }}
+      </div>
+      }
+
+      <div class="space-y-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+          <input type="text" [(ngModel)]="newContactName" placeholder="John Doe" class="input" autofocus
+            [disabled]="isLoading">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <input type="email" [(ngModel)]="newContactEmail" placeholder="john@example.com" class="input"
+            (keyup.enter)="saveEditContact()" [disabled]="isLoading">
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="cancelDialog()" class="btn-secondary" [disabled]="isLoading">Cancel</button>
+        <button (click)="saveEditContact()" [disabled]="!newContactName.trim() || !newContactEmail.trim() || isLoading"
+          class="btn-primary">
+          @if (isLoading) {
+          <span>Saving...</span>
+          } @else {
+          <span>Save</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

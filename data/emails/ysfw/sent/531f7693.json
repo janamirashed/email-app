@@ -1,0 +1,15 @@
+{
+  "messageId" : "531f7693",
+  "from" : "ysfw@jaryn.com",
+  "to" : [ "ysfw@jaryn.com" ],
+  "subject" : "ysfw@jaryn.com",
+  "body" : "closecompose",
+  "timestamp" : [ 2025, 12, 10, 12, 47, 45, 469826200 ],
+  "priority" : 3,
+  "folder" : "sent",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

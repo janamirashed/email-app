@@ -1,74 +1,103 @@
-
-<div class="h-full flex flex-col p-6 bg-gray-50 min-h-screen">
-  
-  <div class="flex justify-between items-center mb-8"> <h1 class="text-3xl font-extrabold text-gray-900">Filters and Incoming Mail Rules</h1> <button class="flex items-center bg-indigo-600 text-white rounded-lg px-4 py-2 shadow-lg hover:bg-indigo-700 transition transform hover:scale-105"> <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-      Create Filter
-    </button>
-  </div>
-  
-  <p class="text-gray-500 mb-8">Create rules to automatically organize and manage your incoming emails.</p> <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden mb-10"> <div class="grid grid-cols-12 p-4 text-sm font-semibold text-gray-700 border-b border-gray-200 bg-gray-50"> <div class="col-span-4">Filter Name</div>
-      <div class="col-span-4">Condition</div>
-      <div class="col-span-3">Action</div>
-      <div class="col-span-1"></div>
+<div class="h-full p-6 bg-slate-50 overflow-y-auto">
+  <div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Filters & Rules</h1>
+        <p class="text-sm text-gray-600 mt-1">Automatically organize incoming emails</p>
+      </div>
+      <button (click)="openCreateDialog()" class="btn-primary">
+        + Create Filter
+      </button>
     </div>
-    <ng-container *ngFor="let rule of existingRules">
-      <div class="grid grid-cols-12 items-center p-4 border-b border-gray-100 hover:bg-indigo-50/50 transition"> <div class="col-span-4 text-sm font-medium text-gray-900">{{ rule.name }}</div> <div class="col-span-4 text-sm text-gray-600">{{ rule.condition }}</div>
-        <div class="col-span-3 text-sm text-indigo-700 font-medium">{{ rule.action }}</div> <div class="col-span-1 flex justify-end space-x-2"> <button title="Edit" class="text-gray-400 hover:text-indigo-600 p-1 rounded-full hover:bg-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-          <button title="Delete" class="text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+
+    <!-- Existing Filters -->
+    <div class="card mb-6">
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Condition</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
+            <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let rule of existingRules">
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ rule.name }}</td>
+              <td class="px-4 py-3 text-sm text-gray-600">{{ rule.condition }}</td>
+              <td class="px-4 py-3 text-sm text-indigo-600 font-medium">{{ rule.action }}</td>
+              <td class="px-4 py-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="editFilter(rule)" class="text-gray-600 hover:text-indigo-600 text-sm">Edit</button>
+                  <button (click)="deleteFilter(rule)" class="text-gray-600 hover:text-red-600 text-sm">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+
+      <div *ngIf="existingRules.length === 0" class="text-center py-12 text-gray-500">
+        <p class="text-sm">No filters created yet</p>
+      </div>
+    </div>
+
+    <div class="text-sm text-gray-500">
+      <p>💡 <strong>Tip:</strong> Filters automatically organize emails as they arrive</p>
+    </div>
+  </div>
+
+  <!-- Create Filter Dialog -->
+  <div *ngIf="showCreateDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
+    (click)="closeCreateDialog()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Create New Filter</h2>
+
+      <!-- Conditions -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">When message matches:</label>
+        <div class="flex gap-3">
+          <select [(ngModel)]="newFilterConditionField" class="input flex-1">
+            <option>Subject</option>
+            <option>From</option>
+            <option>To</option>
+          </select>
+          <select [(ngModel)]="newFilterConditionOperator" class="input flex-1">
+            <option>contains</option>
+            <option>is exactly</option>
+            <option>starts with</option>
+          </select>
+          <input type="text" [(ngModel)]="newFilterConditionValue" placeholder="Value..." class="input flex-1">
         </div>
       </div>
-    </ng-container>
-    <div *ngIf="existingRules.length === 0" class="p-6 text-center text-gray-500 italic">
-        No filters have been created yet.
-    </div>
-  </div>
 
-  <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Create a New Filter</h2> <div class="p-8 bg-white border border-gray-200 rounded-xl shadow-lg"> <div class="mb-8 p-4 border border-gray-100 rounded-lg bg-gray-50/50"> <p class="font-semibold text-gray-800 mb-4">1. Define Conditions:</p> <p class="text-gray-700 mb-3">When a message arrives that matches **all** of these conditions:</p>
-
-      <div class="flex space-x-3 items-center mb-3"> <select [(ngModel)]="newFilterConditionField" class="border border-gray-300 rounded-lg p-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-          <option>Subject</option>
-          <option>From</option>
-          <option>To</option>
-          <option>Has attachment</option>
-        </select>
-        <select [(ngModel)]="newFilterConditionOperator" class="border border-gray-300 rounded-lg p-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-          <option>contains</option>
-          <option>is exactly</option>
-          <option>starts with</option>
-        </select>
-        <input type="text" [(ngModel)]="newFilterConditionValue" placeholder="e.g., invoice, specific@email.com" class="flex-1 border border-gray-300 rounded-lg p-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-        <button class="text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+      <!-- Actions -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Then do:</label>
+        <div class="flex gap-3">
+          <select [(ngModel)]="newFilterAction" class="input flex-1">
+            <option>Move to folder</option>
+            <option>Mark as read</option>
+            <option>Star</option>
+            <option>Delete</option>
+          </select>
+          <select *ngIf="newFilterAction === 'Move to folder'" [(ngModel)]="newFilterActionValue" class="input flex-1">
+            <option value="">Choose folder...</option>
+            <option>Work</option>
+            <option>Personal</option>
+            <option>Archive</option>
+          </select>
+        </div>
       </div>
-      <button class="text-sm text-indigo-600 mt-2 hover:underline flex items-center">
-        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Add another condition
-      </button>
-    </div>
 
-    <div class="mb-8 p-4 border border-gray-100 rounded-lg bg-gray-50/50"> <p class="font-semibold text-gray-800 mb-4">2. Define Actions:</p> <p class="text-gray-700 mb-3">Do the following **action(s)**:</p>
-      
-      <div class="flex space-x-3 items-center mb-3"> <select [(ngModel)]="newFilterAction" class="border border-gray-300 rounded-lg p-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-          <option>Move to folder</option>
-          <option>Mark as read</option>
-          <option>Star</option>
-          <option>Forward to</option>
-          <option>Delete</option>
-        </select>
-        <select *ngIf="newFilterAction === 'Move to folder'" [(ngModel)]="newFilterActionValue" class="border border-gray-300 rounded-lg p-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-          <option disabled>Choose a folder...</option>
-          <option>Projects</option>
-          <option>Personal</option>
-          <option>Archive</option>
-        </select>
-        <button class="text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+      <!-- Buttons -->
+      <div class="flex justify-end gap-3 pt-4 border-t">
+        <button (click)="closeCreateDialog()" class="btn-secondary">Cancel</button>
+        <button (click)="saveFilter()" [disabled]="!newFilterConditionValue.trim()" class="btn-primary">Save
+          Filter</button>
       </div>
-      <button class="text-sm text-indigo-600 mt-2 hover:underline flex items-center">
-        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Add another action
-      </button>
     </div>
-    
-    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6"> <button class="text-gray-700 text-sm py-2 px-4 rounded-lg hover:bg-gray-200 transition">Cancel</button>
-      <button class="bg-indigo-600 text-white text-sm py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition transform hover:scale-105">Save Filter</button> </div>
   </div>
 </div>

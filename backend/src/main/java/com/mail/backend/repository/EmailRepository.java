@@ -24,6 +24,10 @@ public class EmailRepository {
 
     private final ObjectMapper objectMapper;
 
+    public String getMsgRoot() {
+        return msgRoot;
+    }
+
     public EmailRepository() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
@@ -108,10 +112,33 @@ public class EmailRepository {
     }
 
     // Delete email
-    public void deleteEmail(String username, String folder, String messageId) throws IOException {
+    public boolean deleteEmail(String username, String folder, String messageId) throws IOException {
+        if (folder == null || folder.isEmpty()) {
+            throw new IOException("Folder cannot be null or empty for deletion");
+        }
+
         Path emailPath = Paths.get(msgRoot, username, folder, messageId + ".json");
-        Files.deleteIfExists(emailPath);
-        log.info("Deleted email {} from folder {}", messageId, folder);
+
+        if (!Files.exists(emailPath)) {
+            log.warn("Email file does not exist at path: {}", emailPath.toAbsolutePath());
+            return false;
+        }
+
+        try {
+            boolean deleted = Files.deleteIfExists(emailPath);
+
+            if (deleted) {
+                log.info("Successfully deleted email {} from folder {}", messageId, folder);
+            } else {
+                log.warn("Files.deleteIfExists returned false for: {}", emailPath);
+            }
+
+            return deleted;
+
+        } catch (IOException e) {
+            log.error("Error deleting email {}: {}", messageId, e.getMessage(), e);
+            throw e;
+        }
     }
 
     // Get all emails for a user (across all folders)

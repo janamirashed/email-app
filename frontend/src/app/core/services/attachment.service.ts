@@ -13,8 +13,8 @@ class AttachmentIDResponse {
 })
 export class AttachmentService {
 
-  private attachment_id_url : string = "http://localhost:8080/attachments/ids"
-  private attachment_upload_url : string = "http://localhost:8080/attachments"
+  private attachment_id_url : string = "http://localhost:8080/api/attachments/ids"
+  private attachment_upload_url : string = "http://localhost:8080/api/attachments"
   private headers = new HttpHeaders({
 
     'Authorization': `Bearer ${localStorage.getItem("authToken")}`,

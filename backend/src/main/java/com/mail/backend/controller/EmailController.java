@@ -1,10 +1,11 @@
 package com.mail.backend.controller;
 
+import com.mail.backend.model.SSE;
 import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.Email;
-import com.mail.backend.repository.EmailRepository;
 import com.mail.backend.service.AttachmentService;
 import com.mail.backend.service.EmailService;
+import com.mail.backend.service.EventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ public class EmailController {
 
     @Autowired
     private AttachmentService attachmentService;
+
+    @Autowired
+    private EventService eventService;
 
     // GET current user's username from JWT token
     private String getCurrentUsername(Authentication authentication) {
@@ -70,6 +74,7 @@ public class EmailController {
             response.put("message", "Email sent successfully");
 
             log.info("Email {} sent successfully", messageId);
+            eventService.publishEvent(new SSE("Sent","",email.getTo()));
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             log.error("Invalid email: {}", e.getMessage());
@@ -467,6 +472,30 @@ public class EmailController {
     }
 
     /**
+     * PERMANENTLY DELETE EMAILS (from trash)
+     * POST /api/email/permanent-delete
+     * Body: ["messageId1", "messageId2", ...]
+     */
+    @PostMapping("/permanent-delete")
+    public ResponseEntity<?> permanentlyDeleteEmails(@RequestBody List<String> messageIds, Authentication authentication) {
+        String username = getCurrentUsername(authentication);
+
+        for (String messageId : messageIds) {
+            try {
+                emailService.permanentlyDeleteEmail(username, messageId);
+            } catch (IOException e) {
+                log.error("Failed to permanently delete email {}", messageId, e);
+            }
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Permanently deleted " + messageIds.size() + " emails");
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
      * BULK MOVE EMAILS
      * POST /api/email/bulk-move?toFolder=work
      * Body: ["messageId1", "messageId2", ...]
@@ -515,6 +544,34 @@ public class EmailController {
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
             error.put("error", "Bulk delete failed");
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * BULK RESTORE EMAILS FROM TRASH
+     * POST /api/email/bulk-restore
+     * Body: ["messageId1", "messageId2", ...]
+     * Restores multiple emails from trash to their original folders
+     */
+    @PostMapping("/bulk-restore")
+    public ResponseEntity<?> bulkRestore(
+            @RequestBody List<String> messageIds,
+            Authentication authentication) {
+        try {
+            String username = getCurrentUsername(authentication);
+            emailService.bulkRestoreFromTrash(username, messageIds);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Restored " + messageIds.size() + " emails from trash");
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IOException e) {
+            log.error("Bulk restore failed: {}", e.getMessage());
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Bulk restore failed");
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -7,7 +7,7 @@ import { ContactDialogComponent } from '../../features/contact/components/contac
 @Component({
   selector: 'app-contact-view',
   standalone: true,
-  imports: [CommonModule, ContactListComponent, ContactDialogComponent],
+  imports: [CommonModule, ContactListComponent],
   templateUrl: './contact-view.html'
 })
 export class ContactViewComponent {}
