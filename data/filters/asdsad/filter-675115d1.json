@@ -1,0 +1,9 @@
+{
+  "id" : "filter-675115d1",
+  "name" : "just ignore it",
+  "property" : "subject",
+  "matcher" : "contains",
+  "value" : "ignore",
+  "action" : "markread",
+  "newFolder" : null
+}
