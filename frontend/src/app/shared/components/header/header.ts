@@ -16,6 +16,7 @@ export class HeaderComponent implements OnInit {
   userName: string = '';
   userEmail: string = '';
   searchTerm: string = '';
+  searchBy: string = 'all';
   showUserMenu: boolean = false;
 
   constructor(
@@ -55,12 +56,22 @@ export class HeaderComponent implements OnInit {
     }
   }
 
+  importanceLevel: string = '3'; // Default to Normal (3)
+
   onSearch() {
-    if (this.searchTerm.trim()) {
-      console.log('Searching for:', this.searchTerm);
-      // Navigate to search results or filter current view
-      // TODO: Implement actual search
-      alert(`Search functionality coming soon!\nSearching for: ${this.searchTerm}`);
+    let keyword = this.searchTerm;
+
+    if (this.searchBy === 'importance') {
+      keyword = this.importanceLevel;
+    }
+
+    if (keyword.trim()) {
+      this.router.navigate(['/search'], {
+        queryParams: {
+          keyword: keyword,
+          searchBy: this.searchBy
+        }
+      });
     }
   }
 
@@ -71,6 +82,5 @@ export class HeaderComponent implements OnInit {
 
   logout() {
     this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }

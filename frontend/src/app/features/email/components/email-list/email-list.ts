@@ -37,7 +37,12 @@ export class EmailListComponent implements OnInit {
     private ngZone: NgZone
   ) { }
 
+  currentUserEmail: string = '';
+
   ngOnInit() {
+    const currentUser = localStorage.getItem('currentUser') || '';
+    this.currentUserEmail = `${currentUser}@jaryn.com`;
+
     // Get current folder from route
     this.route.url.subscribe(urlSegments => {
       // Check if we're on a /folder/:folderName route
@@ -63,6 +68,37 @@ export class EmailListComponent implements OnInit {
       })
 
     });
+  }
+
+  // ... (existing code)
+
+  // Get sender display name
+  getParticipant(email: any): string {
+    if (this.currentFolder === 'sent' || this.currentFolder === 'drafts') {
+      if (email.to && email.to.length > 0) {
+        return 'To: ' + email.to.map((addr: string) => addr.split('@')[0]).join(', ');
+      }
+      return 'To: (No Recipients)';
+    }
+
+    // Check if I am the sender (for mixed folders like Trash, Search, or custom folders)
+    // Case-insensitive comparison
+    const sender = email.from ? email.from.toLowerCase().trim() : '';
+    const me = this.currentUserEmail.toLowerCase().trim();
+    const rawUsername = (localStorage.getItem('currentUser') || '').toLowerCase().trim();
+
+    // Check against full email, raw username, or if sender contains the username
+    if (sender === me || sender === rawUsername || (rawUsername && sender.includes(rawUsername))) {
+      if (email.to && email.to.length > 0) {
+        return 'To: ' + email.to.map((addr: string) => addr.split('@')[0]).join(', ');
+      }
+      return 'To: (No Recipients)';
+    }
+
+    if (email.from) {
+      return email.from.split('@')[0];
+    }
+    return 'Unknown';
   }
 
   // Load emails for current folder
@@ -113,7 +149,11 @@ export class EmailListComponent implements OnInit {
   private loadStarredEmails() {
     this.emailService.getStarredEmails(this.currentPage, this.pageSize, this.sortBy).subscribe({
       next: (response) => {
-        this.emails = response.content || [];
+        let allStarred = response.content || [];
+
+        // Filter out emails that are in trash
+        this.emails = allStarred.filter((email: any) => email.folder !== 'trash');
+
         this.currentPage = response.currentPage || 1;
         this.pageSize = response.pageSize || 20;
         this.totalPages = response.totalPages || 0;
@@ -125,7 +165,7 @@ export class EmailListComponent implements OnInit {
         });
 
         this.isLoading = false;
-        console.log('Starred emails loaded:', this.emails);
+        console.log('Starred emails loaded (filtered):', this.emails);
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -367,20 +407,7 @@ export class EmailListComponent implements OnInit {
     }
   }
 
-  // Get sender display name
-  getParticipant(email: any): string {
-    if (this.currentFolder === 'sent' || this.currentFolder === 'drafts') {
-      if (email.to && email.to.length > 0) {
-        return 'To: ' + email.to.map((addr: string) => addr.split('@')[0]).join(', ');
-      }
-      return 'To: (No Recipients)';
-    }
 
-    if (email.from) {
-      return email.from.split('@')[0];
-    }
-    return 'Unknown';
-  }
 
   // Check if email has attachments
   hasAttachments(email: any): boolean {
