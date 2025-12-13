@@ -252,19 +252,16 @@ public class EmailController {
      */
     @GetMapping("/starred")
     public ResponseEntity<?> getStarredEmails(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int limit,
             @RequestParam(defaultValue = "date") String sortBy,
             Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
-            List<Email> emails = emailService.getStarredEmails(username, sortBy);
+            
+            Map<String, Object> emails = emailService.getStarredEmailsPaginated(username, page, limit, sortBy);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("totalStarred", emails.size());
-            response.put("sortBy", sortBy);
-            response.put("emails", emails);
-
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(emails, HttpStatus.OK);
         } catch (IOException e) {
             log.error("Failed to get starred emails: {}", e.getMessage());
             Map<String, Object> error = new HashMap<>();

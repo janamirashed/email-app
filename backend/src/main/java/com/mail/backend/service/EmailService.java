@@ -412,7 +412,7 @@ public class EmailService {
     }
 
     // GET STARRED EMAILS + sorting
-    public List<Email> getStarredEmails(String username, String sortBy) throws IOException {
+    public Map<String, Object> getStarredEmails(String username, String sortBy) throws IOException {
         List<Email> allEmails = emailRepository.getAllEmails(username);
         List<Email> starred = allEmails.stream()
                 .filter(Email::isStarred)
@@ -424,7 +424,32 @@ public class EmailService {
             starred = strategy.sort(starred);
         }
 
-        return starred;
+        // Return in same format
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", starred);
+        response.put("currentPage", 1);
+        response.put("pageSize", starred.size());
+        response.put("totalPages", 1);
+        response.put("totalEmails", starred.size());
+        response.put("folder", "starred");
+
+        return response;
+    }
+
+    // Also add paginated version for future use
+    public Map<String, Object> getStarredEmailsPaginated(String username, int page, int limit, String sortBy) throws IOException {
+        List<Email> allEmails = emailRepository.getAllEmails(username);
+        List<Email> starred = allEmails.stream()
+                .filter(Email::isStarred)
+                .collect(Collectors.toList());
+
+        // Apply sorting
+        if (sortBy != null && !sortBy.isEmpty()) {
+            SortStrategy strategy = getSortStrategy(sortBy);
+            starred = strategy.sort(starred);
+        }
+
+        return paginate(starred, page, limit, "starred");
     }
 
     // GET UNREAD EMAIL COUNT

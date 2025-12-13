@@ -75,12 +75,15 @@ export class EmailService {
   }
 
   // GET /api/email/starred?sortBy=date
-  getStarredEmails(sortBy: string = 'date'): Observable<any> {
-    const params = new HttpParams().set('sortBy', sortBy);
+  getStarredEmails(page: number = 1, limit: number = 20, sortBy: string = 'date'): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('sortBy', sortBy);
 
     return this.http.get(`${this.baseUrl}/starred`, {
       headers: this.getHeaders(),
-      params: params
+      params: params  // ADD THIS
     });
   }
 

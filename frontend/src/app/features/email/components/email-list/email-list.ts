@@ -87,59 +87,51 @@ export class EmailListComponent implements OnInit {
     ).subscribe({
       next: (response) => {
         this.emails = response.content || [];
-
-        // Map backend field names to frontend field names
-        this.emails.forEach((email: any) => {
-          // Backend uses 'starred', frontend uses 'isStarred'
-          email.isStarred = !!email.starred;
-          // Backend uses 'read', frontend uses 'isRead'
-          email.isRead = !!email.read;
-        });
-
+        this.currentPage = response.currentPage || 1;
+        this.pageSize = response.pageSize || 20;
         this.totalPages = response.totalPages || 0;
         this.totalEmails = response.totalEmails || 0;
+
+        this.emails.forEach((email: any) => {
+          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
+          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
+        });
+
         this.isLoading = false;
         console.log('Emails loaded:', this.emails);
         this.cdr.detectChanges();
       },
       error: (error) => {
-        setTimeout(() => {
-          console.error('Failed to load emails:', error);
-          this.errorMessage = 'Failed to load emails. Please try again.';
-          this.isLoading = false;
-        }, 0);
+        console.error('Failed to load emails:', error);
+        this.errorMessage = 'Failed to load emails. Please try again.';
+        this.isLoading = false;
       }
     });
   }
 
   // Load starred emails
   private loadStarredEmails() {
-    this.emailService.getStarredEmails(this.sortBy).subscribe({
+    this.emailService.getStarredEmails(this.currentPage, this.pageSize, this.sortBy).subscribe({
       next: (response) => {
-        setTimeout(() => {
-          this.emails = response.emails || [];
+        this.emails = response.content || [];
+        this.currentPage = response.currentPage || 1;
+        this.pageSize = response.pageSize || 20;
+        this.totalPages = response.totalPages || 0;
+        this.totalEmails = response.totalEmails || 0;
 
-          // Map backend field names to frontend field names
-          this.emails.forEach((email: any) => {
-            // Backend uses 'starred', frontend uses 'isStarred'
-            email.isStarred = !!email.starred;
-            // Backend uses 'read', frontend uses 'isRead'
-            email.isRead = !!email.read;
-          });
+        this.emails.forEach((email: any) => {
+          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
+          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
+        });
 
-          this.totalEmails = response.totalStarred || 0;
-          this.totalPages = 1; // Starred emails not paginated
-          this.isLoading = false;
-          console.log('Starred emails loaded:', this.emails);
-          this.cdr.detectChanges();
-        }, 0);
+        this.isLoading = false;
+        console.log('Starred emails loaded:', this.emails);
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        setTimeout(() => {
-          console.error('Failed to load starred emails:', error);
-          this.errorMessage = 'Failed to load emails. Please try again.';
-          this.isLoading = false;
-        }, 0);
+        console.error('Failed to load starred emails:', error);
+        this.errorMessage = 'Failed to load emails. Please try again.';
+        this.isLoading = false;
       }
     });
   }
