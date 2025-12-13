@@ -17,7 +17,7 @@ export class EmailListComponent implements OnInit {
   selectedEmailId: string | null = null;
   currentFolder: string = 'inbox';
   currentPage: number = 1;
-  pageSize: number = 20;
+  pageSize: number = 10;
   totalPages: number = 0;
   totalEmails: number = 0;
 

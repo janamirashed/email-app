@@ -42,7 +42,7 @@ export class EmailService {
   }
 
   // GET /api/email/inbox?page=1&limit=20&sortBy=date
-  getInboxEmails(page: number = 1, limit: number = 20, sortBy: string = 'date'): Observable<any> {
+  getInboxEmails(page: number = 1, limit: number = 10, sortBy: string = 'date'): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString())
@@ -55,7 +55,7 @@ export class EmailService {
   }
 
   // GET /api/email/folder/{folder}?page=1&limit=20&sortBy=date
-  getEmailsInFolder(folder: string, page: number = 1, limit: number = 20, sortBy: string = 'date'): Observable<any> {
+  getEmailsInFolder(folder: string, page: number = 1, limit: number = 10, sortBy: string = 'date'): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString())
@@ -75,7 +75,7 @@ export class EmailService {
   }
 
   // GET /api/email/starred?sortBy=date
-  getStarredEmails(page: number = 1, limit: number = 20, sortBy: string = 'date'): Observable<any> {
+  getStarredEmails(page: number = 1, limit: number = 10, sortBy: string = 'date'): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString())
