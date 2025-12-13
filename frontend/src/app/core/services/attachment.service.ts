@@ -17,11 +17,12 @@ export interface UploadProgress{
 })
 export class AttachmentService {
 
-  private attachment_id_url : string = "https://d9c0ab38c98c.ngrok-free.app/api/attachments/ids"
-  private attachment_upload_url : string = "https://d9c0ab38c98c.ngrok-free.app/api/attachments"
+  private attachment_id_url : string = "http://localhost:8080/api/attachments/ids"
+  private attachment_upload_url : string = "http://localhost:8080/api/attachments"
   private headers = new HttpHeaders({
 
     'Authorization': `Bearer ${localStorage.getItem("authToken")}`,
+    'ngrok-skip-browser-warning': 'true'
   });
 
 

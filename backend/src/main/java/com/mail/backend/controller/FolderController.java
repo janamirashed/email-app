@@ -19,7 +19,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/folders")
-@CrossOrigin(origins = "http://localhost:4200")
 public class FolderController {
 
     @Autowired

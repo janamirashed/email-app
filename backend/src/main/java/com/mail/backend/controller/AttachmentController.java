@@ -20,7 +20,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/attachments")
-@CrossOrigin(origins = "http://localhost:4200/")
 public class AttachmentController {
 
     @Autowired

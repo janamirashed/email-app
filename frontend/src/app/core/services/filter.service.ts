@@ -8,7 +8,7 @@ import { Filter } from '../models/filter.model';
     providedIn: 'root'
 })
 export class FilterService {
-    private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/filters';
+    private baseUrl = 'http://localhost:8080/api/filters';
 
     constructor(private http: HttpClient) { }
 
@@ -16,7 +16,8 @@ export class FilterService {
         const token = localStorage.getItem('authToken');
         return new HttpHeaders({
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true'
         });
     }
 

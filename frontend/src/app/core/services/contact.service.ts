@@ -8,7 +8,7 @@ import { Contact } from '../models/contact.model';
     providedIn: 'root'
 })
 export class ContactService {
-    private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/contacts';
+    private baseUrl = 'http://localhost:8080/api/contacts';
 
     constructor(private http: HttpClient) { }
 
@@ -17,7 +17,8 @@ export class ContactService {
         const token = localStorage.getItem('authToken');
         return new HttpHeaders({
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true'
         });
     }
 

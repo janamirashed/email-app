@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class FolderService {
-    private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/folders';
+    private baseUrl = 'http://localhost:8080/api/folders';
 
     constructor(private http: HttpClient) { }
 
@@ -15,7 +15,8 @@ export class FolderService {
         const token = localStorage.getItem('authToken');
         return new HttpHeaders({
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true'
         });
     }
 

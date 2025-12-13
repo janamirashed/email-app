@@ -7,7 +7,7 @@ import { Email } from '../models/email.model';
   providedIn: 'root'
 })
 export class EmailService {
-  private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/email';
+  private baseUrl = 'http://localhost:8080/api/email';
 
   constructor(private http: HttpClient) { }
 
@@ -16,7 +16,8 @@ export class EmailService {
     const token = localStorage.getItem('authToken');
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      'ngrok-skip-browser-warning': 'true'
     });
   }
 

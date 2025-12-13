@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   providedIn: 'root',
 })
 export class EventService {
-  private readonly streamUrl: string = 'https://d9c0ab38c98c.ngrok-free.app/event-stream';
+  private readonly streamUrl: string = 'http://localhost:8080/event-stream';
   private readonly reconnnectionDelay: number = 5000
   private stopStream$ = new Subject<void>();
   private inboxRefresh$ = new Subject<void>();

@@ -8,7 +8,7 @@ import { User } from '../models/user.model';
 })
 export class ApiService {
   http = inject(HttpClient);
-  private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app';
+  private baseUrl = 'http://localhost:8080';
 
   register(user: User): Observable<any> {
     console.log('Sending register request:', user);
