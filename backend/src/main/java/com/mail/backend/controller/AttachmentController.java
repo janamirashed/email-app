@@ -26,10 +26,17 @@ public class AttachmentController {
     @Autowired
     AttachmentService attachmentService;
 
+
+    /**
+     * used if we want to choose speed at the price of reliability.
+     * we can have non-transactional uploads where the frontend sends the email and starts sending the files,
+     * but we consider the data to be existent once it got acknowledged by the attachment service,
+     * which follows the principle of optimistic response.
+     */
     @GetMapping("/ids")
     public ResponseEntity<?> getValidAttachmentId(){
         Map<String,String> response = new HashMap<>();
-        response.put("id",attachmentService.generateAttachmentId());
+        response.put("id",attachmentService.generateAttachmentId(true));
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
@@ -49,12 +56,17 @@ public class AttachmentController {
     }
 
     @PutMapping("")
-    public ResponseEntity<?>  saveAttachment(@RequestParam String id, @RequestParam String mimeType, @RequestParam String fileName, HttpServletRequest file){
+    public ResponseEntity<?>  saveAttachment(@RequestParam(required = false) String id, @RequestParam String mimeType, @RequestParam String fileName, HttpServletRequest file){
+        AttachmentMetadata data;
         try {
-            if (attachmentService.saveAttachment(id, MimeType.fromValue(mimeType), fileName, file.getInputStream()) == null){
+             data = (id == null || id.trim().isEmpty())?
+                     attachmentService.saveAttachment(MimeType.fromValue(mimeType), fileName, file.getInputStream()):
+                     attachmentService.saveAttachment(id, MimeType.fromValue(mimeType), fileName, file.getInputStream());
+
+            if (data == null){
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(data, HttpStatus.OK);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

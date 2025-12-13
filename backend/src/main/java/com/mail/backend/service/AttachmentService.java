@@ -4,6 +4,7 @@ import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.MimeType;
 import com.mail.backend.repository.AttachmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -16,23 +17,52 @@ public class AttachmentService {
     @Autowired
     AttachmentRepository attachmentRepository;
     Map<String, Date> generatedIds;
-    Set<String> acknowledged;
+    Map<String, Date>  acknowledged;
 
     public AttachmentService() {
         this.generatedIds = new ConcurrentHashMap<>();
-        this.acknowledged = new HashSet<>();
+        this.acknowledged = new ConcurrentHashMap<>();
+    }
+
+    @Scheduled(cron = "0 */10 * * * *")
+    private void cleanupIdTracker(){
+        /**
+         * to handle if a person generates too many ids and never uses them.
+         * to avoid consuming more memory than needed
+         */
+        for(Map.Entry<String,Date> entry : this.generatedIds.entrySet()){
+            if (entry.getValue().after(new Date()))
+                continue;
+            this.generatedIds.remove(entry.getKey());
+        }
+    }
+
+    @Scheduled(cron = "0 */15 * * * *")
+    private void cleanupAcknowledgement(){
+        /**
+         * to handle if a person generates too many ids and never uses them.
+         * to avoid consuming more memory than needed
+         */
+        for(Map.Entry<String,Date> entry : this.generatedIds.entrySet()){
+            if (new Date().getTime() - entry.getValue().getTime() >= 60 * 1e3 * 60)
+                continue;
+            this.generatedIds.remove(entry.getKey());
+        }
     }
 
     public AttachmentMetadata saveAttachment(String id, MimeType mimeType, String fileName, InputStream inputStream) {
         /**
-         * returns the updated metadata having the size in bytes and the assigned attachment_id
+         * used when we are taking the approach of non-transactional uploads, in which case the client requests the id first,
+         * and then uploads with the same id in that case we track the generated ids,and consider acknowledgement before completing the upload.
+         * returns the updated metadata and the assigned attachment_id
          */
+        System.out.println("Non-Transactional attachment save");
         //any validation or checking logic and then delegates to the repository
         if (!isValidAttachmentId(id))
             return null;
 
         generatedIds.remove(id);
-        this.acknowledged.add(id);
+        this.acknowledged.put(id, new Date());
         //prevents reuse
         AttachmentMetadata attachmentMetadata = new AttachmentMetadata();
 
@@ -48,9 +78,32 @@ public class AttachmentService {
         return attachmentMetadata;
     }
 
-    public InputStream getAttachmentStream(String attachment_id) {
+    public AttachmentMetadata saveAttachment(MimeType mimeType, String fileName, InputStream inputStream){
+
         /**
-         * returns the stream of the file from disk to be directly piped to the HTTPServletResponse Stream
+         * used when we are taking the approach of transactional uploads, in which case the client doesn't request the id prior to upload,
+         * the client just uploads the file and waits for the upload completion.
+         * returns the updated metadata and the generated attachment_id
+         */
+        System.out.println("Transactional attachment save");
+        AttachmentMetadata attachmentMetadata = new AttachmentMetadata();
+        String id = this.generateAttachmentId(false);
+        attachmentMetadata.setId(id);
+        attachmentMetadata.setFileName(fileName);
+        attachmentMetadata.setMimeType(mimeType);
+        Long size = attachmentRepository.saveAttachment(attachmentMetadata, inputStream);
+
+        if (size > 0){
+            this.acknowledged.put(id, new Date());
+        }
+        //acknowledged only after completion
+        attachmentRepository.saveAttachmentMetadata(attachmentMetadata);
+        return attachmentMetadata;
+    }
+
+    public InputStream getAttachmentStream(String attachment_id) {
+        /*
+          returns the stream of the file from disk to be directly piped to the HTTPServletResponse Stream
          */
         //any logic lies here
         InputStream inputStream = attachmentRepository.getAttachmentStream(attachment_id);
@@ -64,12 +117,15 @@ public class AttachmentService {
         return attachmentRepository.getAttachmentMetadata(attachment_id);
     }
 
-    public String generateAttachmentId(){
+    public String generateAttachmentId(boolean track_id){
         /**
-         * generates and returns a UUID and tracks it's issuing time to later check for validity
+         * generates and returns a UUID and tracks it's expiration time to later check for validity
          */
         String uuid = UUID.randomUUID().toString();
-        generatedIds.put(uuid, new Date());
+        if (track_id){
+            long expirationTime = (long) (new Date().getTime() + 60*1e3*5);
+            generatedIds.put(uuid, new Date(expirationTime));
+        }
         return uuid;
     }
 
@@ -77,19 +133,14 @@ public class AttachmentService {
         /**
          * checks if the attachment id was generated and that it was generated less than 5 minutes ago as a security measure
          */
-        return generatedIds.containsKey(id) && (new Date().getTime() - generatedIds.get(id).getTime() <= 60 * 1e3 * 30);
+        return generatedIds.containsKey(id) && (new Date().before(generatedIds.get(id)));
     }
 
     public boolean isAcknowledged(String attachment_id){
-        /**
-         * be careful that for this version once this method is called the acknowledgement of this id is reset (as if it's not acknowledged)
+        /*
          * as a way to clean up the acknowledgement set on check.
          */
-        if (acknowledged.contains(attachment_id)){
-            acknowledged.remove(attachment_id);
-            return true;
-        }
-        return false;
+        return acknowledged.containsKey(attachment_id);
     }
 
 

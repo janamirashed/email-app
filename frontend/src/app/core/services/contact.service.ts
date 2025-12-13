@@ -8,7 +8,7 @@ import { Contact } from '../models/contact.model';
     providedIn: 'root'
 })
 export class ContactService {
-    private baseUrl = 'http://localhost:8080/api/contacts';
+    private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/contacts';
 
     constructor(private http: HttpClient) { }
 

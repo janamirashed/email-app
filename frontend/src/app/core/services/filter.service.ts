@@ -8,7 +8,7 @@ import { Filter } from '../models/filter.model';
     providedIn: 'root'
 })
 export class FilterService {
-    private baseUrl = 'http://localhost:8080/api/filters';
+    private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/filters';
 
     constructor(private http: HttpClient) { }
 

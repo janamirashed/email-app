@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
     providedIn: 'root'
 })
 export class FolderService {
-    private baseUrl = 'http://localhost:8080/api/folders';
+    private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/folders';
 
     constructor(private http: HttpClient) { }
 
