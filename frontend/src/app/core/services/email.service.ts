@@ -7,7 +7,7 @@ import { Email } from '../models/email.model';
   providedIn: 'root'
 })
 export class EmailService {
-  private baseUrl = 'http://localhost:8080/api/email';
+  private baseUrl = 'https://d9c0ab38c98c.ngrok-free.app/api/email';
 
   constructor(private http: HttpClient) {}
 
