@@ -27,8 +27,34 @@ export class EmailTrashComponent implements OnInit {
     private route: ActivatedRoute
   ) { }
 
+  currentUserEmail: string = '';
+
   ngOnInit() {
+    const currentUser = localStorage.getItem('currentUser') || '';
+    this.currentUserEmail = `${currentUser}@jaryn.com`;
     this.loadTrashEmails();
+  }
+
+  // ... (existing code)
+
+  // Get sender display name
+  getParticipant(email: any): string {
+    // Check if I am the sender
+    const sender = email.from ? email.from.toLowerCase().trim() : '';
+    const me = this.currentUserEmail.toLowerCase().trim();
+    const rawUsername = (localStorage.getItem('currentUser') || '').toLowerCase().trim();
+
+    if (sender === me || sender === rawUsername || (rawUsername && sender.includes(rawUsername))) {
+      if (email.to && email.to.length > 0) {
+        return 'To: ' + email.to.map((addr: string) => addr.split('@')[0]).join(', ');
+      }
+      return 'To: (No Recipients)';
+    }
+
+    if (email.from) {
+      return email.from.split('@')[0];
+    }
+    return 'Unknown';
   }
 
   // Load all emails from trash folder
@@ -198,11 +224,5 @@ export class EmailTrashComponent implements OnInit {
     });
   }
 
-  // Get sender name from email
-  getSenderName(email: any): string {
-    if (email.from) {
-      return email.from.split('@')[0];
-    }
-    return 'Unknown';
-  }
+
 }

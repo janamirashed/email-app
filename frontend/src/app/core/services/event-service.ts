@@ -1,4 +1,4 @@
-import {inject, Injectable, NgZone} from '@angular/core';
+import { inject, Injectable, NgZone } from '@angular/core';
 import { EMPTY, Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs';
 import { AuthService } from './auth-service';
 import { map } from 'rxjs/operators';
@@ -28,16 +28,10 @@ export class EventService {
         return JSON.parse(cleanJSON) as sseEvent;
       }
       ),
-      // Log out the user if their token is not valid
       tap((payload: sseEvent) => {
-        if (payload.type === 'Token_Expired' && payload.token === this.authService.getToken()) {
-          console.log('Token expired, logging out user');
-          this.authService.logout();
-          this.router.navigate(['/login']);
-        }
         // Emit inbox refresh if current user received an email
         if (payload.type === 'Sent' && payload.to && payload.to.length > 0) {
-          const currentUserEmail = localStorage.getItem('currentUser')+"@jaryn.com";
+          const currentUserEmail = localStorage.getItem('currentUser') + "@jaryn.com";
           console.log(currentUserEmail + ' ' + payload.to);
           if (currentUserEmail && payload.to.includes(currentUserEmail)) {
             console.log('New email received for current user, refreshing inbox');
@@ -57,55 +51,76 @@ export class EventService {
   }
 
   /**
-   * Sets up the EventSource connection and emits raw strings.
+   * Sets up the EventSource connection using fetch to support Bearer auth.
    */
   private createEventObservable(): Observable<string> {
     return new Observable<string>((observer: Observer<string>) => {
-      let eventSource: EventSource | null = null;
+      const controller = new AbortController();
+      const signal = controller.signal;
 
-      this.ngZone.runOutsideAngular(() => {
+      this.ngZone.runOutsideAngular(async () => {
         try {
-          // Create EventSource without a token (backend permits this route for now at least)
-          eventSource = new EventSource(this.streamUrl);
+          const token = this.authService.getToken();
+          const headers: HeadersInit = {};
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
 
-          // Handle incoming messages
-          eventSource.onmessage = (event: MessageEvent) => {
-            this.ngZone.run(() => {
-              observer.next(event.data);
-            });
-          };
+          const response = await fetch(this.streamUrl, {
+            headers,
+            signal
+          });
 
-          // Handle connection open
-          eventSource.onopen = () => {
-            console.log('SSE connection established');
-          };
+          if (!response.ok) {
+            if (response.status === 401) {
+              console.warn('SSE Unauthorized (401). Logging out.');
+              this.ngZone.run(() => this.authService.logout());
+              return; // Stop further processing
+            }
+            throw new Error(`SSE connection failed: ${response.statusText}`);
+          }
 
-          // Handle errors
-          eventSource.onerror = (error) => {
-            console.error('SSE connection error:', error);
+          const reader = response.body?.getReader();
+          if (!reader) {
+            throw new Error('No response body');
+          }
 
-            this.ngZone.run(() => {
-              // Close the connection
-              if (eventSource) {
-                eventSource.close();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
+
+            const parts = buffer.split('\n\n');
+            buffer = parts.pop() || ''; // Keep the incomplete part
+
+            for (const part of parts) {
+              const lines = part.split('\n');
+              for (const line of lines) {
+                if (line.startsWith('data:')) {
+                  const data = line.substring(5).trim();
+                  if (data) {
+                    this.ngZone.run(() => observer.next(data));
+                  }
+                }
               }
-
-              // Emit error to trigger retry logic
-              observer.error(new Error('SSE connection failed'));
-            });
-          };
-        } catch (error) {
-          observer.error(error);
+            }
+          }
+        } catch (error: any) {
+          if (error.name !== 'AbortError') {
+            console.error('SSE error:', error);
+            this.ngZone.run(() => observer.error(error));
+          }
         }
       });
 
-      // Cleanup function when unsubscribing
       return () => {
-        if (eventSource) {
-          console.log('Closing SSE connection');
-          eventSource.close();
-          eventSource = null;
-        }
+        console.log('Closing SSE connection');
+        controller.abort();
       };
     });
   }

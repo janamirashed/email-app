@@ -1,11 +1,168 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EmailService } from '../../../../core/services/email.service';
+import { EmailDetailComponent } from '../email-detail/email-detail';
 
 @Component({
   selector: 'app-email-search',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, EmailDetailComponent],
   templateUrl: './email-search.html',
   styleUrl: './email-search.css',
 })
-export class EmailSearch {
+export class EmailSearch implements OnInit {
+  emails: any[] = [];
+  selectedEmailId: string | null = null;
+  keyword: string = '';
+  searchBy: string = 'all';
+  sortBy: string = 'date';
 
+  isLoading: boolean = false;
+  errorMessage: string = '';
+
+  selectedEmails: Set<string> = new Set();
+  Math = Math;
+
+  constructor(
+    private emailService: EmailService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) { }
+
+  currentUserEmail: string = '';
+
+  ngOnInit() {
+    const currentUser = localStorage.getItem('currentUser') || '';
+    this.currentUserEmail = `${currentUser}@jaryn.com`;
+
+    this.route.queryParams.subscribe(params => {
+      this.keyword = params['keyword'] || '';
+      this.searchBy = params['searchBy'] || 'all';
+      this.sortBy = params['sortBy'] || 'date';
+
+      if (this.keyword) {
+        this.searchEmails();
+      }
+    });
+  }
+
+  // ... (existing code)
+
+  // Get sender display name
+  getParticipant(email: any): string {
+    // Check if I am the sender
+    const sender = email.from ? email.from.toLowerCase().trim() : '';
+    const me = this.currentUserEmail.toLowerCase().trim();
+    const rawUsername = (localStorage.getItem('currentUser') || '').toLowerCase().trim();
+
+    if (sender === me || sender === rawUsername || (rawUsername && sender.includes(rawUsername))) {
+      if (email.to && email.to.length > 0) {
+        return 'To: ' + email.to.map((addr: string) => addr.split('@')[0]).join(', ');
+      }
+      return 'To: (No Recipients)';
+    }
+
+    if (email.from) {
+      return email.from.split('@')[0];
+    }
+    return 'Unknown';
+  }
+
+  searchEmails() {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.emails = [];
+
+    this.emailService.searchEmails(this.keyword, this.searchBy, this.sortBy).subscribe({
+      next: (response) => {
+        // The backend returns a map with "results" key containing the list
+        this.emails = response.results || [];
+
+        this.emails.forEach((email: any) => {
+          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
+          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
+        });
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Search failed:', error);
+        this.errorMessage = 'Search failed. Please try again.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // Select/deselect email
+  selectEmail(email: any) {
+    this.selectedEmailId = email.messageId;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { messageId: email.messageId },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  // Toggle email selection (checkbox)
+  toggleEmailSelection(emailId: string, event: Event) {
+    event.stopPropagation();
+    if (this.selectedEmails.has(emailId)) {
+      this.selectedEmails.delete(emailId);
+    } else {
+      this.selectedEmails.add(emailId);
+    }
+  }
+
+  // Toggle star for single email
+  toggleStar(email: any, event: Event) {
+    event.stopPropagation();
+
+    if (email.isStarred) {
+      this.emailService.unstarEmail(email.messageId).subscribe({
+        next: () => {
+          email.isStarred = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => console.error('Failed to unstar email:', error)
+      });
+    } else {
+      this.emailService.starEmail(email.messageId).subscribe({
+        next: () => {
+          email.isStarred = true;
+          this.cdr.detectChanges();
+        },
+        error: (error) => console.error('Failed to star email:', error)
+      });
+    }
+  }
+
+  // Format date
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else if (date.getFullYear() === today.getFullYear()) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } else {
+      return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: 'numeric' });
+    }
+  }
+
+
+
+  // Check if email has attachments
+  hasAttachments(email: any): boolean {
+    return email.attachments && email.attachments.length > 0;
+  }
 }

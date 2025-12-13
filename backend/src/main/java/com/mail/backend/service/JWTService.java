@@ -70,7 +70,9 @@ public class JWTService {
                 .getPayload();
         }
         catch (Exception e){
-            eventService.publishEvent(new SSE("Token_Expired",token,new ArrayList<>()));
+//            ArrayList<String> list=new ArrayList<String>();
+//            list.add(extractUsername(token) + "@jaryn.com");
+//            eventService.publishEvent(new SSE("Token_Expired",token,list));
             throw new RuntimeException(e);
         }
     }

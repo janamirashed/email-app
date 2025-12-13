@@ -4,15 +4,53 @@
 
   <!-- Search -->
   <div class="flex-1 max-w-2xl mx-8">
-    <div class="relative">
-      <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
-        stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      <input type="text" placeholder="Search emails, contacts, and more..." [(ngModel)]="searchTerm"
-        (keyup.enter)="onSearch()"
-        class="w-full pl-12 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+    <div
+      class="group flex items-center w-full bg-gray-50 border border-gray-300 rounded-xl focus-within:bg-white focus-within:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+
+      <!-- Filter Dropdown -->
+      <div class="relative flex-shrink-0">
+        <select [(ngModel)]="searchBy"
+          class="h-11 pl-4 pr-9 bg-transparent border-none text-gray-600 text-sm font-medium focus:ring-0 cursor-pointer hover:text-gray-900 transition-colors appearance-none outline-none">
+          <option value="all">All</option>
+          <option value="subject">Subject</option>
+          <option value="body">Body</option>
+          <option value="sender">Sender</option>
+          <option value="receiver">Receiver</option>
+          <option value="importance">Importance</option>
+        </select>
+        <!-- Custom Chevron -->
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="h-6 w-px bg-gray-300"></div>
+
+      <!-- Search Input Wrapper -->
+      <div class="flex-1 flex items-center px-3">
+        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+
+        <!-- Text Input for Normal Search -->
+        <input *ngIf="searchBy !== 'importance'" type="text" placeholder="Search emails..." [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          class="w-full bg-transparent border-none p-0 text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none outline-none text-sm h-11">
+
+        <!-- Dropdown for Importance Search -->
+        <select *ngIf="searchBy === 'importance'" [(ngModel)]="importanceLevel" (change)="onSearch()"
+          class="w-full bg-transparent border-none p-0 text-gray-900 focus:ring-0 focus:outline-none outline-none text-sm h-11 cursor-pointer">
+          <option value="1">High (Extreme)</option>
+          <option value="2">Medium (High)</option>
+          <option value="3">Normal</option>
+          <option value="4">Low</option>
+          <option value="5">Very Low</option>
+        </select>
+      </div>
     </div>
   </div>
 

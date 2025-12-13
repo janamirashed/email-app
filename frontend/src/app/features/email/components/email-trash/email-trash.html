@@ -44,21 +44,24 @@
             <div class="h-6 w-px bg-gray-200"></div>
 
             <!-- Restore Button -->
-            <button title="Restore to original folder" (click)="restoreSelected()" [disabled]="selectedEmails.size === 0"
-                    class="flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 rounded-lg transition border border-green-200 hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+            <button title="Restore to original folder" (click)="restoreSelected()"
+              [disabled]="selectedEmails.size === 0"
+              class="flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 rounded-lg transition border border-green-200 hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                  d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
               </svg>
               Restore
             </button>
 
             <!-- Permanent Delete Button -->
-            <button title="Delete forever - cannot be undone" (click)="permanentlyDeleteSelected()" [disabled]="selectedEmails.size === 0"
-                    class="flex items-center gap-2 px-2 py-2   bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 rounded-lg transition border border-red-200 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+            <button title="Delete forever - cannot be undone" (click)="permanentlyDeleteSelected()"
+              [disabled]="selectedEmails.size === 0"
+              class="flex items-center gap-2 px-2 py-2   bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 rounded-lg transition border border-red-200 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                </path>
               </svg>
               Delete
             </button>
@@ -68,10 +71,11 @@
 
           <!-- Empty Trash Button -->
           <button title="Empty entire trash" (click)="emptyTrash()" [disabled]="emails.length === 0"
-                  class="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 rounded-lg transition border border-red-200 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm ml-auto">
+            class="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 rounded-lg transition border border-red-200 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm ml-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+              </path>
             </svg>
             Empty Trash
           </button>
@@ -136,7 +140,7 @@
           <!-- Email Content -->
           <div class="flex-1 min-w-0">
             <div class="flex justify-between items-center">
-              <span class="text-sm font-medium text-gray-900 truncate mr-2">{{ getSenderName(email) }}</span>
+              <span class="text-sm font-medium text-gray-900 truncate mr-2">{{ getParticipant(email) }}</span>
               <span class="text-xs text-gray-500 flex-shrink-0">{{ formatDate(email.timestamp) }}</span>
             </div>
             <div class="text-sm truncate text-gray-600 mt-0.5">

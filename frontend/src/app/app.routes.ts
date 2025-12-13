@@ -76,6 +76,12 @@ export const routes: Routes = [
         component: FilterViewComponent,
         canActivate: [AuthGuard]
       },
+
+      {
+        path: 'search',
+        loadComponent: () => import('./features/email/components/email-search/email-search').then(m => m.EmailSearch),
+        canActivate: [AuthGuard]
+      },
     ]
   }
 ];

@@ -9,7 +9,7 @@ import { Email } from '../models/email.model';
 export class EmailService {
   private baseUrl = 'http://localhost:8080/api/email';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Get authorization headers
   private getHeaders(): HttpHeaders {
@@ -172,6 +172,19 @@ export class EmailService {
   bulkRestoreFromTrash(messageIds: string[]): Observable<any> {
     return this.http.post(`${this.baseUrl}/bulk-restore`, messageIds, {
       headers: this.getHeaders()
+    });
+  }
+
+  // GET /api/email/search?keyword=test&searchIn=all
+  searchEmails(keyword: string, searchBy: string = 'all', sortBy: string = 'date'): Observable<any> {
+    const params = new HttpParams()
+      .set('keyword', keyword)
+      .set('searchBy', searchBy)
+      .set('sortBy', sortBy);
+
+    return this.http.get(`${this.baseUrl}/search`, {
+      headers: this.getHeaders(),
+      params: params
     });
   }
 }
