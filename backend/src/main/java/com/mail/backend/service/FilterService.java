@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import static com.mail.backend.service.PlainTextExtractor.extractPlainText;
 
 @Service
 @Slf4j
@@ -88,7 +89,7 @@ public class FilterService {
                     PROPERTY_EXTRACTORS.get(filter.getProperty().toLowerCase());
             if (extractor == null) continue;
             FilterFactory factory = new FilterFactory(filter.getMatcher());
-            String emailValue = extractor.apply(email);
+            String emailValue = extractPlainText(extractor.apply(email));
 
             if (factory.filter(emailValue, filter.getValue())) {
                 Action action = ACTIONS.get(filter.getAction().toLowerCase());

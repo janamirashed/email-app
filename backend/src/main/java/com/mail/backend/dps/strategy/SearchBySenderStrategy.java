@@ -10,7 +10,7 @@ public class SearchBySenderStrategy implements SearchStrategy {
         String lowerKeyword = keyword.toLowerCase();
         return emails.stream()
                 .filter(email -> email.getFrom() != null &&
-                        email.getFrom().toLowerCase().contains(lowerKeyword))
+                        email.getFrom().replace("@jaryn.com","").toLowerCase().contains(lowerKeyword))
                 .collect(Collectors.toList());
     }
 }

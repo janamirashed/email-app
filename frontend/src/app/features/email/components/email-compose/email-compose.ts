@@ -9,11 +9,12 @@ import { ContactService } from '../../../../core/services/contact.service';
 import { Subscription, lastValueFrom, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Attachment } from '../../../../core/models/attachment.model';
+import { Editor, Toolbar, NgxEditorModule } from 'ngx-editor';
 
 @Component({
   selector: 'app-email-compose',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgxEditorModule],
   templateUrl: './email-compose.html',
   styleUrl: './email-compose.css'
 })
@@ -23,6 +24,18 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   subject: string = '';
   body: string = '';
   priority: number = 3;
+
+  // Editor
+  editor!: Editor;
+  toolbar: Toolbar = [
+    ['bold', 'italic'],
+    ['underline', 'strike'],
+    ['blockquote'],
+    [{ heading: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] }],
+    ['link'],
+    ['text_color', 'background_color'],
+    ['align_left', 'align_center', 'align_right', 'align_justify'],
+  ];
 
   // Attachments
   attachments: Attachment[] = [];
@@ -54,6 +67,8 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.editor = new Editor();
+
     this.composeSubscription = this.composeService.isComposing$.subscribe(
       (isVisible) => {
         this.isComposing = isVisible;
@@ -318,6 +333,9 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.editor) {
+      this.editor.destroy();
+    }
     if (this.composeSubscription) {
       this.composeSubscription.unsubscribe();
     }

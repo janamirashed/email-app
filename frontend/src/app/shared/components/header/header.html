@@ -44,11 +44,10 @@
         <!-- Dropdown for Importance Search -->
         <select *ngIf="searchBy === 'importance'" [(ngModel)]="importanceLevel" (change)="onSearch()"
           class="w-full bg-transparent border-none p-0 text-gray-900 focus:ring-0 focus:outline-none outline-none text-sm h-11 cursor-pointer">
-          <option value="1">High (Extreme)</option>
-          <option value="2">Medium (High)</option>
+          <option value="1">Extreme</option>
+          <option value="2">High</option>
           <option value="3">Normal</option>
           <option value="4">Low</option>
-          <option value="5">Very Low</option>
         </select>
       </div>
     </div>

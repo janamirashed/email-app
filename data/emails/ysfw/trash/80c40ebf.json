@@ -1,0 +1,16 @@
+{
+  "messageId" : "80c40ebf",
+  "from" : "ysfw@jaryn.com",
+  "to" : [ "ysfw@jaryn.com" ],
+  "subject" : "hey",
+  "body" : "<p>I update the unread count</p>",
+  "timestamp" : [ 2025, 12, 14, 15, 51, 23, 269620000 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "originalFolder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : [ 2025, 12, 14, 15, 51, 52, 806516700 ],
+  "starred" : false,
+  "draft" : false,
+  "read" : true
+}

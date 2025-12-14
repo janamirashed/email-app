@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
+import { EmailService } from '../../../core/services/email.service';
 import { FolderService } from '../../../core/services/folder.service';
 import { FormsModule } from '@angular/forms';
 
@@ -20,7 +21,7 @@ interface Folder {
 export class SidebarComponent implements OnInit {
 
   systemFolders = [
-    { name: 'Inbox', icon: 'inbox', count: 12, path: 'inbox' },
+    { name: 'Inbox', icon: 'inbox', count: 0, path: 'inbox' },
     { name: 'Starred', icon: 'star', count: 3, path: 'starred' },
     { name: 'Sent', icon: 'send', count: null, path: 'sent' },
     { name: 'Drafts', icon: 'drafts', count: 2, path: 'drafts' },
@@ -44,12 +45,26 @@ export class SidebarComponent implements OnInit {
   constructor(
     private router: Router,
     private composeService: EmailComposeService,
+    private emailService: EmailService,
     private folderService: FolderService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.loadCustomFolders();
+
+    // Initial fetch
+    this.emailService.refreshUnreadCount();
+
+    // Subscribe to unread count updates
+    this.emailService.unreadCount$.subscribe(count => {
+      console.log('Sidebar received unread count update:', count);
+      const inbox = this.systemFolders.find(f => f.path === 'inbox');
+      if (inbox) {
+        inbox.count = count;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   loadCustomFolders() {

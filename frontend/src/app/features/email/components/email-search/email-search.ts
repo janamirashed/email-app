@@ -48,8 +48,6 @@ export class EmailSearch implements OnInit {
     });
   }
 
-  // ... (existing code)
-
   // Get sender display name
   getParticipant(email: any): string {
     // Check if I am the sender
@@ -78,7 +76,17 @@ export class EmailSearch implements OnInit {
     this.emailService.searchEmails(this.keyword, this.searchBy, this.sortBy).subscribe({
       next: (response) => {
         // The backend returns a map with "results" key containing the list
-        this.emails = response.results || [];
+        const rawResults = response.results || [];
+
+        // Deduplicate based on messageId
+        const uniqueEmails = new Map();
+        rawResults.forEach((email: any) => {
+          if (email.messageId && !uniqueEmails.has(email.messageId)) {
+            uniqueEmails.set(email.messageId, email);
+          }
+        });
+
+        this.emails = Array.from(uniqueEmails.values());
 
         this.emails.forEach((email: any) => {
           email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
@@ -158,8 +166,6 @@ export class EmailSearch implements OnInit {
       return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: 'numeric' });
     }
   }
-
-
 
   // Check if email has attachments
   hasAttachments(email: any): boolean {

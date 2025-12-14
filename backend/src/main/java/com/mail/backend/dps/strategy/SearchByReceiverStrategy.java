@@ -11,7 +11,7 @@ public class SearchByReceiverStrategy implements SearchStrategy {
         return emails.stream()
                 .filter(email -> email.getTo() != null &&
                         email.getTo().stream()
-                                .anyMatch(receiver -> receiver.toLowerCase().contains(lowerKeyword)))
+                                .anyMatch(receiver -> receiver.toLowerCase().replace("@jaryn.com","").contains(lowerKeyword)))
                 .collect(Collectors.toList());
     }
 }

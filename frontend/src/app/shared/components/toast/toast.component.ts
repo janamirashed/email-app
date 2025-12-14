@@ -1,13 +1,13 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService, Toast } from '../../../core/services/notification.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-toast',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-toast',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div *ngIf="currentToast" 
          [ngClass]="getToastClass()"
          class="fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out max-w-md">
@@ -33,41 +33,42 @@ import { Subscription } from 'rxjs';
       </div>
     </div>
   `,
-    styles: []
+  styles: []
 })
 export class ToastComponent implements OnInit, OnDestroy {
-    currentToast: Toast | null = null;
-    private subscription!: Subscription;
+  currentToast: Toast | null = null;
+  private subscription!: Subscription;
 
-    constructor(private notificationService: NotificationService) { }
+  constructor(private notificationService: NotificationService, private cdr: ChangeDetectorRef) { }
 
-    ngOnInit() {
-        this.subscription = this.notificationService.toast$.subscribe(toast => {
-            this.currentToast = toast;
-        });
+  ngOnInit() {
+    this.subscription = this.notificationService.toast$.subscribe(toast => {
+      this.currentToast = toast;
+      this.cdr.detectChanges();
+    });
+  }
+
+  getToastClass(): string {
+    if (!this.currentToast) return '';
+
+    const baseClass = 'text-white';
+    const typeClasses = {
+      'success': 'bg-green-500',
+      'error': 'bg-red-500',
+      'info': 'bg-blue-500',
+      'warning': 'bg-yellow-500'
+    };
+
+    return `${baseClass} ${typeClasses[this.currentToast.type]}`;
+  }
+
+  close() {
+    this.notificationService.hide();
+  }
+
+  ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
     }
-
-    getToastClass(): string {
-        if (!this.currentToast) return '';
-
-        const baseClass = 'text-white';
-        const typeClasses = {
-            'success': 'bg-green-500',
-            'error': 'bg-red-500',
-            'info': 'bg-blue-500',
-            'warning': 'bg-yellow-500'
-        };
-
-        return `${baseClass} ${typeClasses[this.currentToast.type]}`;
-    }
-
-    close() {
-        this.notificationService.hide();
-    }
-
-    ngOnDestroy() {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-        }
-    }
+  }
 }
