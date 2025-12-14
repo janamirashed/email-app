@@ -76,6 +76,15 @@ export class EmailListComponent implements OnInit, OnDestroy {
       })
 
     });
+
+    // Subscribe to read events
+    this.readSubscription = this.emailService.messageRead$.subscribe(messageId => {
+      const email = this.emails.find(e => e.messageId === messageId);
+      if (email && !email.isRead) {
+        email.isRead = true;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // Drag and drop handlers
@@ -108,15 +117,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
     this.draggedEmailId = null;
   }
 
-    // Subscribe to read events
-    this.readSubscription = this.emailService.messageRead$.subscribe(messageId => {
-      const email = this.emails.find(e => e.messageId === messageId);
-      if (email && !email.isRead) {
-        email.isRead = true;
-        this.cdr.detectChanges();
-      }
-    });
-  }
   // Get sender display name
   getParticipant(email: any): string {
     if (this.currentFolder === 'sent' || this.currentFolder === 'drafts') {

@@ -4,7 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
 import { EmailService } from '../../../core/services/email.service';
 import { FolderService } from '../../../core/services/folder.service';
-import { EmailService } from '../../../core/services/email.service';
 import { FormsModule } from '@angular/forms';
 
 interface Folder {
@@ -51,7 +50,6 @@ export class SidebarComponent implements OnInit {
     private composeService: EmailComposeService,
     private emailService: EmailService,
     private folderService: FolderService,
-    private emailService: EmailService,
     private cdr: ChangeDetectorRef
   ) { }
 
