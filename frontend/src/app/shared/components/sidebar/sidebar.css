@@ -34,3 +34,29 @@
 .rotate-90 {
     transform: rotate(90deg);
 }
+
+[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+}
+
+[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Dragging email state */
+.opacity-50 {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.scale-95 {
+  transform: scale(0.95);
+}
+
+/* Folder drag-over effect - Gmail style */
+.drag-over-folder {
+  background-color: #dbeafe;
+  border-left: 4px solid #2563eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

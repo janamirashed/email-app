@@ -48,7 +48,11 @@ public class EmailService {
                 .build();
 
         // Save to sender's sent folder
-        emailRepository.saveEmail(username, email);
+        try{
+            emailRepository.saveEmail(username, filterService.applyFilters(username, email));
+        } catch (Exception e){
+            System.err.println(e.getMessage());
+        }
         log.info("Email {} sent by {} to {}", messageId, username, email.getTo());
 
         // Loop through all recipients

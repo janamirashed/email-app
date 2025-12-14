@@ -54,6 +54,9 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options": {
+            "allowedHosts": ["61caa2646139.ngrok-free.app"]
+          },
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {

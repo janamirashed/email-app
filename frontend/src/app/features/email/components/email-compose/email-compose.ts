@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef, Signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
-import { AttachmentService } from '../../../../core/services/attachment.service';
+import {AttachmentService, UploadProgress} from '../../../../core/services/attachment.service';
 import { EmailService } from '../../../../core/services/email.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ContactService } from '../../../../core/services/contact.service';
@@ -41,9 +41,13 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   attachments: Attachment[] = [];
   selectedFiles: File[] = [];
 
+  isUploading : Signal<boolean>;
+  uploadProgress : Signal<UploadProgress>;
+
   // UI State
   isComposing: boolean = false;
   isLoading: boolean = false;
+  isSending : boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
 
@@ -64,7 +68,12 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private notificationService: NotificationService,
     private contactService: ContactService
-  ) { }
+  ) {
+
+    this.isUploading = this.attachmentService.isUploading;
+    this.uploadProgress = this.attachmentService.uploadProgress;
+    // to bind and use for the loading bar
+  }
 
   ngOnInit() {
     this.editor = new Editor();
@@ -134,23 +143,38 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     this.selectedFiles.splice(index, 1);
   }
 
-  async sendMail() {
+  async sendMail(transactional : boolean) {
+
+    this.isSending = true;
+    console.log("isSending : " + this.isSending);
     let attachment_ids: string[] = [];
-    if (this.selectedFiles.length > 0) {
+    if (this.selectedFiles.length > 0 && !transactional) {
+
       attachment_ids = await lastValueFrom(
         this.attachmentService.getAttachmentIds(this.selectedFiles.length)
       );
     }
 
-    console.log(attachment_ids.length);
-    if (this.selectedFiles.length > 0)
-      this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles);
+    if (this.selectedFiles.length > 0){
+      if(transactional){
+        attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles));
+        console.log(attachment_ids.length);
+        console.log(attachment_ids.at(0));
+      }
+      else{
+        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles).subscribe({
+          next : () => {
+            console.log("non-transactional uploads complete");
+          }
+        });
+        //no need to await if it's not transactional
+      }
+    }
 
-    console.log(attachment_ids.length);
     let attachments: any[] = [];
     attachment_ids.forEach((val, idx) => {
       let entry = {
-        id: attachment_ids.at(idx),
+        id: val,
         mimeType: this.selectedFiles.at(idx)?.type,
         fileName: this.selectedFiles.at(idx)?.name
       };
@@ -166,13 +190,21 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       attachments: attachments
     };
 
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    if (!transactional)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+    this.sendMailHelper(email);
+  }
+
+  sendMailHelper(email : any){
     this.emailService.sendEmail(email).subscribe({
       next: (response) => {
         console.log("Email sent successfully:", response);
         this.isLoading = false;
         this.closeCompose();
         this.notificationService.showSuccess('Email sent successfully!');
+        this.isSending = false;
+        console.log("isSending : " + this.isSending);
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -223,6 +255,9 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     });
   }
 
+  editingIsDisabled(){
+    return this.isSending || this.isLoading;
+  }
   // Parse recipients from comma-separated string to array
   private parseRecipients(recipientsStr: string): string[] {
     return recipientsStr

@@ -12,7 +12,6 @@ import com.mail.backend.repository.EmailRepository;
 import java.io.IOException;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200/")
 @RequestMapping("/account")
 public class AccountController {
     @Autowired

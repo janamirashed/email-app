@@ -16,7 +16,8 @@ export class FilterService {
         const token = localStorage.getItem('authToken');
         return new HttpHeaders({
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true'
         });
     }
 

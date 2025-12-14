@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
 import { EmailService } from '../../../core/services/email.service';
 import { FolderService } from '../../../core/services/folder.service';
+import { EmailService } from '../../../core/services/email.service';
 import { FormsModule } from '@angular/forms';
 
 interface Folder {
@@ -42,11 +43,15 @@ export class SidebarComponent implements OnInit {
   renameFolderName = '';
   renamingFolder = '';
 
+  // Drag and drop
+  dragOverFolder: string | null = null;
+
   constructor(
     private router: Router,
     private composeService: EmailComposeService,
     private emailService: EmailService,
     private folderService: FolderService,
+    private emailService: EmailService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -85,6 +90,46 @@ export class SidebarComponent implements OnInit {
       error: (error) => {
         console.error('Sidebar - Failed to load folders:', error);
         // Silently fail, folders section will just be empty
+      }
+    });
+  }
+
+  // Drag and drop handlers
+  onFolderDragOver(event: DragEvent, folderName: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+      this.dragOverFolder = folderName;
+    }
+  }
+
+  onFolderDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.dragOverFolder = null;
+  }
+
+  onFolderDrop(event: DragEvent, folderName: string) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const emailIdsJson = event.dataTransfer?.getData('emailIds');
+    if (emailIdsJson) {
+      const emailIds = JSON.parse(emailIdsJson);
+      this.moveEmailsToFolder(emailIds, folderName);
+    }
+    this.dragOverFolder = null;
+  }
+
+  moveEmailsToFolder(emailIds: string[], folderName: string) {
+    this.emailService.bulkMove(emailIds, folderName).subscribe({
+      next: () => {
+        console.log(`${emailIds.length} emails moved to ${folderName}`);
+        alert(`${emailIds.length} email(s) moved to ${folderName}`);
+      },
+      error: (error) => {
+        console.error('Failed to move emails:', error);
+        alert('Failed to move emails to folder');
       }
     });
   }
