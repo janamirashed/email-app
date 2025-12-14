@@ -1,16 +1,16 @@
 {
-  "messageId" : "2e4a360e",
+  "messageId" : "719c2713",
   "from" : "ysfw@jaryn.com",
-  "to" : [ "asdsad@jaryn.com" ],
-  "subject" : "hh",
-  "body" : "hh",
-  "timestamp" : [ 2025, 12, 11, 20, 0, 8, 77150700 ],
+  "to" : [ "c" ],
+  "subject" : "c",
+  "body" : "<p>c</p>",
+  "timestamp" : [ 2025, 12, 14, 12, 39, 52, 60723300 ],
   "priority" : 3,
   "folder" : "inbox",
   "originalFolder" : null,
   "attachments" : [ ],
   "deletedAt" : null,
-  "read" : true,
+  "read" : false,
   "starred" : false,
   "draft" : false
 }

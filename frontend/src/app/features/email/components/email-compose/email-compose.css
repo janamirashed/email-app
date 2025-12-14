@@ -1,1 +1,8 @@
 /* Email Compose - Minimal styles */
+:host ::ng-deep .NgxEditor__Content {
+    min-height: 300px;
+    max-height: 500px;
+    overflow-y: auto;
+    height: 300px;
+    /* Fallback/Default */
+}

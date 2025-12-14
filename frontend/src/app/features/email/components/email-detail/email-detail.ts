@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { FolderService } from '../../../../core/services/folder.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-email-detail',
@@ -34,7 +35,9 @@ export class EmailDetailComponent implements OnInit {
     private composeService: EmailComposeService,
     private folderService: FolderService,
     private http: HttpClient,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private sanitizer: DomSanitizer,
+    private location: Location
   ) { }
 
   ngOnInit() {
@@ -115,7 +118,7 @@ export class EmailDetailComponent implements OnInit {
         next: () => {
           console.log('Email deleted');
           // Navigate back or close detail view
-          window.history.back();
+          this.location.back();
           this.cdr.detectChanges()
         },
         error: (error) => {
@@ -191,13 +194,12 @@ export class EmailDetailComponent implements OnInit {
     this.emailService.moveEmail(this.messageId, folderName).subscribe({
       next: () => {
         console.log('Email moved to', folderName);
+
         this.showMoveDialog = false;
-        // Show toast notification
+        this.location.back();
         this.notificationService.showSuccess(`Email moved to ${folderName}`);
-        // Navigate back after notification appears
-        setTimeout(() => {
-          window.history.back();
-        }, 800);
+        this.cdr.detectChanges();
+
       },
       error: (error) => {
         console.error('Failed to move email:', error);
@@ -277,5 +279,9 @@ export class EmailDetailComponent implements OnInit {
         alert(errorMsg + '\n\nCheck browser console for details.');
       }
     });
+  }
+
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }

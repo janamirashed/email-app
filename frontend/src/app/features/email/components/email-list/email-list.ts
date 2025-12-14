@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EventService } from '../../../../core/services/event-service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-email-list',
@@ -12,7 +13,7 @@ import { EmailDetailComponent } from '../email-detail/email-detail';
   templateUrl: './email-list.html',
   styleUrl: './email-list.css'
 })
-export class EmailListComponent implements OnInit {
+export class EmailListComponent implements OnInit, OnDestroy {
   emails: any[] = [];
   selectedEmailId: string | null = null;
   currentFolder: string = 'inbox';
@@ -43,6 +44,7 @@ export class EmailListComponent implements OnInit {
   ) { }
 
   currentUserEmail: string = '';
+  private readSubscription?: Subscription;
 
   ngOnInit() {
     const currentUser = localStorage.getItem('currentUser') || '';
@@ -68,6 +70,7 @@ export class EmailListComponent implements OnInit {
         // Only refresh if we're currently viewing the inbox
         if (this.currentFolder === 'inbox') {
           this.loadEmails();
+          this.emailService.refreshUnreadCount();
           this.cdr.detectChanges();
         }
       })
@@ -105,6 +108,15 @@ export class EmailListComponent implements OnInit {
     this.draggedEmailId = null;
   }
 
+    // Subscribe to read events
+    this.readSubscription = this.emailService.messageRead$.subscribe(messageId => {
+      const email = this.emails.find(e => e.messageId === messageId);
+      if (email && !email.isRead) {
+        email.isRead = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
   // Get sender display name
   getParticipant(email: any): string {
     if (this.currentFolder === 'sent' || this.currentFolder === 'drafts') {
@@ -447,12 +459,11 @@ export class EmailListComponent implements OnInit {
 
   // Get priority color class based on priority level
   getPriorityColor(priority: number): string {
-    // Priority: 1 = High, 2 = Medium-High, 3 = Normal, 4 = Low, 5 = Very Low
-    if (priority === 1) return 'text-red-500';     // High - Red
-    if (priority === 2) return 'text-orange-500';  // Medium - Orange
+    // Priority
+    if (priority === 1) return 'text-red-500';     // Extreme - Red
+    if (priority === 2) return 'text-orange-500';  // High - Orange
     if (priority === 3) return 'text-gray-400';    // Normal - Gray
     if (priority === 4) return 'text-blue-400';    // Low - Blue
-    if (priority === 5) return 'text-gray-300';    // Very Low - Light Gray
     return 'text-gray-400'; // Default
   }
 
@@ -463,5 +474,11 @@ export class EmailListComponent implements OnInit {
     if (priority === 3) return 'normal';
     if (priority >= 4) return 'low';
     return 'normal';
+  }
+
+  ngOnDestroy() {
+    if (this.readSubscription) {
+      this.readSubscription.unsubscribe();
+    }
   }
 }

@@ -58,9 +58,7 @@
 
     <!-- Body -->
     <div class="flex-1 overflow-y-auto px-6 py-6">
-      <div class="prose prose-sm max-w-none whitespace-pre-wrap">
-        {{ email.body }}
-      </div>
+      <div class="prose prose-sm max-w-none" [innerHTML]="getSafeHtml(email.body)"></div>
     </div>
 
     <!-- Attachments -->

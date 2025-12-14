@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, Subject, tap } from 'rxjs';
 import { Email } from '../models/email.model';
 
 @Injectable({
@@ -8,6 +8,11 @@ import { Email } from '../models/email.model';
 })
 export class EmailService {
   private baseUrl = 'http://localhost:8080/api/email';
+  private unreadCountSubject = new BehaviorSubject<number>(0);
+  public unreadCount$ = this.unreadCountSubject.asObservable();
+
+  private messageReadSubject = new Subject<string>();
+  public messageRead$ = this.messageReadSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -72,7 +77,14 @@ export class EmailService {
   getEmail(messageId: string): Observable<Email> {
     return this.http.get<Email>(`${this.baseUrl}/${messageId}`, {
       headers: this.getHeaders()
-    });
+    }).pipe(
+      tap(() => {
+        console.log('Email fetched, triggering unread count refresh and read event');
+        // Since backend marks as read on fetch, we should update the count
+        this.refreshUnreadCount();
+        this.messageReadSubject.next(messageId);
+      })
+    );
   }
 
   // GET /api/email/starred?sortBy=date
@@ -92,6 +104,19 @@ export class EmailService {
   getUnreadCount(): Observable<any> {
     return this.http.get(`${this.baseUrl}/unread-count`, {
       headers: this.getHeaders()
+    });
+  }
+
+  refreshUnreadCount() {
+    console.log('Refreshing unread count...');
+    this.getUnreadCount().subscribe({
+      next: (response: any) => {
+        // Backend returns { success: true, unreadCount: number }
+        const count = typeof response === 'number' ? response : (response.unreadCount || 0);
+        console.log('Unread count refreshed:', count);
+        this.unreadCountSubject.next(count);
+      },
+      error: (err) => console.error('Failed to refresh unread count', err)
     });
   }
 

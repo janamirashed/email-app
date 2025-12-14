@@ -34,10 +34,6 @@ export class EmailTrashComponent implements OnInit {
     this.currentUserEmail = `${currentUser}@jaryn.com`;
     this.loadTrashEmails();
   }
-
-  // ... (existing code)
-
-  // Get sender display name
   getParticipant(email: any): string {
     // Check if I am the sender
     const sender = email.from ? email.from.toLowerCase().trim() : '';
@@ -89,6 +85,20 @@ export class EmailTrashComponent implements OnInit {
     });
   }
 
+  clearEmailSelection(messageIds: string[]) {
+    if(messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString()))
+    {
+    this.router.navigate(
+      [],
+      {
+        relativeTo: this.route,
+        queryParams: {},
+        queryParamsHandling: ''
+      }
+    );
+    }
+  }
+
   // Toggle email selection (checkbox)
   toggleEmailSelection(emailId: string, event: Event) {
     event.stopPropagation();
@@ -130,7 +140,7 @@ export class EmailTrashComponent implements OnInit {
         console.log('Emails restored to their original folders');
         this.selectedEmails.clear();
         this.loadTrashEmails();
-
+        this.clearEmailSelection(messageIds);
         setTimeout(() => {
           this.successMessage = '';
         }, 3000);
@@ -153,20 +163,15 @@ export class EmailTrashComponent implements OnInit {
       const messageIds = Array.from(this.selectedEmails);
       this.isLoading = true;
 
-      this.emailService.permanentlyDeleteEmails(messageIds).subscribe({  // Changed this line
+      this.emailService.permanentlyDeleteEmails(messageIds).subscribe({
         next: () => {
           this.successMessage = `Permanently deleted ${messageIds.length} email(s)`;
           console.log('Emails permanently deleted');
-          this.selectedEmails.clear();
           this.isLoading = false;
-
-          setTimeout(() => {
-            this.loadTrashEmails();
-          }, 500);
-
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
+          this.cdr.detectChanges();
+          this.selectedEmails.clear();
+          this.clearEmailSelection(messageIds);
+          this.loadTrashEmails();
         },
         error: (error) => {
           console.error('Failed to delete emails:', error);
@@ -188,20 +193,16 @@ export class EmailTrashComponent implements OnInit {
       const allMessageIds = this.emails.map(e => e.messageId);
       this.isLoading = true;
 
-      this.emailService.permanentlyDeleteEmails(allMessageIds).subscribe({  // Changed this line
+      this.emailService.permanentlyDeleteEmails(allMessageIds).subscribe({
         next: () => {
           this.successMessage = 'Trash emptied successfully';
           console.log('Trash emptied');
           this.selectedEmails.clear();
           this.isLoading = false;
-
-          setTimeout(() => {
+            this.cdr.detectChanges();
             this.loadTrashEmails();
-          }, 500);
-
-          setTimeout(() => {
+            this.clearEmailSelection(allMessageIds);
             this.successMessage = '';
-          }, 3000);
         },
         error: (error) => {
           console.error('Failed to empty trash:', error);

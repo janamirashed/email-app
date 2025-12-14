@@ -461,6 +461,7 @@ public class EmailService {
     public int getUnreadCount(String username) throws IOException {
         List<Email> allEmails = emailRepository.getAllEmails(username);
         return (int) allEmails.stream()
+                .filter(email -> email.getTo().contains(username+"@jaryn.com"))
                 .filter(email -> !email.isRead())
                 .count();
     }
