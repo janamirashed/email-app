@@ -28,6 +28,11 @@ export class EmailListComponent implements OnInit {
   selectedEmails: Set<string> = new Set();
   Math = Math;
 
+  // Drag and drop
+  draggedEmailId: string | null = null;
+  dragX: number = 0;
+  dragY: number = 0;
+
   constructor(
     private emailService: EmailService,
     private eventService: EventService,
@@ -70,7 +75,35 @@ export class EmailListComponent implements OnInit {
     });
   }
 
-  // ... (existing code)
+  // Drag and drop handlers
+  onEmailDragStart(event: DragEvent, emailId: string) {
+    // If clicking email is not in selected, select only this one
+    if (!this.selectedEmails.has(emailId)) {
+      this.selectedEmails.clear();
+      this.selectedEmails.add(emailId);
+    }
+
+    this.draggedEmailId = emailId;
+
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('emailIds', JSON.stringify(Array.from(this.selectedEmails)));
+
+      // Hide the drag image
+      const emptyImage = new Image();
+      event.dataTransfer.setDragImage(emptyImage, 0, 0);
+    }
+  }
+
+  onEmailDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.dragX = event.clientX;
+    this.dragY = event.clientY;
+  }
+
+  onEmailDragEnd(event: DragEvent) {
+    this.draggedEmailId = null;
+  }
 
   // Get sender display name
   getParticipant(email: any): string {
@@ -406,8 +439,6 @@ export class EmailListComponent implements OnInit {
       return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: 'numeric' });
     }
   }
-
-
 
   // Check if email has attachments
   hasAttachments(email: any): boolean {
