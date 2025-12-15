@@ -11,7 +11,7 @@ import { EmailComposeService } from '../../../../core/services/email-compose.ser
   imports: [CommonModule, FormsModule],
   templateUrl: './contact-list.html',
 })
-export class ContactListComponent implements OnInit {
+export class ContactList implements OnInit {
   searchTerm: string = '';
   sortBy: 'name' | 'email' | 'date' = 'name';
   showAddDialog = false;

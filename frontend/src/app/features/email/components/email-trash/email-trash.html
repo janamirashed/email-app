@@ -7,7 +7,8 @@
     </div>
 
     <!-- Success Message -->
-    <div *ngIf="successMessage" class="px-4 py-3 bg-green-50 border-b border-green-200">
+    @if(successMessage){
+    <div class="px-4 py-3 bg-green-50 border-b border-green-200">
       <div class="text-sm text-green-700 flex items-start">
         <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd"
@@ -17,9 +18,11 @@
         {{ successMessage }}
       </div>
     </div>
+    }
 
     <!-- Error Message -->
-    <div *ngIf="errorMessage" class="px-4 py-3 bg-red-50 border-b border-red-200">
+    @if (errorMessage){
+    <div class="px-4 py-3 bg-red-50 border-b border-red-200">
       <div class="text-sm text-red-700 flex items-start">
         <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd"
@@ -29,6 +32,7 @@
         {{ errorMessage }}
       </div>
     </div>
+    }
 
     <!-- Toolbar -->
     <div class="px-4 py-3 border-b border-gray-200 bg-white">
@@ -39,7 +43,8 @@
             class="rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
 
           <!-- Action Buttons -->
-          <div *ngIf="selectedEmails.size > 0" class="flex items-center space-x-2 text-gray-400">
+          @if (selectedEmails.size > 0){
+          <div class="flex items-center space-x-2 text-gray-400">
             <span class="text-xs text-gray-600">{{ selectedEmails.size }} selected</span>
             <div class="h-6 w-px bg-gray-200"></div>
 
@@ -68,6 +73,7 @@
 
             <div class="h-6 w-px bg-gray-200"></div>
           </div>
+          }
 
           <!-- Empty Trash Button -->
           <button title="Empty entire trash" (click)="emptyTrash()" [disabled]="emails.length === 0"
@@ -91,7 +97,8 @@
     <!-- Email List -->
     <div class="flex-1 overflow-y-auto">
       <!-- Loading State -->
-      <div *ngIf="isLoading" class="flex items-center justify-center h-full">
+      @if (isLoading){
+      <div class="flex items-center justify-center h-full">
         <div class="text-center">
           <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -102,9 +109,11 @@
           <p class="text-gray-500">Loading trash...</p>
         </div>
       </div>
+      }
 
       <!-- Error State -->
-      <div *ngIf="errorMessage && !isLoading" class="flex items-center justify-center h-full">
+      @if(errorMessage && !isLoading){
+      <div class="flex items-center justify-center h-full">
         <div class="text-center">
           <svg class="h-12 w-12 text-red-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -113,9 +122,11 @@
           <p class="text-red-500 font-semibold">{{ errorMessage }}</p>
         </div>
       </div>
+      }
 
       <!-- Empty State -->
-      <div *ngIf="!isLoading && emails.length === 0 && !errorMessage" class="flex items-center justify-center h-full">
+      @if (!isLoading && emails.length === 0 && !errorMessage){
+      <div class="flex items-center justify-center h-full">
         <div class="text-center">
           <svg class="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -125,9 +136,12 @@
           <p class="text-gray-500 text-lg">Trash is empty</p>
         </div>
       </div>
+      }
+
 
       <!-- Email Items -->
-      <ng-container *ngFor="let email of emails">
+      @for (email of emails;track $index){
+      <ng-container>
         <div (click)="selectEmail(email)" [ngClass]="{
           'bg-blue-50 border-l-4 border-blue-600': email.messageId === selectedEmailId,
           'bg-white hover:bg-gray-50 border-l-4 border-transparent': email.messageId !== selectedEmailId
@@ -149,6 +163,7 @@
           </div>
         </div>
       </ng-container>
+      }
     </div>
   </div>
 

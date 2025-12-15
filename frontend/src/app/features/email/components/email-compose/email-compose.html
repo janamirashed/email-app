@@ -11,12 +11,16 @@
   </div>
 
   <!-- Error/Success Messages -->
-  <div *ngIf="errorMessage" class="px-4 py-2 bg-red-50 border-b border-red-200 text-sm text-red-700">
+  @if (errorMessage) {
+  <div class="px-4 py-2 bg-red-50 border-b border-red-200 text-sm text-red-700">
     {{ errorMessage }}
   </div>
-  <div *ngIf="successMessage" class="px-4 py-2 bg-green-50 border-b border-green-200 text-sm text-green-700">
+  }
+  @if (successMessage) {
+  <div class="px-4 py-2 bg-green-50 border-b border-green-200 text-sm text-green-700">
     {{ successMessage }}
   </div>
+  }
 
   <!-- Form -->
   <div class="p-4 space-y-3 max-h-96 overflow-y-auto">
@@ -28,15 +32,19 @@
         class="input text-sm">
 
       <!-- Contact Autocomplete Dropdown -->
-      <div *ngIf="showContactDropdown && filteredContacts.length > 0"
+      @if (showContactDropdown && filteredContacts.length > 0) {
+      <div
         class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-        <div *ngFor="let contact of filteredContacts; let i = index" (mousedown)="selectContact(contact)"
+        @for (contact of filteredContacts; track contact.email; let i = $index) {
+        <div (mousedown)="selectContact(contact)"
           [ngClass]="{'bg-blue-50': i === selectedContactIndex, 'hover:bg-gray-50': i !== selectedContactIndex}"
           class="px-3 py-2 cursor-pointer transition">
           <div class="font-medium text-sm text-gray-900">{{ contact.name }}</div>
           <div class="text-xs text-gray-600">{{ contact.email }}</div>
         </div>
+        }
       </div>
+      }
     </div>
 
     <!-- Subject -->
@@ -65,29 +73,33 @@
     </div>
 
     <!-- Attachments -->
-    <div *ngIf="attachments.length > 0" class="flex flex-wrap gap-2 pt-2">
-      <ng-container *ngFor="let attachment of attachments; let i = index">
-        <div class="flex items-center gap-2 text-xs py-1 px-2 bg-gray-100 rounded">
-          <svg class="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5" />
-          </svg>
-          <span class="truncate max-w-xs">{{ attachment.fileName }}</span>
-          <button (click)="removeAttachment(i)" [disabled]="editingIsDisabled()"
-            class="text-gray-600 hover:text-red-600">
-            ✕
-          </button>
-        </div>
-      </ng-container>
+    @if (attachments.length > 0) {
+    <div class="flex flex-wrap gap-2 pt-2">
+      @for (attachment of attachments; track attachment.fileName; let i = $index) {
+      <div class="flex items-center gap-2 text-xs py-1 px-2 bg-gray-100 rounded">
+        <svg class="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5" />
+        </svg>
+        <span class="truncate max-w-xs">{{ attachment.fileName }}</span>
+        <button (click)="removeAttachment(i)" [disabled]="editingIsDisabled()" class="text-gray-600 hover:text-red-600">
+          ✕
+        </button>
+      </div>
+      }
     </div>
+    }
   </div>
 
   <!-- Footer -->
   <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200">
     <div class="flex items-center gap-2">
       <button (click)="sendMail(true)" [disabled]="editingIsDisabled()" class="btn-primary text-sm">
-        <span *ngIf="!isLoading">Send</span>
-        <span *ngIf="isLoading">Sending...</span>
+        @if (!isLoading) {
+        <span>Send</span>
+        } @else {
+        <span>Sending...</span>
+        }
       </button>
       <button (click)="saveDraft()" [disabled]="editingIsDisabled()" class="btn-secondary text-sm">
         Draft

@@ -284,4 +284,21 @@ export class EmailDetailComponent implements OnInit {
   getSafeHtml(html: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
+
+  // Check if the current user is a recipient (not the sender)
+  isReceivedEmail(): boolean {
+    if (!this.email || !this.email.to) return false;
+
+    const currentUser = localStorage.getItem('currentUser');
+    if (!currentUser) return false;
+
+    const currentUserEmail = `${currentUser}@jaryn.com`;
+
+    // Check if current user is in the recipients list
+    return this.email.to.some((recipient: string) =>
+      recipient.toLowerCase() === currentUserEmail.toLowerCase()
+    );
+  }
+
+  protected readonly localStorage = localStorage;
 }

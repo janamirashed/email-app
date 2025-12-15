@@ -4,21 +4,26 @@
         <!-- Header -->
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-900">Search Results</h2>
-            <span class="text-xs text-gray-500" *ngIf="keyword">for "{{ keyword }}"</span>
+          @if (keyword){
+            <span class="text-xs text-gray-500">for "{{ keyword }}"</span>
+          }
         </div>
 
         <!-- Email Items -->
         <div class="flex-1 overflow-y-auto">
-            <div *ngIf="isLoading" class="flex items-center justify-center h-40">
+          @if(isLoading){
+            <div class="flex items-center justify-center h-40">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
-
-            <div *ngIf="!isLoading && emails.length === 0"
-                class="flex items-center justify-center h-40 text-gray-500 text-sm">
+          } @else if (!isLoading && emails.length === 0){
+            <div class="flex items-center justify-center h-40 text-gray-500 text-sm">
                 No emails found
             </div>
+          }
 
-            <ng-container *ngFor="let email of emails">
+          @for(email of emails;track $index){
+
+            <ng-container>
                 <div (click)="selectEmail(email)" [class.bg-blue-50]="email.messageId === selectedEmailId"
                     [class.border-l-4]="email.messageId === selectedEmailId"
                     [class.border-l-blue-600]="email.messageId === selectedEmailId"
@@ -46,6 +51,7 @@
                     </div>
                 </div>
             </ng-container>
+          }
         </div>
     </div>
 

@@ -242,10 +242,11 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         console.log('Draft saved successfully:', response);
         this.successMessage = 'Draft saved successfully!';
         this.isLoading = false;
+        this.successMessage = '';
+        this.closeCompose();
+        this.notificationService.showWarning('Email drafted!');
 
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to save draft:', error);

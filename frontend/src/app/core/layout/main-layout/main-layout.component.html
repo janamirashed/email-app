@@ -12,7 +12,9 @@
         </main>
 
         <!-- Compose panel (floating) -->
-        <app-email-compose *ngIf="isComposing"></app-email-compose>
+        @if (isComposing) {
+        <app-email-compose></app-email-compose>
+        }
     </div>
 
     <!-- Toast Notifications -->
