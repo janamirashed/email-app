@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EventService } from '../../../../core/services/event-service';
@@ -24,7 +24,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   isLoading: boolean = false;
   errorMessage: string = '';
-
   sortBy: string = 'date';
   selectedEmails: Set<string> = new Set();
   Math = Math;
@@ -35,6 +34,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
   dragY: number = 0;
 
   constructor(
+    private location: Location,
     private emailService: EmailService,
     private eventService: EventService,
     private route: ActivatedRoute,
@@ -305,16 +305,11 @@ export class EmailListComponent implements OnInit, OnDestroy {
           if (this.selectedEmailId && messageIds.includes(this.selectedEmailId)) {
             this.selectedEmailId = null;
             // Remove messageId query param to show 'Select an email to read'
-            this.router.navigate([], {
-              relativeTo: this.route,
-              queryParams: {},
-              replaceUrl: true
-            }).then(() => {
+             this.location.back();
               // Reload emails after navigation completes
               this.selectedEmails.clear();
               this.cdr.detectChanges();
               this.loadEmails();
-            });
           } else {
             this.selectedEmails.clear();
             this.loadEmails();
@@ -421,6 +416,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
             email.isRead = false;
             this.emailService.refreshUnreadCount();
             this.cdr.detectChanges();
+
           }
         },
         error: (error) => console.error('Failed to mark as unread:', error)

@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule,Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
 import { EmailService } from '../../../core/services/email.service';
@@ -54,6 +54,7 @@ export class SidebarComponent implements OnInit {
     private eventService: EventService,
     private folderService: FolderService,
     private notificationService: NotificationService,
+    private location: Location,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -129,6 +130,7 @@ export class SidebarComponent implements OnInit {
         console.log(`${emailIds.length} emails moved to ${folderName}`);
         // Trigger email list refresh event
         this.eventService.triggerEmailListRefresh();
+        this.location.back();
         // Show success toast
         this.notificationService.showSuccess(`${emailIds.length} email(s) moved to ${folderName}`);
       },
