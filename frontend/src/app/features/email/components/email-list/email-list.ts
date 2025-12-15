@@ -76,7 +76,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
       })
 
     });
-
     // Subscribe to read events
     this.readSubscription = this.emailService.messageRead$.subscribe(messageId => {
       const email = this.emails.find(e => e.messageId === messageId);

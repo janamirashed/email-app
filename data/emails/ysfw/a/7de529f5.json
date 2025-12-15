@@ -10,7 +10,7 @@
   "originalFolder" : "sent",
   "attachments" : [ ],
   "deletedAt" : null,
-  "read" : true,
   "starred" : false,
-  "draft" : false
+  "draft" : false,
+  "read" : true
 }

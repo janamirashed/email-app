@@ -6,11 +6,11 @@
   "body" : "hey it's healthy",
   "timestamp" : [ 2025, 12, 11, 19, 58, 35, 597428300 ],
   "priority" : 3,
-  "folder" : "trash",
+  "folder" : "inbox",
   "originalFolder" : null,
   "attachments" : [ ],
-  "deletedAt" : [ 2025, 12, 11, 19, 58, 35, 604197400 ],
-  "read" : true,
+  "deletedAt" : null,
   "starred" : false,
-  "draft" : false
+  "draft" : false,
+  "read" : true
 }

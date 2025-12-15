@@ -23,10 +23,12 @@
         </svg>
         <span>Inbox</span>
       </div>
-      <span *ngIf="systemFolders[0].count && systemFolders[0].count! > 0"
+      @if(systemFolders[0].count && systemFolders[0].count! > 0){
+      <span
         class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
         {{ systemFolders[0].count }}
       </span>
+      }
     </a>
 
     <a routerLink="/starred" routerLinkActive="nav-active" class="nav-link">

@@ -1,16 +1,16 @@
 {
-  "messageId" : "347b7c69",
+  "messageId" : "b7e56bd0",
   "from" : "asdsad@jaryn.com",
   "to" : [ "ysfw@jaryn.com" ],
   "subject" : "hey",
-  "body" : "<p>I update the read count</p>",
-  "timestamp" : [ 2025, 12, 14, 15, 52, 26, 190656400 ],
+  "body" : "<p>a</p>",
+  "timestamp" : [ 2025, 12, 15, 12, 50, 28, 11807700 ],
   "priority" : 3,
-  "folder" : "sent",
+  "folder" : "inbox",
   "originalFolder" : null,
   "attachments" : [ ],
   "deletedAt" : null,
-  "starred" : false,
   "draft" : false,
-  "read" : true
+  "starred" : false,
+  "read" : false
 }

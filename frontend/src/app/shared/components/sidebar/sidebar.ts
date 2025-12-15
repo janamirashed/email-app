@@ -56,10 +56,10 @@ export class SidebarComponent implements OnInit {
   ngOnInit() {
     this.loadCustomFolders();
 
-    // Initial fetch
+    // fetching the unread count from the backend with the service
     this.emailService.refreshUnreadCount();
 
-    // Subscribe to unread count updates
+    // Subscribe to unread count updates to update the count after calling the Service
     this.emailService.unreadCount$.subscribe(count => {
       console.log('Sidebar received unread count update:', count);
       const inbox = this.systemFolders.find(f => f.path === 'inbox');
