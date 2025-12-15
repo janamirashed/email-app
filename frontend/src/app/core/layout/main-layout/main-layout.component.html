@@ -4,17 +4,15 @@
     <div class="flex-1 flex flex-col overflow-hidden">
         <app-header></app-header>
 
-        <main class="flex-1 overflow-hidden flex">
+        <main class="flex-1 overflow-hidden">
             <!-- Main content area -->
-            <div [ngClass]="isComposing ? 'flex-1' : 'w-full'" class="overflow-hidden">
+            <div class="w-full h-full overflow-hidden">
                 <router-outlet></router-outlet>
             </div>
-
-            <!-- Compose panel (slides in from right) -->
-            <div *ngIf="isComposing" class="w-full max-w-xl border-l border-gray-200 bg-white">
-                <app-email-compose></app-email-compose>
-            </div>
         </main>
+
+        <!-- Compose panel (floating) -->
+        <app-email-compose *ngIf="isComposing"></app-email-compose>
     </div>
 
     <!-- Toast Notifications -->

@@ -1,5 +1,5 @@
 <div
-  class="fixed bottom-0 right-6 w-full max-w-4xl bg-white rounded-t-xl shadow-2xl border border-gray-200 overflow-hidden z-50 fade-in">
+  class="fixed bottom-0 right-6 w-[600px] bg-white rounded-t-xl shadow-2xl border border-gray-200 overflow-hidden z-50 fade-in">
   <!-- Header -->
   <div class="flex items-center justify-between px-4 py-3 bg-blue-600 text-white">
     <h2 class="text-base font-semibold">New Message</h2>
@@ -42,7 +42,8 @@
     <!-- Subject -->
     <div>
       <label class="block text-xs font-medium text-gray-700 mb-1">Subject</label>
-      <input type="text" [(ngModel)]="subject" placeholder="Email subject" [disabled]="editingIsDisabled()" class="input text-sm">
+      <input type="text" [(ngModel)]="subject" placeholder="Email subject" [disabled]="editingIsDisabled()"
+        class="input text-sm">
     </div>
 
     <!-- Priority -->
@@ -72,7 +73,8 @@
               d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5" />
           </svg>
           <span class="truncate max-w-xs">{{ attachment.fileName }}</span>
-          <button (click)="removeAttachment(i)" [disabled]="editingIsDisabled()" class="text-gray-600 hover:text-red-600">
+          <button (click)="removeAttachment(i)" [disabled]="editingIsDisabled()"
+            class="text-gray-600 hover:text-red-600">
             ✕
           </button>
         </div>
@@ -92,7 +94,8 @@
       </button>
 
       <!-- Attach File -->
-      <input type="file" #fileInputRef (change)="updateFiles($event)" [disabled]="editingIsDisabled()" multiple class="hidden">
+      <input type="file" #fileInputRef (change)="updateFiles($event)" [disabled]="editingIsDisabled()" multiple
+        class="hidden">
       <button (click)="fileInputRef.click()" [disabled]="editingIsDisabled()" title="Attach"
         class="p-2 rounded hover:bg-gray-200">
         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,23 +105,21 @@
       </button>
 
       @if (isUploading()) {
-        <div #loading class="flex items-center justify-center space-x-3 text-lg font-semibold text-gray-700">
-              <div class="w-8 h-8
+      <div #loading class="flex items-center justify-center space-x-3 text-lg font-semibold text-gray-700">
+        <div class="w-8 h-8
                   border-4
                   border-gray-300 /* Slightly darker base for contrast */
                   border-t-4      /* Added border-t-4 for explicit thickness */
                   border-t-blue-500
                   rounded-full
                   animate-spin
-                "
-                   role="status"
-                   aria-label="uploading">
-                <span class="sr-only">Uploading...</span>
-              </div>
-              <span class="tabular-nums">
-                {{uploadProgress()?.completed}} / {{uploadProgress()?.total}}
-              </span>
+                " role="status" aria-label="uploading">
+          <span class="sr-only">Uploading...</span>
         </div>
+        <span class="tabular-nums">
+          {{uploadProgress()?.completed}} / {{uploadProgress()?.total}}
+        </span>
+      </div>
       }
 
 
