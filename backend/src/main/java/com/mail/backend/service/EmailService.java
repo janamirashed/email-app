@@ -56,7 +56,17 @@ public class EmailService {
         log.info("Email {} sent by {} to {}", messageId, username, email.getTo());
 
         // Loop through all recipients
-        for (String recipient : email.getTo()) {
+        Queue<String> recipientQueue = new LinkedList<>(email.getTo());
+        int totalRecipients = recipientQueue.size();
+        int successfulDeliveries = 0;
+        int failedDeliveries = 0;
+
+        log.info("Processing email {} delivery to {} recipients using Queue", messageId, totalRecipients);
+
+        // Process recipients from the queue
+        while (!recipientQueue.isEmpty()) {
+            String recipient = recipientQueue.poll();
+
             try {
                 // Create copy for recipient's inbox using Builder Pattern
                 Email recipientCopy = Email.builder()
@@ -74,12 +84,25 @@ public class EmailService {
 
                 String recipientUsername = extractUsername(recipient);
                 emailRepository.saveEmail(recipientUsername, filterService.applyFilters(recipientUsername, recipientCopy));
-                log.info("Email {} delivered to {}", messageId, recipient);
+
+                successfulDeliveries++;
+                log.info("Email {} delivered successfully to {} [Queue position: {}/{}]",
+                        messageId, recipient, (totalRecipients - recipientQueue.size()), totalRecipients);
 
             } catch (Exception e) {
-                // Continue with next recipient, don't throw
-                log.error("Failed to deliver email to {}: {}", recipient, e.getMessage());
+                failedDeliveries++;
+                // Continue with next recipient instead of throwing
+                log.error("Failed to deliver email {} to {}: {}", messageId, recipient, e.getMessage());
             }
+        }
+
+        // Log delivery summary
+        log.info("Email {} delivery complete - Success: {}/{}, Failed: {}/{}",
+                messageId, successfulDeliveries, totalRecipients, failedDeliveries, totalRecipients);
+
+        if (failedDeliveries > 0) {
+            log.warn("Email {} had {} failed delivery attempts out of {}",
+                    messageId, failedDeliveries, totalRecipients);
         }
 
         return messageId;
