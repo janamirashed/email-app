@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
 import { EmailService } from '../../../core/services/email.service';
+import { EventService } from '../../../core/services/event-service';
 import { FolderService } from '../../../core/services/folder.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { FormsModule } from '@angular/forms';
 
 interface Folder {
@@ -22,10 +24,10 @@ export class SidebarComponent implements OnInit {
 
   systemFolders = [
     { name: 'Inbox', icon: 'inbox', count: 0, path: 'inbox' },
-    { name: 'Starred', icon: 'star', count: 3, path: 'starred' },
+    { name: 'Starred', icon: 'star', count: null, path: 'starred' },
     { name: 'Sent', icon: 'send', count: null, path: 'sent' },
-    { name: 'Drafts', icon: 'drafts', count: 2, path: 'drafts' },
-    { name: 'Trash', icon: 'trash', count: 5, path: 'trash' }
+    { name: 'Drafts', icon: 'drafts', count: null, path: 'drafts' },
+    { name: 'Trash', icon: 'trash', count: null, path: 'trash' }
   ];
 
   customFolders: Folder[] = [];
@@ -49,7 +51,9 @@ export class SidebarComponent implements OnInit {
     private router: Router,
     private composeService: EmailComposeService,
     private emailService: EmailService,
+    private eventService: EventService,
     private folderService: FolderService,
+    private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -123,11 +127,14 @@ export class SidebarComponent implements OnInit {
     this.emailService.bulkMove(emailIds, folderName).subscribe({
       next: () => {
         console.log(`${emailIds.length} emails moved to ${folderName}`);
-        alert(`${emailIds.length} email(s) moved to ${folderName}`);
+        // Trigger email list refresh event
+        this.eventService.triggerEmailListRefresh();
+        // Show success toast
+        this.notificationService.showSuccess(`${emailIds.length} email(s) moved to ${folderName}`);
       },
       error: (error) => {
         console.error('Failed to move emails:', error);
-        alert('Failed to move emails to folder');
+        this.notificationService.showError('Failed to move emails to folder');
       }
     });
   }

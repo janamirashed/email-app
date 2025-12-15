@@ -11,7 +11,7 @@ public class SortByPriorityStrategy implements SortStrategy {
     @Override
     public List<Email> sort(List<Email> emails) {
 
-        Comparator<Email> comparator = Comparator.comparing(Email::getPriority).thenComparing(Email::getTimestamp).reversed();
+        Comparator<Email> comparator = Comparator.comparing(Email::getPriority).reversed().thenComparing(Email::getTimestamp).reversed();
         PriorityQueue<Email> pq = new PriorityQueue<>(comparator);
 
         pq.addAll(emails);

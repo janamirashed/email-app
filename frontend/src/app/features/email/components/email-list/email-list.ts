@@ -45,6 +45,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   currentUserEmail: string = '';
   private readSubscription?: Subscription;
+  private emailListRefreshSubscription?: Subscription;
 
   ngOnInit() {
     const currentUser = localStorage.getItem('currentUser') || '';
@@ -67,7 +68,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
       this.eventService.getInboxRefresh().subscribe(() => {
         console.log('Inbox refresh event received from SSE');
-        // Only refresh if we're currently viewing the inbox
         if (this.currentFolder === 'inbox') {
           this.loadEmails();
           this.emailService.refreshUnreadCount();
@@ -76,6 +76,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
       })
 
     });
+
     // Subscribe to read events
     this.readSubscription = this.emailService.messageRead$.subscribe(messageId => {
       const email = this.emails.find(e => e.messageId === messageId);
@@ -83,6 +84,15 @@ export class EmailListComponent implements OnInit, OnDestroy {
         email.isRead = true;
         this.cdr.detectChanges();
       }
+    });
+
+    // Subscribe to email list refresh events (triggered by drag-and-drop moves)
+    this.emailListRefreshSubscription = this.eventService.getEmailListRefresh().subscribe(() => {
+      console.log('Email list refresh event received from drag-and-drop');
+      this.selectedEmails.clear(); // Clear selection after moving emails
+      this.loadEmails();
+      this.emailService.refreshUnreadCount();
+      this.cdr.detectChanges();
     });
   }
 
@@ -302,9 +312,9 @@ export class EmailListComponent implements OnInit, OnDestroy {
             }).then(() => {
               // Reload emails after navigation completes
               this.selectedEmails.clear();
+              this.cdr.detectChanges();
               this.loadEmails();
             });
-            this.cdr.detectChanges();
           } else {
             this.selectedEmails.clear();
             this.loadEmails();
@@ -318,19 +328,62 @@ export class EmailListComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Star selected emails
+  // Toggle star for selected emails
   starSelected() {
     if (this.selectedEmails.size === 0) return;
 
-    this.selectedEmails.forEach(messageId => {
-      this.emailService.starEmail(messageId).subscribe({
-        next: () => {
-          const email = this.emails.find(e => e.messageId === messageId);
-          if (email) email.isStarred = true;
-        },
-        error: (error) => console.error('Failed to star email:', error)
+    // Check if all selected emails are starred
+    const selectedEmailObjects = this.emails.filter(e => this.selectedEmails.has(e.messageId));
+    const allStarred = selectedEmailObjects.every(e => e.isStarred);
+
+    // If all are starred, unstar them. Otherwise, star them.
+    if (allStarred) {
+      // Unstar all selected
+      this.selectedEmails.forEach(messageId => {
+        this.emailService.unstarEmail(messageId).subscribe({
+          next: () => {
+            const email = this.emails.find(e => e.messageId === messageId);
+            if (email) {
+              email.isStarred = false;
+
+              // If we're in the starred folder, reload to remove the email from the list
+              if (this.currentFolder === 'starred') {
+                // Clear selection if the unstarred email was being viewed
+                if (this.selectedEmailId === messageId) {
+                  this.selectedEmailId = null;
+                  this.router.navigate([], {
+                    relativeTo: this.route,
+                    queryParams: {},
+                    replaceUrl: true
+                  });
+                }
+              }
+              this.cdr.detectChanges();
+            }
+          },
+          error: (error) => console.error('Failed to unstar email:', error)
+        });
       });
-    });
+
+      // Reload if in starred folder to remove unstarred emails
+      if (this.currentFolder === 'starred') {
+        setTimeout(() => this.loadEmails(), 500);
+      }
+    } else {
+      // Star all selected
+      this.selectedEmails.forEach(messageId => {
+        this.emailService.starEmail(messageId).subscribe({
+          next: () => {
+            const email = this.emails.find(e => e.messageId === messageId);
+            if (email) {
+              email.isStarred = true;
+              this.cdr.detectChanges();
+            }
+          },
+          error: (error) => console.error('Failed to star email:', error)
+        });
+      });
+    }
 
     this.selectedEmails.clear();
   }
@@ -343,9 +396,34 @@ export class EmailListComponent implements OnInit, OnDestroy {
       this.emailService.markAsRead(messageId).subscribe({
         next: () => {
           const email = this.emails.find(e => e.messageId === messageId);
-          if (email) email.isRead = true;
+          if (email) {
+            email.isRead = true;
+            this.emailService.refreshUnreadCount();
+            this.cdr.detectChanges();
+          }
         },
         error: (error) => console.error('Failed to mark as read:', error)
+      });
+    });
+
+    this.selectedEmails.clear();
+  }
+
+  // Mark selected as unread
+  markSelectedAsUnread() {
+    if (this.selectedEmails.size === 0) return;
+
+    this.selectedEmails.forEach(messageId => {
+      this.emailService.markAsUnread(messageId).subscribe({
+        next: () => {
+          const email = this.emails.find(e => e.messageId === messageId);
+          if (email) {
+            email.isRead = false;
+            this.emailService.refreshUnreadCount();
+            this.cdr.detectChanges();
+          }
+        },
+        error: (error) => console.error('Failed to mark as unread:', error)
       });
     });
 
@@ -478,6 +556,9 @@ export class EmailListComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.readSubscription) {
       this.readSubscription.unsubscribe();
+    }
+    if (this.emailListRefreshSubscription) {
+      this.emailListRefreshSubscription.unsubscribe();
     }
   }
 }

@@ -1,16 +1,16 @@
 {
-  "messageId" : "f8ac0ebd",
+  "messageId" : "b7e56bd0",
   "from" : "asdsad@jaryn.com",
   "to" : [ "ysfw@jaryn.com" ],
   "subject" : "hey",
-  "body" : "<p>yabadabado</p>",
-  "timestamp" : [ 2025, 12, 15, 12, 49, 52, 308746600 ],
+  "body" : "<p>a</p>",
+  "timestamp" : [ 2025, 12, 15, 12, 50, 28, 11807700 ],
   "priority" : 3,
-  "folder" : "inbox",
-  "originalFolder" : null,
+  "folder" : "a",
+  "originalFolder" : "inbox",
   "attachments" : [ ],
   "deletedAt" : null,
   "draft" : false,
   "starred" : false,
-  "read" : false
+  "read" : true
 }

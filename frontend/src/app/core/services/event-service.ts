@@ -13,6 +13,7 @@ export class EventService {
   private readonly reconnnectionDelay: number = 5000
   private stopStream$ = new Subject<void>();
   private inboxRefresh$ = new Subject<void>();
+  private folderRefresh$ = new Subject<void>();
   router = inject(Router);
   constructor(private ngZone: NgZone, private authService: AuthService) {
 
@@ -130,6 +131,20 @@ export class EventService {
    */
   public getInboxRefresh(): Observable<void> {
     return this.inboxRefresh$.asObservable();
+  }
+
+  /**
+   * Observable that emits when email list should be refreshed (e.g., after drag-and-drop move)
+   */
+  public getEmailListRefresh(): Observable<void> {
+    return this.folderRefresh$.asObservable();
+  }
+
+  /**
+   * Trigger email list refresh (called after moving emails)
+   */
+  public triggerEmailListRefresh(): void {
+    this.folderRefresh$.next();
   }
 
   /**
