@@ -6,6 +6,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
 import { HeaderComponent } from '../../../shared/components/header/header';
 import { EmailComposeComponent } from '../../../features/email/components/email-compose/email-compose';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { EmailComposeService } from '../../services/email-compose.service';
 import { EventService } from '../../services/event-service';
 import { sseEvent } from '../../models/sse-event.model';
@@ -20,7 +21,8 @@ import { AuthService } from '../../services/auth-service';
     SidebarComponent,
     HeaderComponent,
     EmailComposeComponent,
-    ToastComponent
+    ToastComponent,
+    ConfirmationModalComponent
   ],
   templateUrl: './main-layout.component.html'
 })

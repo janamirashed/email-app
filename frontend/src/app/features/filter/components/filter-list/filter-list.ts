@@ -4,6 +4,7 @@ import { Filter } from '../../../../core/models/filter.model';
 import { FormsModule } from '@angular/forms';
 import { FilterService } from '../../../../core/services/filter.service';
 import { FolderService } from '../../../../core/services/folder.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 
 @Component({
   selector: 'app-filter-list',
@@ -31,6 +32,7 @@ export class FilterListComponent implements OnInit {
   constructor(
     private filterService: FilterService,
     private folderService: FolderService,
+    private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef,
   ) { }
 
@@ -168,8 +170,16 @@ export class FilterListComponent implements OnInit {
     }
   }
 
-  deleteFilter(filter: Filter) {
-    if (confirm(`Delete filter for "${filter.property} ${filter.matcher} ${filter.value}"?`)) {
+  async deleteFilter(filter: Filter) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Delete Filter',
+      message: `Delete filter for "${filter.property} ${filter.matcher} ${filter.value}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'warning'
+    });
+
+    if (confirmed) {
       this.filterService.deleteFilter(filter.id!).subscribe({
         next: () => {
           this.existingRules = this.existingRules.filter(f => f.id !== filter.id);

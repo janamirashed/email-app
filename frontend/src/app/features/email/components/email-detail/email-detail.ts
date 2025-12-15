@@ -5,6 +5,7 @@ import { EmailService } from '../../../../core/services/email.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { FolderService } from '../../../../core/services/folder.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -36,6 +37,7 @@ export class EmailDetailComponent implements OnInit {
     private folderService: FolderService,
     private http: HttpClient,
     private notificationService: NotificationService,
+    private confirmationService: ConfirmationService,
     private sanitizer: DomSanitizer,
     private location: Location
   ) { }
@@ -109,11 +111,18 @@ export class EmailDetailComponent implements OnInit {
   }
 
   // Delete email
-  deleteEmail() {
+  async deleteEmail() {
     if (!this.messageId) return;
 
-    if (confirm('Are you sure you want to delete this email?')) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Delete Email',
+      message: 'Are you sure you want to delete this email?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
 
+    if (confirmed) {
       this.emailService.deleteEmail(this.messageId).subscribe({
         next: () => {
           console.log('Email deleted');

@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule,Location } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { EmailComposeService } from '../../../core/services/email-compose.service';
 import { EmailService } from '../../../core/services/email.service';
 import { EventService } from '../../../core/services/event-service';
 import { FolderService } from '../../../core/services/folder.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmationService } from '../../../core/services/confirmation.service';
 import { FormsModule } from '@angular/forms';
 
 interface Folder {
@@ -54,6 +55,7 @@ export class SidebarComponent implements OnInit {
     private eventService: EventService,
     private folderService: FolderService,
     private notificationService: NotificationService,
+    private confirmationService: ConfirmationService,
     private location: Location,
     private cdr: ChangeDetectorRef
   ) { }
@@ -180,8 +182,16 @@ export class SidebarComponent implements OnInit {
     this.router.navigate(['/folder', folderName]);
   }
 
-  deleteFolder(folderName: string) {
-    if (confirm(`Are you sure you want to delete the folder "${folderName}"?`)) {
+  async deleteFolder(folderName: string) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Delete Folder',
+      message: `Are you sure you want to delete the folder "${folderName}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'warning'
+    });
+
+    if (confirmed) {
       console.log('Sidebar - Deleting folder:', folderName);
       this.folderService.deleteFolder(folderName).subscribe({
         next: (response) => {
@@ -194,7 +204,7 @@ export class SidebarComponent implements OnInit {
         },
         error: (error) => {
           console.error('Sidebar - Failed to delete folder:', error);
-          alert('Failed to delete folder: ' + (error.error?.error || 'Unknown error'));
+          this.notificationService.showError('Failed to delete folder: ' + (error.error?.error || 'Unknown error'));
         }
       });
     }

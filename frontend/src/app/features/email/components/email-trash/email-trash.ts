@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmailService } from '../../../../core/services/email.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 
@@ -22,6 +23,7 @@ export class EmailTrashComponent implements OnInit {
 
   constructor(
     private emailService: EmailService,
+    private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private route: ActivatedRoute
@@ -86,16 +88,15 @@ export class EmailTrashComponent implements OnInit {
   }
 
   clearEmailSelection(messageIds: string[]) {
-    if(messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString()))
-    {
-    this.router.navigate(
-      [],
-      {
-        relativeTo: this.route,
-        queryParams: {},
-        queryParamsHandling: ''
-      }
-    );
+    if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())) {
+      this.router.navigate(
+        [],
+        {
+          relativeTo: this.route,
+          queryParams: {},
+          queryParamsHandling: ''
+        }
+      );
     }
   }
 
@@ -153,13 +154,21 @@ export class EmailTrashComponent implements OnInit {
   }
 
   // Permanently delete selected emails
-  permanentlyDeleteSelected() {
+  async permanentlyDeleteSelected() {
     if (this.selectedEmails.size === 0) {
       alert('Please select emails to delete');
       return;
     }
 
-    if (confirm(`Permanently delete ${this.selectedEmails.size} email(s)? This cannot be undone.`)) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Permanently Delete Emails',
+      message: `Permanently delete ${this.selectedEmails.size} email(s)? This cannot be undone.`,
+      confirmText: 'Delete Forever',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       const messageIds = Array.from(this.selectedEmails);
       this.isLoading = true;
 
@@ -183,13 +192,21 @@ export class EmailTrashComponent implements OnInit {
     }
   }
 
-  emptyTrash() {
+  async emptyTrash() {
     if (this.emails.length === 0) {
       alert('Trash is already empty');
       return;
     }
 
-    if (confirm('Permanently delete all emails in trash? This cannot be undone.')) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Empty Trash',
+      message: 'Permanently delete all emails in trash? This cannot be undone.',
+      confirmText: 'Empty Trash',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       const allMessageIds = this.emails.map(e => e.messageId);
       this.isLoading = true;
 
@@ -199,10 +216,10 @@ export class EmailTrashComponent implements OnInit {
           console.log('Trash emptied');
           this.selectedEmails.clear();
           this.isLoading = false;
-            this.cdr.detectChanges();
-            this.loadTrashEmails();
-            this.clearEmailSelection(allMessageIds);
-            this.successMessage = '';
+          this.cdr.detectChanges();
+          this.loadTrashEmails();
+          this.clearEmailSelection(allMessageIds);
+          this.successMessage = '';
         },
         error: (error) => {
           console.error('Failed to empty trash:', error);

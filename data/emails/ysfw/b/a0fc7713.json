@@ -6,7 +6,7 @@
   "body" : "<p>a</p>",
   "timestamp" : [ 2025, 12, 14, 15, 12, 23, 573716900 ],
   "priority" : 3,
-  "folder" : "a",
+  "folder" : "b",
   "originalFolder" : "sent",
   "attachments" : [ ],
   "deletedAt" : null,

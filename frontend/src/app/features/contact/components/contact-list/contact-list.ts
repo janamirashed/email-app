@@ -4,6 +4,7 @@ import { Contact } from '../../../../core/models/contact.model';
 import { FormsModule } from '@angular/forms';
 import { ContactService } from '../../../../core/services/contact.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 
 @Component({
   selector: 'app-contact-list',
@@ -29,6 +30,7 @@ export class ContactList implements OnInit {
 
   constructor(
     private contactService: ContactService,
+    private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef,
     private composeService: EmailComposeService
   ) { }
@@ -185,14 +187,22 @@ export class ContactList implements OnInit {
     }
   }
 
-  deleteContact(contact: Contact) {
+  async deleteContact(contact: Contact) {
     // Validate that contact has an ID
     if (!contact.id) {
       this.errorMessage = 'Cannot delete contact: Invalid contact ID';
       return;
     }
 
-    if (confirm(`Delete contact ${contact.name}?`)) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Delete Contact',
+      message: `Delete contact ${contact.name}?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'warning'
+    });
+
+    if (confirmed) {
       this.isLoading = true;
       this.errorMessage = '';
 

@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EventService } from '../../../../core/services/event-service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 import { Subscription } from 'rxjs';
 
@@ -37,6 +38,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
     private location: Location,
     private emailService: EmailService,
     private eventService: EventService,
+    private confirmationService: ConfirmationService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
@@ -290,13 +292,21 @@ export class EmailListComponent implements OnInit, OnDestroy {
   }
 
   // Bulk delete selected emails
-  bulkDelete() {
+  async bulkDelete() {
     if (this.selectedEmails.size === 0) {
       alert('Please select emails to delete');
       return;
     }
 
-    if (confirm(`Delete ${this.selectedEmails.size} email(s)?`)) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Delete Emails',
+      message: `Are you sure you want to delete ${this.selectedEmails.size} email(s)?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       const messageIds = Array.from(this.selectedEmails);
       this.emailService.bulkDelete(messageIds).subscribe({
         next: () => {
@@ -305,11 +315,11 @@ export class EmailListComponent implements OnInit, OnDestroy {
           if (this.selectedEmailId && messageIds.includes(this.selectedEmailId)) {
             this.selectedEmailId = null;
             // Remove messageId query param to show 'Select an email to read'
-             this.location.back();
-              // Reload emails after navigation completes
-              this.selectedEmails.clear();
-              this.cdr.detectChanges();
-              this.loadEmails();
+            this.location.back();
+            // Reload emails after navigation completes
+            this.selectedEmails.clear();
+            this.cdr.detectChanges();
+            this.loadEmails();
           } else {
             this.selectedEmails.clear();
             this.loadEmails();
