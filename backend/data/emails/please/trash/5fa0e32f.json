@@ -1,0 +1,19 @@
+{
+  "messageId" : "5fa0e32f",
+  "from" : "please@jaryn.com",
+  "to" : [ "burh@jaryn.com" ],
+  "subject" : "TESTAGAIN",
+  "body" : "ATTACH",
+  "timestamp" : [ 2025, 12, 7, 23, 12, 20, 89310800 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "attachments" : [ {
+    "id" : "94f88abb-29e5-405f-b293-5cb0e8ba2cc1",
+    "fileName" : "Assembly 1.pdf",
+    "mimeType" : "application/pdf"
+  } ],
+  "deletedAt" : [ 2025, 12, 7, 23, 15, 19, 735761100 ],
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

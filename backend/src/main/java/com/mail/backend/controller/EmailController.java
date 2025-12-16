@@ -218,29 +218,33 @@ public class EmailController {
      */
     @GetMapping("/search")
     public ResponseEntity<?> searchEmails(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "all") String searchBy,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sender,
+            @RequestParam(required = false) String receiver,
+            @RequestParam(required = false) String subject,
+            @RequestParam(required = false) String body,
+            @RequestParam(required = false) String keyword, //also "All Search"
+            @RequestParam(defaultValue = "date") String sortBy,
             Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
-            List<Email> results = emailService.searchEmails(username, keyword, searchBy, sortBy);
+
+            //Handle only searching with no filtering
+            String effectiveBody = body;
+            if ((sender == null && receiver == null && subject == null && body == null) && keyword != null) {
+                effectiveBody = keyword;
+            }
+
+            List<Email> results = emailService.searchEmails(username, sender, receiver, subject, effectiveBody, sortBy);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("keyword", keyword);
-            response.put("searchBy", searchBy);
-            response.put("sortBy", sortBy);
-            response.put("totalResults", results.size());
             response.put("results", results);
+            response.put("totalResults", results.size());
 
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (IOException e) {
             log.error("Search failed: {}", e.getMessage());
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("error", "Search failed");
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

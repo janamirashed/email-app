@@ -15,10 +15,16 @@ export class HeaderComponent implements OnInit {
   userInitials: string = '';
   userName: string = '';
   userEmail: string = '';
-  searchTerm: string = '';
-  searchBy: string = 'all';
+  simpleSearchTerm: string = '';
+  showAdvancedSearch: boolean = false;
   showUserMenu: boolean = false;
 
+  advancedParams = {
+    sender: '',
+    receiver: '',
+    subject: '',
+    body: ''
+  };
   constructor(
     private authService: AuthService,
     private router: Router
@@ -50,6 +56,13 @@ export class HeaderComponent implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
+
+    // Close Advanced Search if clicked outside
+    const clickedInsideSearch = target.closest('.max-w-2xl');
+    if (!clickedInsideSearch && this.showAdvancedSearch) {
+      this.showAdvancedSearch = false;
+    }
+
     const clickedInside = target.closest('.user-menu-container');
     if (!clickedInside && this.showUserMenu) {
       this.showUserMenu = false;
@@ -58,22 +71,34 @@ export class HeaderComponent implements OnInit {
 
   importanceLevel: string = '3'; // Default to Normal (3)
 
-  onSearch() {
-    let keyword = this.searchTerm;
 
-    if (this.searchBy === 'importance') {
-      keyword = this.importanceLevel;
-    }
-
-    if (keyword.trim()) {
-      this.router.navigate(['/search'], {
-        queryParams: {
-          keyword: keyword,
-          searchBy: this.searchBy
-        }
-      });
-    }
+  toggleAdvancedSearch(event: MouseEvent) {
+    event.stopPropagation();
+    this.showAdvancedSearch = !this.showAdvancedSearch;
   }
+
+  onSearch() {
+    this.showAdvancedSearch = false;
+    this.router.navigate(['/search'], {
+      queryParams: {
+        keyword: this.simpleSearchTerm
+      }
+    });
+  }
+
+  onAdvancedSearch() {
+    this.showAdvancedSearch = false;
+
+    // Filter out empty params
+    const queryParams: any = {};
+    if(this.advancedParams.sender) queryParams.sender = this.advancedParams.sender;
+    if(this.advancedParams.receiver) queryParams.receiver = this.advancedParams.receiver;
+    if(this.advancedParams.subject) queryParams.subject = this.advancedParams.subject;
+    if(this.advancedParams.body) queryParams.body = this.advancedParams.body;
+
+    this.router.navigate(['/search'], { queryParams });
+  }
+
 
   toggleUserMenu(event: MouseEvent) {
     event.stopPropagation();

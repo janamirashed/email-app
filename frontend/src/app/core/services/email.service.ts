@@ -202,11 +202,14 @@ export class EmailService {
   }
 
   // GET /api/email/search?keyword=test&searchIn=all
-  searchEmails(keyword: string, searchBy: string = 'all', sortBy: string = 'date'): Observable<any> {
-    const params = new HttpParams()
-      .set('keyword', keyword)
-      .set('searchBy', searchBy)
-      .set('sortBy', sortBy);
+  searchEmails(parameters: {sender?:string, receiver?:string, subject?:string, body?:string, keyword?:string, sortBy?:string}): Observable<any> {
+    let params = new HttpParams()
+    if(parameters.sender) params = new HttpParams().set('sender', parameters.sender);
+    if(parameters.receiver) params = new HttpParams().set('receiver', parameters.receiver);
+    if(parameters.subject) params = new HttpParams().set('subject', parameters.subject);
+    if(parameters.body) params = new HttpParams().set('body', parameters.body);
+    if(parameters.keyword) params = new HttpParams().set('keyword', parameters.keyword);
+    if (parameters.sortBy) params = new HttpParams().set('sortBy', parameters.sortBy);
 
     return this.http.get(`${this.baseUrl}/search`, {
       headers: this.getHeaders(),

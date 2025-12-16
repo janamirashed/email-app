@@ -1,0 +1,19 @@
+{
+  "messageId" : "9551b078",
+  "from" : "please@jaryn.com",
+  "to" : [ "bruh@jaryn.com" ],
+  "subject" : "ANYTHING",
+  "body" : "AAA",
+  "timestamp" : [ 2025, 12, 7, 23, 14, 28, 265777000 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "attachments" : [ {
+    "id" : "4367ddb9-dca8-4644-af46-07b8e32924cf",
+    "fileName" : "Assembly 1.pdf",
+    "mimeType" : "application/pdf"
+  } ],
+  "deletedAt" : [ 2025, 12, 7, 23, 15, 19, 731761200 ],
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

@@ -1,0 +1,15 @@
+{
+  "messageId" : "33a6790d",
+  "from" : "please@jaryn.com",
+  "to" : [ "bruh@jaryn.com" ],
+  "subject" : "ATTACH",
+  "body" : "LAST DANVCE",
+  "timestamp" : [ 2025, 12, 7, 23, 13, 56, 651289900 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "attachments" : [ ],
+  "deletedAt" : [ 2025, 12, 7, 23, 15, 23, 221818000 ],
+  "read" : true,
+  "starred" : false,
+  "draft" : true
+}

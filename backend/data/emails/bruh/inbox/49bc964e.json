@@ -1,0 +1,15 @@
+{
+  "messageId" : "49bc964e",
+  "from" : "please@jaryn.com",
+  "to" : [ "bruh@jaryn.com", "burh@jaryn.com" ],
+  "subject" : "bruhhhhhh",
+  "body" : "nhuuuuuuuuuuut",
+  "timestamp" : [ 2025, 12, 7, 23, 37, 18, 222356800 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "draft" : false,
+  "read" : false,
+  "starred" : false
+}

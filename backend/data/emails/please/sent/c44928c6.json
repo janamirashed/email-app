@@ -1,0 +1,19 @@
+{
+  "messageId" : "c44928c6",
+  "from" : "please@jaryn.com",
+  "to" : [ "bruh@jaryn.com", " burh@jaryn.com" ],
+  "subject" : "COME ON",
+  "body" : "OUR LAST CHANce",
+  "timestamp" : [ 2025, 12, 7, 23, 33, 7, 441786800 ],
+  "priority" : 3,
+  "folder" : "sent",
+  "attachments" : [ {
+    "id" : "2cd6e728-a3c7-418c-ae95-ad92be409a30",
+    "fileName" : "robb-stark.gif",
+    "mimeType" : "image/gif"
+  } ],
+  "deletedAt" : null,
+  "draft" : false,
+  "read" : false,
+  "starred" : false
+}

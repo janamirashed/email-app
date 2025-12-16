@@ -1,0 +1,15 @@
+{
+  "messageId" : "356e4f1a",
+  "from" : "please@jaryn.com",
+  "to" : [ "burh@jaryn.com", " bruh@jaryn.com" ],
+  "subject" : "multi",
+  "body" : "trynna do shit",
+  "timestamp" : [ 2025, 12, 7, 23, 16, 30, 141415200 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : false,
+  "starred" : false,
+  "draft" : false
+}

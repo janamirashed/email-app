@@ -17,7 +17,10 @@ export class EmailSearch implements OnInit {
   keyword: string = '';
   searchBy: string = 'all';
   sortBy: string = 'date';
-
+  sender: string = '';
+  receiver: string = '';
+  subject: string = '';
+  body: string = '';
   isLoading: boolean = false;
   errorMessage: string = '';
 
@@ -38,11 +41,13 @@ export class EmailSearch implements OnInit {
     this.currentUserEmail = `${currentUser}@jaryn.com`;
 
     this.route.queryParams.subscribe(params => {
-      this.keyword = params['keyword'] || '';
-      this.searchBy = params['searchBy'] || 'all';
-      this.sortBy = params['sortBy'] || 'date';
+      this.sender = params['sender'];
+      this.receiver = params['receiver'];
+      this.subject = params['subject'];
+      this.body = params['body'];
+      this.keyword = params['keyword'];
 
-      if (this.keyword) {
+      if (this.sender || this.receiver || this.subject || this.body || this.keyword) {
         this.searchEmails();
       }
     });
@@ -73,7 +78,15 @@ export class EmailSearch implements OnInit {
     this.errorMessage = '';
     this.emails = [];
 
-    this.emailService.searchEmails(this.keyword, this.searchBy, this.sortBy).subscribe({
+    const searchParams = {
+      sender: this.sender,
+      receiver: this.receiver,
+      subject: this.subject,
+      body: this.body,
+      keyword: this.keyword
+    };
+
+    this.emailService.searchEmails(searchParams).subscribe({
       next: (response) => {
         // The backend returns a map with "results" key containing the list
         const rawResults = response.results || [];
@@ -92,7 +105,6 @@ export class EmailSearch implements OnInit {
           email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
           email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
         });
-
         this.isLoading = false;
         this.cdr.detectChanges();
       },

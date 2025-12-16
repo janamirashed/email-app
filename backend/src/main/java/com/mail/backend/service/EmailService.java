@@ -1,5 +1,6 @@
 package com.mail.backend.service;
 
+import com.mail.backend.dps.SearchFilter.*;
 import com.mail.backend.dps.strategy.*;
 import com.mail.backend.model.Email;
 import com.mail.backend.repository.EmailRepository;
@@ -180,14 +181,27 @@ public class EmailService {
     }
 
     // SEARCH EMAILS
-    public List<Email> searchEmails(String username, String keyword, String searchBy, String sortBy) throws IOException {
+    public List<Email> searchEmails(String username, String sender, String receiver,
+                                    String subject, String body, String sortBy) throws IOException {
         List<Email> allEmails = emailRepository.getAllEmails(username);
 
-        // Apply search strategy
-        SearchStrategy searchStrategy = getSearchStrategy(searchBy);
-        List<Email> results = searchStrategy.search(allEmails, keyword);
+        // Chain filters using the Filter Pattern
 
-        // Apply sorting strategy if specified
+        SearchFilter finalFilter = new SenderFilter(sender);
+        //combine criteria using AndFilter
+        if (receiver != null && !receiver.isEmpty()) {
+            finalFilter = new AndFilter(finalFilter, new ReceiverFilter(receiver));
+        }
+        if (subject != null && !subject.isEmpty()) {
+            finalFilter = new AndFilter(finalFilter, new SubjectFilter(subject));
+        }
+        if (body != null && !body.isEmpty()) {
+            finalFilter = new AndFilter(finalFilter, new BodyFilter(body));
+        }
+
+        // Execute the filter chain
+        List<Email> results = finalFilter.meetCriteria(allEmails);
+
         if (sortBy != null && !sortBy.isEmpty()) {
             SortStrategy sortStrategy = getSortStrategy(sortBy);
             results = sortStrategy.sort(results);
