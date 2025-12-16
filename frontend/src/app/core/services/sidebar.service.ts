@@ -9,6 +9,17 @@ export class SidebarService {
     isOpen$ = this.isOpenSubject.asObservable();
 
     constructor() {
+        // Check screen size on init to set default state
+        this.checkScreenSize();
+        window.addEventListener('resize', () => this.checkScreenSize());
+    }
+
+    private checkScreenSize() {
+        if (window.innerWidth < 1024) { // Mobile/Tablet
+            this.isOpenSubject.next(false);
+        } else { // Desktop
+            this.isOpenSubject.next(true);
+        }
     }
 
     toggle() {
