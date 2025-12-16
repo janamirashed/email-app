@@ -110,6 +110,20 @@ export class EmailDetailComponent implements OnInit {
     });
   }
 
+  editDraft() {
+    if (!this.email) return;
+    let recipients = "";
+    this.email.to.forEach((to: string) => {
+      recipients += to + ", ";
+    });
+    this.composeService.openCompose({
+      recipients: recipients,
+      subject: this.email.subject,
+      body: this.email.body,
+      attachments: this.email.attachments
+    });
+  }
+
   // Delete email
   async deleteEmail() {
     if (!this.messageId) return;

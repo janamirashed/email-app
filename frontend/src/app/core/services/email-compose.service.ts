@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Attachment } from '../models/attachment.model';
 
 export interface ComposeData {
   recipients?: string;
   subject?: string;
   body?: string;
+  attachments?: Attachment[];
 }
 
 @Injectable({

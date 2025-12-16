@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth-service';
+import { SidebarService } from '../../../core/services/sidebar.service';
 
 @Component({
   selector: 'app-header',
@@ -27,6 +28,7 @@ export class HeaderComponent implements OnInit {
   };
   constructor(
     private authService: AuthService,
+    private sidebarService: SidebarService,
     private router: Router
   ) { }
 
@@ -103,6 +105,10 @@ export class HeaderComponent implements OnInit {
   toggleUserMenu(event: MouseEvent) {
     event.stopPropagation();
     this.showUserMenu = !this.showUserMenu;
+  }
+
+  toggleSidebar() {
+    this.sidebarService.toggle();
   }
 
   logout() {

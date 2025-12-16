@@ -1,181 +1,255 @@
-<aside class="flex flex-col w-64 h-full bg-white border-r border-gray-200">
-  <!-- Compose Button -->
-  <div class="p-4">
-    <button (click)="openCompose()" class="btn-primary w-full flex items-center justify-center gap-2">
-      <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"></path>
-        <path
-          d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z">
-        </path>
-      </svg>
-      <span>Compose</span>
-    </button>
-  </div>
+<aside class="flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300 ease-in-out"
+  [class.w-64]="isOpen" [class.w-0]="!isOpen" [class.md:w-20]="!isOpen" [class.border-r-0]="!isOpen && false"
+  [class.overflow-hidden]="isOpen" [class.overflow-visible]="!isOpen">
+  <div class="w-full flex flex-col h-full">
+    <!-- Compose Button -->
+    <div class="p-4 flex justify-center">
+      <button (click)="openCompose()"
+              class="btn-primary flex items-center justify-center transition-all duration-300 group relative"
+              [ngClass]="isOpen ? 'w-full rounded-md px-4' : 'w-14 h-14 rounded-full p-0'">
 
-  <!-- Navigation -->
-  <nav class="flex-1 px-3 overflow-y-auto">
-    <a routerLink="/inbox" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }"
-      class="nav-link group">
-      <div class="flex items-center gap-3 flex-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="transition-all duration-300"
+             [ngClass]="isOpen ? 'h-5 w-5 mr-2' : 'h-21 w-21'"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+          </path>
         </svg>
-        <span>Inbox</span>
-      </div>
-      @if(systemFolders[0].count && systemFolders[0].count! > 0){
-      <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-        {{ systemFolders[0].count }}
-      </span>
-      }
-    </a>
 
-    <a routerLink="/starred" routerLinkActive="nav-active" class="nav-link">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-      </svg>
-      <span>Starred</span>
-    </a>
+        <span [class.hidden]="!isOpen" class="whitespace-nowrap transition-opacity duration-300">
+    Compose
+  </span>
+          <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Compose
+        </div>
+      </button>
+    </div>
 
-    <a routerLink="/sent" routerLinkActive="nav-active" class="nav-link">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-      </svg>
-      <span>Sent</span>
-    </a>
-
-    <a routerLink="/drafts" routerLinkActive="nav-active" class="nav-link">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-      <span>Drafts</span>
-    </a>
-
-    <a routerLink="/trash" routerLinkActive="nav-active" class="nav-link">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-      </svg>
-      <span>Trash</span>
-    </a>
-
-    <!-- Divider -->
-    <div class="my-3 border-t border-gray-200"></div>
-
-    <!-- Folders Section - Collapsible -->
-    <div class="mb-3">
-      <div class="flex items-center justify-between px-3 py-2">
-        <button (click)="toggleFolders()"
-          class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase hover:text-gray-700 transition">
-          <svg class="w-4 h-4 transition-transform" [class.rotate-90]="showFolders" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 custom-scrollbar" [class.overflow-y-auto]="isOpen" [class.overflow-x-hidden]="isOpen"
+      [class.overflow-visible]="!isOpen">
+      <a routerLink="/inbox" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link group flex items-center relative" [class.justify-center]="!isOpen">
+        <div class="flex items-center flex-1" [class.justify-center]="!isOpen" [class.gap-3]="isOpen">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-          <span>Folders</span>
-        </button>
-        <button (click)="openCreateFolderModal()" title="Create folder"
-          class="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-blue-600 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-      </div>
+          <span [class.hidden]="!isOpen" class="whitespace-nowrap">Inbox</span>
+        </div>
+        @if(systemFolders[0].count && systemFolders[0].count! > 0){
+        <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
+          [class.absolute]="!isOpen" [class.top-2]="!isOpen" [class.right-2]="!isOpen" [class.hidden]="!isOpen">
+          {{ systemFolders[0].count }}
+        </span>
+        }
 
-      <!-- Folder List -->
-      @if (showFolders) {
-      <div class="ml-2 mt-1">
-        @for (folder of customFolders; track folder.name) {
-        <div class="flex items-center group transition-all duration-200"
-          [class.bg-blue-100]="dragOverFolder === folder.name" [class.border-l-4]="dragOverFolder === folder.name"
-          [class.border-l-blue-600]="dragOverFolder === folder.name" [class.shadow-md]="dragOverFolder === folder.name"
-          (dragover)="onFolderDragOver($event, folder.name)" (dragleave)="onFolderDragLeave($event)"
-          (drop)="onFolderDrop($event, folder.name)">
-          <a (click)="navigateToFolder(folder.name)" routerLinkActive="nav-active"
-            class="nav-link text-sm flex-1 cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+        <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Inbox
+        </div>
+      </a>
+
+      <a routerLink="/starred" routerLinkActive="nav-active" class="nav-link flex items-center group relative"
+        [class.justify-center]="!isOpen">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+        <span [class.hidden]="!isOpen" class="ml-3 whitespace-nowrap">Starred</span>
+
+        <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Starred
+        </div>
+      </a>
+
+      <a routerLink="/sent" routerLinkActive="nav-active" class="nav-link flex items-center group relative"
+        [class.justify-center]="!isOpen">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
+        <span [class.hidden]="!isOpen" class="ml-3 whitespace-nowrap">Sent</span>
+
+        <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Sent
+        </div>
+      </a>
+
+      <a routerLink="/drafts" routerLinkActive="nav-active" class="nav-link flex items-center group relative"
+        [class.justify-center]="!isOpen">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span [class.hidden]="!isOpen" class="ml-3 whitespace-nowrap">Drafts</span>
+
+        <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Drafts
+        </div>
+      </a>
+
+      <a routerLink="/trash" routerLinkActive="nav-active" class="nav-link flex items-center group relative"
+        [class.justify-center]="!isOpen">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span [class.hidden]="!isOpen" class="ml-3 whitespace-nowrap">Trash</span>
+
+        <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Trash
+        </div>
+      </a>
+
+      <!-- Divider -->
+      <div class="my-3 border-t border-gray-200"></div>
+
+      <!-- Folders Section - Collapsible -->
+      <div class="mb-3">
+        <div class="flex items-center justify-between px-3 py-2" [class.justify-center]="!isOpen">
+          <button (click)="toggleFolders()" [class.hidden]="!isOpen"
+            class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase hover:text-gray-700 transition">
+            <svg class="w-4 h-4 transition-transform" [class.rotate-90]="showFolders" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
-            <span>{{ folder.name }}</span>
-          </a>
-          <button (click)="editFolder(folder.name); $event.stopPropagation()"
-            class="p-1 rounded hover:bg-gray-100 transition" title="Rename folder">
-            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
+            <span>Folders</span>
           </button>
-          <button (click)="deleteFolder(folder.name); $event.stopPropagation()"
-            class="p-1 rounded hover:bg-red-100 transition mr-2" title="Delete folder">
-            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          <button (click)="openCreateFolderModal()" title="Create folder"
+            class="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-blue-600 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
           </button>
         </div>
+
+        <!-- Folder List -->
+        @if (showFolders || !isOpen) {
+        <div class="mt-1" [class.ml-2]="isOpen">
+          @for (folder of customFolders; track folder.name) {
+          <div class="flex items-center group transition-all duration-200"
+            [class.bg-blue-100]="dragOverFolder === folder.name" [class.border-l-4]="dragOverFolder === folder.name"
+            [class.border-l-blue-600]="dragOverFolder === folder.name"
+            [class.shadow-md]="dragOverFolder === folder.name" (dragover)="onFolderDragOver($event, folder.name)"
+            (dragleave)="onFolderDragLeave($event)" (drop)="onFolderDrop($event, folder.name)">
+            <a (click)="navigateToFolder(folder.name)" routerLinkActive="nav-active"
+              class="nav-link text-sm flex-1 cursor-pointer flex items-center relative"
+              [class.justify-center]="!isOpen">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              <span [class.hidden]="!isOpen" class="ml-3 truncate">{{ folder.name }}</span>
+
+              <!-- Tooltip -->
+              <div [class.hidden]="isOpen"
+                class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+                {{ folder.name }}
+              </div>
+            </a>
+            <button (click)="editFolder(folder.name); $event.stopPropagation()" [class.hidden]="!isOpen"
+              class="p-1 rounded hover:bg-gray-100 transition opacity-0 group-hover:opacity-100" title="Rename folder">
+              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button (click)="deleteFolder(folder.name); $event.stopPropagation()" [class.hidden]="!isOpen"
+              class="p-1 rounded hover:bg-red-100 transition mr-2 opacity-0 group-hover:opacity-100"
+              title="Delete folder">
+              <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+          }
+        </div>
         }
       </div>
-      }
-    </div>
 
-    <!-- Divider -->
-    <div class="my-3 border-t border-gray-200"></div>
+      <!-- Divider -->
+      <div class="my-3 border-t border-gray-200"></div>
 
-    <!-- Bottom Links -->
-    <a routerLink="/contacts" routerLinkActive="nav-active" class="nav-link">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-      <span>Contacts</span>
-    </a>
+      <!-- Bottom Links -->
+      <a routerLink="/contacts" routerLinkActive="nav-active" class="nav-link flex items-center group relative"
+        [class.justify-center]="!isOpen">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span [class.hidden]="!isOpen" class="ml-3 whitespace-nowrap">Contacts</span>
 
-    <a routerLink="/filters" routerLinkActive="nav-active" class="nav-link">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-      </svg>
-      <span>Filters</span>
-    </a>
-  </nav>
+        <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Contacts
+        </div>
+      </a>
 
-  <!-- Create Folder Modal -->
-  @if (showCreateFolderModal) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
-    (click)="closeCreateFolderModal()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">Create New Folder</h2>
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Folder Name</label>
-        <input type="text" [(ngModel)]="newFolderName" placeholder="Enter folder name" class="input"
-          (keyup.enter)="createFolder()" autofocus>
+      <a routerLink="/filters" routerLinkActive="nav-active" class="nav-link flex items-center group relative"
+        [class.justify-center]="!isOpen">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        <span [class.hidden]="!isOpen" class="ml-3 whitespace-nowrap">Filters</span>
+
+        <!-- Tooltip -->
+        <div [class.hidden]="isOpen"
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+          Filters
+        </div>
+      </a>
+    </nav>
+
+    <!-- Create Folder Modal -->
+    @if (showCreateFolderModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
+      (click)="closeCreateFolderModal()">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Create New Folder</h2>
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Folder Name</label>
+          <input type="text" [(ngModel)]="newFolderName" placeholder="Enter folder name" class="input"
+            (keyup.enter)="createFolder()" autofocus>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button (click)="closeCreateFolderModal()" class="btn-secondary">Cancel</button>
+          <button (click)="createFolder()" [disabled]="!newFolderName.trim()" class="btn-primary">Create</button>
+        </div>
       </div>
-      <div class="flex justify-end gap-3">
-        <button (click)="closeCreateFolderModal()" class="btn-secondary">Cancel</button>
-        <button (click)="createFolder()" [disabled]="!newFolderName.trim()" class="btn-primary">Create</button>
+    </div>
+    }
+
+    <!-- Rename Folder Modal -->
+    @if (showRenameFolderModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
+      (click)="closeRenameFolderModal()">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Rename Folder</h2>
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">New Folder Name</label>
+          <input type="text" [(ngModel)]="renameFolderName" placeholder="Enter new name" class="input"
+            (keyup.enter)="saveRenameFolder()" autofocus>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button (click)="closeRenameFolderModal()" class="btn-secondary">Cancel</button>
+          <button (click)="saveRenameFolder()" [disabled]="!renameFolderName.trim()" class="btn-primary">Rename</button>
+        </div>
       </div>
     </div>
+    }
   </div>
-  }
-
-  <!-- Rename Folder Modal -->
-  @if (showRenameFolderModal) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
-    (click)="closeRenameFolderModal()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">Rename Folder</h2>
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">New Folder Name</label>
-        <input type="text" [(ngModel)]="renameFolderName" placeholder="Enter new name" class="input"
-          (keyup.enter)="saveRenameFolder()" autofocus>
-      </div>
-      <div class="flex justify-end gap-3">
-        <button (click)="closeRenameFolderModal()" class="btn-secondary">Cancel</button>
-        <button (click)="saveRenameFolder()" [disabled]="!renameFolderName.trim()" class="btn-primary">Rename</button>
-      </div>
-    </div>
-  </div>
-  }
 </aside>

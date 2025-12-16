@@ -318,12 +318,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
             this.location.back();
             // Reload emails after navigation completes
             this.selectedEmails.clear();
-            this.cdr.detectChanges();
             this.loadEmails();
-          } else {
+            this.cdr.detectChanges();
+          }
             this.selectedEmails.clear();
             this.loadEmails();
-          }
+
         },
         error: (error) => {
           console.error('Failed to delete emails:', error);
