@@ -28,6 +28,8 @@ export class HeaderComponent implements OnInit {
     subject: '',
     body: '',
     folder: 'all',
+    priority: '',
+    hasAttachment: false,
   };
 
   constructor(
@@ -123,21 +125,38 @@ export class HeaderComponent implements OnInit {
     if(this.advancedParams.folder && this.advancedParams.folder !== 'all') {
       queryParams.folder = this.advancedParams.folder;
     }
+    if(this.advancedParams.priority) {
+      queryParams.priority = this.advancedParams.priority;
+    }
+    if(this.advancedParams.hasAttachment) {
+      queryParams.hasAttachment = 'true';
+    }
     this.router.navigate(['/search'], { queryParams });
   }
 
   onCreateFilter() {
     this.showAdvancedSearch = false;
 
+    // PREPARE PARAMS FOR FILTER PAGE
     const queryParams: any = {};
-    // We pass all filled fields. The Filter page will decide how to handle them.
-    if (this.advancedParams.sender) queryParams.from = this.advancedParams.sender;
-    if (this.advancedParams.subject) queryParams.subject = this.advancedParams.subject;
-    if (this.advancedParams.body) queryParams.body = this.advancedParams.body;
 
+    if (this.advancedParams.sender) queryParams.from = this.advancedParams.sender;
+    if (this.advancedParams.receiver) queryParams.receiver = this.advancedParams.receiver;
+    if (this.advancedParams.subject) queryParams.subject = this.advancedParams.subject;
+    if (this.advancedParams.body) {
+      queryParams.body = this.advancedParams.body;
+    } else if (this.searchTerm) {
+      queryParams.body = this.searchTerm;
+    }
+    if (this.advancedParams.priority) queryParams.priority = this.advancedParams.priority;
+    if (this.advancedParams.hasAttachment) queryParams.hasAttachment = 'true';
     queryParams.create = 'true';
 
-    this.router.navigate(['/filters'], { queryParams });
+    this.router.navigate(['/filters'], { queryParams }).catch(err => {
+      if (err.name !== 'NavigationCancel' && err.message !== 'Transition was skipped') {
+        console.error('Navigation error:', err);
+      }
+    });
   }
 
   toggleUserMenu(event: MouseEvent) {

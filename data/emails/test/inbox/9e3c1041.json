@@ -1,0 +1,16 @@
+{
+  "messageId" : "9e3c1041",
+  "from" : "test2@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "testing our filter",
+  "body" : "<p><strong><span style=\"color: rgb(182, 2, 5);\">LANA IS HERE</span></strong></p>",
+  "timestamp" : [ 2025, 12, 16, 20, 17, 54, 895935200 ],
+  "priority" : 2,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : true,
+  "starred" : true,
+  "draft" : false
+}

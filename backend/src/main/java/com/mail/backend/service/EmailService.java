@@ -182,22 +182,71 @@ public class EmailService {
 
     // SEARCH EMAILS
     public List<Email> searchEmails(String username, String sender, String receiver,
-                                    String subject, String body,String folder, String sortBy) throws IOException {
+                                    String subject, String body,String folder,
+                                    String keyword, Integer priority, Boolean hasAttachment,
+                                    String sortBy) throws IOException {
+
         List<Email> allEmails = emailRepository.getAllEmails(username);
+        SearchFilter finalFilter;
 
-        // Chain filters using the Filter Pattern
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            final String searchKey = keyword.toLowerCase();
+            // Global Search (OR Logic)
+            SearchFilter subjectRule = (emails) -> emails.stream()
+                    .filter(e -> e.getSubject() != null && e.getSubject().toLowerCase().contains(searchKey))
+                    .collect(Collectors.toList());
 
-        SearchFilter finalFilter = new SenderFilter(sender);
-        //combine criteria using AndFilter
-        if (receiver != null && !receiver.isEmpty()) {
-            finalFilter = new AndFilter(finalFilter, new ReceiverFilter(receiver));
+            SearchFilter bodyRule = (emails) -> emails.stream()
+                    .filter(e -> e.getBody() != null && e.getBody().toLowerCase().contains(searchKey))
+                    .collect(Collectors.toList());
+
+            SearchFilter senderRule = (emails) -> emails.stream()
+                    .filter(e -> e.getFrom() != null && e.getFrom().toLowerCase().contains(searchKey))
+                    .collect(Collectors.toList());
+
+            SearchFilter receiverRule = (emails) -> emails.stream()
+                    .filter(e -> e.getTo() != null && e.getTo().toString().toLowerCase().contains(searchKey))
+                    .collect(Collectors.toList());
+
+            // Chain: Subject OR Body OR Sender OR Receiver
+            finalFilter = subjectRule;
+            finalFilter = new OrFilter(finalFilter, bodyRule);
+            finalFilter = new OrFilter(finalFilter, senderRule);
+            finalFilter = new OrFilter(finalFilter, receiverRule);
+
+        } else {
+            // (AND Logic)
+            finalFilter = new SearchFilter() {
+                @Override
+                public List<Email> meetCriteria(List<Email> emails) {
+                    return emails;
+                }
+            };
+
+            if (sender != null && !sender.isEmpty()) {
+                finalFilter = new AndFilter(finalFilter, new SenderFilter(sender));
+            }
+            if (receiver != null && !receiver.isEmpty()) {
+                finalFilter = new AndFilter(finalFilter, new ReceiverFilter(receiver));
+            }
+            if (subject != null && !subject.isEmpty()) {
+                finalFilter = new AndFilter(finalFilter, new SubjectFilter(subject));
+            }
+            if (body != null && !body.isEmpty()) {
+                finalFilter = new AndFilter(finalFilter, new BodyFilter(body));
+            }
         }
-        if (subject != null && !subject.isEmpty()) {
-            finalFilter = new AndFilter(finalFilter, new SubjectFilter(subject));
+
+        //Apply priority and Attachment logic on top of everything (and)
+        if (priority != null) {
+            finalFilter = new AndFilter(finalFilter, new PriorityFilter(priority));
+            log.info("Here is the priority: " + priority.toString());
         }
-        if (body != null && !body.isEmpty()) {
-            finalFilter = new AndFilter(finalFilter, new BodyFilter(body));
+
+        if (hasAttachment != null && hasAttachment) {
+            finalFilter = new AndFilter(finalFilter, new AttachmentFilter(hasAttachment));
         }
+
         //chaining for folders/status
         if (folder != null && !folder.isEmpty() && !folder.equalsIgnoreCase("all")) {
             switch (folder.toLowerCase()) {
@@ -220,7 +269,6 @@ public class EmailService {
 
         // Execute the filter chain
         List<Email> results = finalFilter.meetCriteria(allEmails);
-
         if (sortBy != null && !sortBy.isEmpty()) {
             SortStrategy sortStrategy = getSortStrategy(sortBy);
             results = sortStrategy.sort(results);
@@ -573,19 +621,4 @@ public class EmailService {
         };
     }
 
-    // Strategy Pattern - Searching
-    private SearchStrategy getSearchStrategy(String searchBy) {
-        if(searchBy==null || searchBy.isEmpty()) {
-            return new SearchAllStrategy(); // Default Search strategy
-        }
-        return switch (searchBy.toLowerCase()){
-            case "sender" -> new SearchBySenderStrategy();
-            case "subject"-> new SearchBySubjectStrategy();
-            case "receiver", "receivers", "to" -> new SearchByReceiverStrategy();
-            case "all"  -> new SearchAllStrategy();
-            case "body" -> new SearchByBodyStrategy();
-            case "importance" -> new SearchByImportanceStrategy();
-            default -> new SearchAllStrategy();
-        };
-    }
 }

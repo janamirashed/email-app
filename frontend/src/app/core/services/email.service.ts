@@ -202,7 +202,7 @@ export class EmailService {
   }
 
   // GET /api/email/search?keyword=test&searchIn=all
-  searchEmails(parameters: {sender?:string, receiver?:string, subject?:string, body?:string, folder?:string, keyword?:string, sortBy?:string}): Observable<any> {
+  searchEmails(parameters: {sender?:string, receiver?:string, subject?:string, body?:string, folder?:string, keyword?:string, priority?:string, hasAttachment?:boolean, sortBy?:string}): Observable<any> {
     let httpParams = new HttpParams();
     if(parameters.sender)httpParams = httpParams.set('sender', parameters.sender);
     if(parameters.receiver) httpParams = httpParams.set('receiver', parameters.receiver);
@@ -211,7 +211,10 @@ export class EmailService {
     if (parameters.folder) httpParams = httpParams.set('folder', parameters.folder);
     if(parameters.keyword) httpParams =httpParams.set('keyword', parameters.keyword);
     if (parameters.sortBy) httpParams = httpParams.set('sortBy', parameters.sortBy);
-
+    if (parameters.priority) httpParams = httpParams.set('priority', parameters.priority.toString());
+    if (parameters.hasAttachment !== null && parameters.hasAttachment !== undefined) {
+      httpParams = httpParams.set('hasAttachment', parameters.hasAttachment.toString());
+    }
     return this.http.get(`${this.baseUrl}/search`, {
       headers: this.getHeaders(),
       params: httpParams

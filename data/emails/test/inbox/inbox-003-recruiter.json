@@ -1,0 +1,16 @@
+{
+  "messageId" : "inbox-003-recruiter",
+  "from" : "recruiter@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "New Job Opportunity",
+  "body" : "<p>We are looking for a Senior <strong>Java</strong> Developer with Spring Boot experience.</p>",
+  "timestamp" : [ 2025, 12, 12, 3, 27, 15, 164806400 ],
+  "priority" : 2,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

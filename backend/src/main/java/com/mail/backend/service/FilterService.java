@@ -70,10 +70,13 @@ public class FilterService {
         log.info("Filter {} deleted for user {}", filterId, username);
     }
 
-    private static final Map<String, Function<Email, String>> PROPERTY_EXTRACTORS = Map.of(
+    private static final Map<String, Function<Email, Object>> PROPERTY_EXTRACTORS = Map.of(
             "subject", Email::getSubject,
             "body", Email::getBody,
-            "from", Email::getFrom
+            "from", Email::getFrom,
+            "to", Email::getTo,
+            "receiver", Email::getTo,
+            "composite", email -> email
     );
     private static final Map<String, Action> ACTIONS = Map.of(
             "move", new Move(),
@@ -85,17 +88,22 @@ public class FilterService {
     public Email applyFilters(String username, Email email) throws Exception {
         List<Filter> filterList = this.listFilters(username);
         for (Filter filter : filterList) {
-            Function<Email, String> extractor =
+            Function<Email, Object> extractor =
                     PROPERTY_EXTRACTORS.get(filter.getProperty().toLowerCase());
             if (extractor == null) continue;
-            FilterFactory factory = new FilterFactory(filter.getMatcher());
-            String emailValue = extractPlainText(extractor.apply(email));
+            Object rawValue = extractor.apply(email);
 
-            if (factory.filter(emailValue, filter.getValue())) {
+            if ("body".equalsIgnoreCase(filter.getProperty()) && rawValue instanceof String) {
+                rawValue = extractPlainText((String) rawValue);
+            }
+
+            FilterFactory factory = new FilterFactory(filter.getMatcher());
+
+            if (factory.filter(rawValue, filter.getValue())) {
                 Action action = ACTIONS.get(filter.getAction().toLowerCase());
 
                 if (action != null) {
-                    return action.execute(username,email, filter);
+                    return action.execute(username, email, filter);
                 }
             }
 
