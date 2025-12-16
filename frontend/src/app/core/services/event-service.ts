@@ -3,7 +3,7 @@ import {Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs
 import { AuthService } from './auth-service';
 import { map } from 'rxjs/operators';
 import { sseEvent } from '../models/sse-event.model';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +15,8 @@ export class EventService {
   private inboxRefresh$ = new Subject<void>();
   private folderRefresh$ = new Subject<void>();
   router = inject(Router);
-  constructor(private ngZone: NgZone, private authService: AuthService) {
+  constructor(private ngZone: NgZone, private authService: AuthService ,
+  private route: ActivatedRoute) {
 
   }
   /**
@@ -151,4 +152,22 @@ export class EventService {
   public stopEvents(): void {
     this.stopStream$.next();
   }
+
+clearEmailSelection(messageIds: string[]) {
+  if(this.route.snapshot.queryParamMap.get("messageId")){
+    if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())){
+      this.router.navigate(
+        [],
+        {
+          relativeTo: this.route,
+          queryParams: {},
+          queryParamsHandling: ''
+        }
+      );
+    }
+
+  }
+}
+
+
 }

@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, NgZone, OnDestroy, HostListener } from '@angular/core';
+import { CommonModule} from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EventService } from '../../../../core/services/event-service';
@@ -50,7 +50,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
   moveErrorMessage = '';
 
   constructor(
-    private location: Location,
     private emailService: EmailService,
     private eventService: EventService,
     private confirmationService: ConfirmationService,
@@ -180,6 +179,8 @@ export class EmailListComponent implements OnInit, OnDestroy {
       action.subscribe({
         next: () => {
           this.contextMenuEmail.starred = !this.contextMenuEmail.starred;
+          this.eventService.triggerEmailListRefresh();
+          this.eventService.clearEmailSelection(this.contextMenuEmail.messageId);
           this.cdr.detectChanges();
           this.closeContextMenu();
         },
@@ -256,10 +257,10 @@ export class EmailListComponent implements OnInit, OnDestroy {
         // Close dialog and clear data
         this.showMoveDialog = false;
         this.moveErrorMessage = '';
+        this.eventService.clearEmailSelection(this.contextMenuEmail.messageId);
         this.contextMenuEmail = null;
         this.showContextMenu = false;
         this.selectedEmails.clear();
-
         console.log('Triggering change detection...');
         this.cdr.detectChanges();
 
@@ -306,6 +307,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
         this.emailService.deleteEmail(email.messageId).subscribe({
           next: () => {
             this.emails = this.emails.filter(e => e.messageId !== email.messageId);
+            this.eventService.clearEmailSelection(email.messageId);
             this.cdr.detectChanges();
           },
           error: (error) => console.error('Failed to delete email:', error)
@@ -517,9 +519,13 @@ export class EmailListComponent implements OnInit, OnDestroy {
           console.log(`Deleted ${messageIds.length} emails`);
           // Clear selection if any deleted email was being viewed
           if (this.selectedEmailId && messageIds.includes(this.selectedEmailId)) {
-            this.selectedEmailId = null;
             // Remove messageId query param to show 'Select an email to read'
-            this.location.back();
+            let stringID = this.selectedEmailId as string
+            if (stringID){
+              let messageIds: string[] = new Array(stringID);
+              this.eventService.clearEmailSelection(messageIds);
+            }
+            this.selectedEmailId = null;
             // Reload emails after navigation completes
             this.selectedEmails.clear();
             this.loadEmails();

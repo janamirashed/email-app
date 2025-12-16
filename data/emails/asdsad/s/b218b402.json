@@ -6,11 +6,11 @@
   "body" : "<p>d</p>",
   "timestamp" : [ 2025, 12, 16, 11, 28, 9, 882520200 ],
   "priority" : 3,
-  "folder" : "sent",
-  "originalFolder" : null,
+  "folder" : "s",
+  "originalFolder" : "sent",
   "attachments" : [ ],
   "deletedAt" : null,
-  "read" : false,
+  "draft" : false,
   "starred" : false,
-  "draft" : false
+  "read" : true
 }

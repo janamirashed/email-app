@@ -4,6 +4,7 @@ import { EmailService } from '../../../../core/services/email.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EmailDetailComponent } from '../email-detail/email-detail';
+import { EventService } from '../../../../core/services/event-service';
 
 @Component({
   selector: 'app-email-trash',
@@ -26,7 +27,8 @@ export class EmailTrashComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private eventService: EventService,
   ) { }
 
   currentUserEmail: string = '';
@@ -34,7 +36,10 @@ export class EmailTrashComponent implements OnInit {
   ngOnInit() {
     const currentUser = localStorage.getItem('currentUser') || '';
     this.currentUserEmail = `${currentUser}@jaryn.com`;
-    this.loadTrashEmails();
+    // Defer loading to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.loadTrashEmails();
+    });
   }
   getParticipant(email: any): string {
     // Check if I am the sender
@@ -87,22 +92,6 @@ export class EmailTrashComponent implements OnInit {
     });
   }
 
-  clearEmailSelection(messageIds: string[]) {
-    if(this.route.snapshot.queryParamMap.get("messageId")){
-      if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())){
-        this.router.navigate(
-          [],
-          {
-            relativeTo: this.route,
-            queryParams: {},
-            queryParamsHandling: ''
-          }
-        );
-      }
-
-    }
-
-  }
 
   // Toggle email selection (checkbox)
   toggleEmailSelection(emailId: string, event: Event) {
@@ -146,7 +135,7 @@ export class EmailTrashComponent implements OnInit {
         console.log('Emails restored to their original folders');
         this.isLoading = false;
         this.selectedEmails.clear();
-        this.clearEmailSelection(messageIds);
+        this.eventService.clearEmailSelection(messageIds);
         this.loadTrashEmails();
         this.cdr.detectChanges()
         // this.successMessage = '';
@@ -185,7 +174,7 @@ export class EmailTrashComponent implements OnInit {
           console.log('Emails permanently deleted');
           this.isLoading = false;
           this.selectedEmails.clear();
-          this.clearEmailSelection(messageIds);
+          this.eventService.clearEmailSelection(messageIds);
           this.loadTrashEmails();
           this.cdr.detectChanges();
         },
@@ -225,7 +214,7 @@ export class EmailTrashComponent implements OnInit {
           this.isLoading = false;
           this.cdr.detectChanges();
           this.loadTrashEmails();
-          this.clearEmailSelection(allMessageIds);
+          this.eventService.clearEmailSelection(allMessageIds);
           this.successMessage = '';
         },
         error: (error) => {

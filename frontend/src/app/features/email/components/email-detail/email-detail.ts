@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { CommonModule} from '@angular/common';
+import {ActivatedRoute, Router} from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { FolderService } from '../../../../core/services/folder.service';
@@ -8,6 +8,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import {EventService} from '../../../../core/services/event-service';
 
 @Component({
   selector: 'app-email-detail',
@@ -39,7 +40,7 @@ export class EmailDetailComponent implements OnInit {
     private notificationService: NotificationService,
     private confirmationService: ConfirmationService,
     private sanitizer: DomSanitizer,
-    private location: Location
+    private eventService: EventService,
   ) { }
 
   ngOnInit() {
@@ -144,7 +145,12 @@ export class EmailDetailComponent implements OnInit {
         next: () => {
           console.log('Email deleted');
           // Navigate back or close detail view
-          this.location.back();
+          let stringID = this.messageId as string
+          if (stringID){
+            let messageIds: string[] = new Array(stringID);
+            this.eventService.clearEmailSelection(messageIds);
+            this.eventService.triggerEmailListRefresh();
+          }
           this.cdr.detectChanges()
         },
         error: (error) => {
@@ -214,7 +220,12 @@ export class EmailDetailComponent implements OnInit {
         console.log('Email moved to', folderName);
 
         this.showMoveDialog = false;
-        this.location.back();
+        let stringID = this.messageId as string
+        if (stringID){
+          let messageIds: string[] = new Array(stringID);
+          this.eventService.clearEmailSelection(messageIds);
+        }
+        this.eventService.triggerEmailListRefresh();
         this.notificationService.showSuccess(`Email moved to ${folderName}`);
         this.cdr.detectChanges();
 
