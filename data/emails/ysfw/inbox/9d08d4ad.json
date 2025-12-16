@@ -12,5 +12,5 @@
   "deletedAt" : null,
   "draft" : false,
   "starred" : false,
-  "read" : false
+  "read" : true
 }
