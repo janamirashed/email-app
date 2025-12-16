@@ -5,9 +5,11 @@ import com.mail.backend.model.MimeType;
 import com.mail.backend.service.AttachmentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,15 +38,34 @@ public class AttachmentController {
     public ResponseEntity<?> getValidAttachmentId(){
         Map<String,String> response = new HashMap<>();
         response.put("id",attachmentService.generateAttachmentId(true));
+
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @GetMapping("/{attachment_id}")
-    public ResponseEntity<?> getAttachment(@PathVariable("attachment_id") String attachmentId, HttpServletResponse response){
+    public ResponseEntity<?> getAttachment(@PathVariable("attachment_id") String attachmentId,
+                                           HttpServletResponse response, Authentication authentication){
         try {
+            String username = authentication.getName();
+
+            AttachmentMetadata metadata = attachmentService.getAttachmentMetadata(attachmentId);
             InputStream inputStream = attachmentService.getAttachmentStream(attachmentId);
-            MimeType type = attachmentService.getAttachmentMetadata(attachmentId).getMimeType();
+
+            MimeType type = metadata.getMimeType();
+            String[] accessors = metadata.getAccessors();
+
+            boolean hasAccess = false;
+            for (String accessor : accessors){
+                if (username.equals(accessor)) {
+                    hasAccess = true;
+                    break;
+                }
+            }
+            if (!hasAccess){
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
             response.setContentType(type.toString());
+
             OutputStream outputStream = response.getOutputStream();
             inputStream.transferTo(outputStream);
             return new ResponseEntity<>(HttpStatus.OK);
@@ -55,12 +76,17 @@ public class AttachmentController {
     }
 
     @PutMapping("")
-    public ResponseEntity<?>  saveAttachment(@RequestParam(required = false) String id, @RequestParam String mimeType, @RequestParam String fileName, HttpServletRequest file){
-        AttachmentMetadata data;
+    public ResponseEntity<?> saveAttachment(@RequestParam(required = false) String id,
+                                            @RequestParam String mimeType, @RequestParam String fileName,
+                                            @RequestParam String accessors, HttpServletRequest file){
         try {
+             AttachmentMetadata data;
+             System.out.println(accessors);
+             String [] accessorsArr = accessors.split("\\s*,\\s*");
+//            System.out.println(accessorsArr[0]);
              data = (id == null || id.trim().isEmpty())?
-                     attachmentService.saveAttachment(MimeType.fromValue(mimeType), fileName, file.getInputStream()):
-                     attachmentService.saveAttachment(id, MimeType.fromValue(mimeType), fileName, file.getInputStream());
+                     attachmentService.saveAttachment(MimeType.fromValue(mimeType), fileName, accessorsArr, file.getInputStream()):
+                     attachmentService.saveAttachment(id, MimeType.fromValue(mimeType), fileName,accessorsArr, file.getInputStream());
 
             if (data == null){
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);

@@ -164,7 +164,7 @@ public enum MimeType {
             case "json" -> APPLICATION_JSON;
             case "xml" -> APPLICATION_XML;
 
-            default -> null; // Fallback or handle unknown types
+            default -> APPLICATION_OCTET_STREAM; // Fallback or handle unknown types
         };
     }
 

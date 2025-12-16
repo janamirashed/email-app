@@ -50,7 +50,7 @@ public class AttachmentService {
         }
     }
 
-    public AttachmentMetadata saveAttachment(String id, MimeType mimeType, String fileName, InputStream inputStream) {
+    public AttachmentMetadata saveAttachment(String id, MimeType mimeType, String fileName, String[] accessors,  InputStream inputStream) {
         /**
          * used when we are taking the approach of non-transactional uploads, in which case the client requests the id first,
          * and then uploads with the same id in that case we track the generated ids,and consider acknowledgement before completing the upload.
@@ -70,6 +70,7 @@ public class AttachmentService {
         attachmentMetadata.setId(id);
         attachmentMetadata.setFileName(fileName);
         attachmentMetadata.setMimeType(mimeType);
+        attachmentMetadata.setAccessors(accessors);
         Long size = attachmentRepository.saveAttachment(attachmentMetadata, inputStream);
 
 
@@ -79,7 +80,7 @@ public class AttachmentService {
         return attachmentMetadata;
     }
 
-    public AttachmentMetadata saveAttachment(MimeType mimeType, String fileName, InputStream inputStream){
+    public AttachmentMetadata saveAttachment(MimeType mimeType, String fileName, String[] accessors, InputStream inputStream){
 
         /**
          * used when we are taking the approach of transactional uploads, in which case the client doesn't request the id prior to upload,
@@ -92,6 +93,7 @@ public class AttachmentService {
         attachmentMetadata.setId(id);
         attachmentMetadata.setFileName(fileName);
         attachmentMetadata.setMimeType(mimeType);
+        attachmentMetadata.setAccessors(accessors);
         Long size = attachmentRepository.saveAttachment(attachmentMetadata, inputStream);
 
         if (size > 0){
