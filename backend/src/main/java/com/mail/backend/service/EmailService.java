@@ -621,19 +621,4 @@ public class EmailService {
         };
     }
 
-    // Strategy Pattern - Searching
-    private SearchStrategy getSearchStrategy(String searchBy) {
-        if(searchBy==null || searchBy.isEmpty()) {
-            return new SearchAllStrategy(); // Default Search strategy
-        }
-        return switch (searchBy.toLowerCase()){
-            case "sender" -> new SearchBySenderStrategy();
-            case "subject"-> new SearchBySubjectStrategy();
-            case "receiver", "receivers", "to" -> new SearchByReceiverStrategy();
-            case "all"  -> new SearchAllStrategy();
-            case "body" -> new SearchByBodyStrategy();
-            case "importance" -> new SearchByImportanceStrategy();
-            default -> new SearchAllStrategy();
-        };
-    }
 }
