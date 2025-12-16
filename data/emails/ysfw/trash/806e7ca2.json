@@ -6,11 +6,11 @@
   "body" : "<p>wa</p>",
   "timestamp" : [ 2025, 12, 16, 15, 30, 51, 252421400 ],
   "priority" : 3,
-  "folder" : "sent",
-  "originalFolder" : null,
+  "folder" : "trash",
+  "originalFolder" : "sent",
   "attachments" : [ ],
-  "deletedAt" : null,
+  "deletedAt" : [ 2025, 12, 16, 15, 45, 13, 983987400 ],
   "draft" : false,
   "starred" : false,
-  "read" : false
+  "read" : true
 }

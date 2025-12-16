@@ -145,7 +145,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
     if (this.contextMenuEmail) {
       this.emailService.markAsRead(this.contextMenuEmail.messageId).subscribe({
         next: () => {
-          this.contextMenuEmail.isRead = true;
+          this.contextMenuEmail.read = true;
           this.emailService.refreshUnreadCount();
           this.cdr.detectChanges();
           this.closeContextMenu();
@@ -159,7 +159,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
     if (this.contextMenuEmail) {
       this.emailService.markAsUnread(this.contextMenuEmail.messageId).subscribe({
         next: () => {
-          this.contextMenuEmail.isRead = false;
+          this.contextMenuEmail.read = false;
           this.emailService.refreshUnreadCount();
           this.cdr.detectChanges();
           this.closeContextMenu();
@@ -171,13 +171,13 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   contextToggleStar() {
     if (this.contextMenuEmail) {
-      const action = this.contextMenuEmail.isStarred
+      const action = this.contextMenuEmail.starred
         ? this.emailService.unstarEmail(this.contextMenuEmail.messageId)
         : this.emailService.starEmail(this.contextMenuEmail.messageId);
 
       action.subscribe({
         next: () => {
-          this.contextMenuEmail.isStarred = !this.contextMenuEmail.isStarred;
+          this.contextMenuEmail.starred = !this.contextMenuEmail.starred;
           this.cdr.detectChanges();
           this.closeContextMenu();
         },
