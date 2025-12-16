@@ -1,8 +1,8 @@
-import {Component, OnInit, OnDestroy, ChangeDetectorRef, Signal} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
-import {AttachmentService, UploadProgress} from '../../../../core/services/attachment.service';
+import { AttachmentService, UploadProgress } from '../../../../core/services/attachment.service';
 import { EmailService } from '../../../../core/services/email.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ContactService } from '../../../../core/services/contact.service';
@@ -40,14 +40,15 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   // Attachments
   attachments: Attachment[] = [];
   selectedFiles: File[] = [];
+  filesUpdated: boolean = false;
 
-  isUploading : Signal<boolean>;
-  uploadProgress : Signal<UploadProgress>;
+  isUploading: Signal<boolean>;
+  uploadProgress: Signal<UploadProgress>;
 
   // UI State
   isComposing: boolean = false;
   isLoading: boolean = false;
-  isSending : boolean = false;
+  isSending: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
 
@@ -100,6 +101,13 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
           if (data.body) {
             this.body = data.body;
           }
+          if (data.attachments) {
+            this.attachments = data.attachments;
+            this.filesUpdated = false;
+            //we must have this to not reupload the files that the user uploaded before
+            //to make the ux better
+            //and it's secure enough since to get valid attachment ids we need to upload the files first
+          }
         }
       }
     );
@@ -135,6 +143,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       mimeType: file.type,
       size: file.size
     }));
+    this.filesUpdated = true;
   }
 
   // Remove attachment from preview
@@ -143,43 +152,45 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     this.selectedFiles.splice(index, 1);
   }
 
-  async sendMail(transactional : boolean) {
+  async sendMail(transactional: boolean) {
 
     this.isSending = true;
     console.log("isSending : " + this.isSending);
-    let attachment_ids: string[] = [];
-    if (this.selectedFiles.length > 0 && !transactional) {
+    // let attachment_ids: string[] = [];
+    // if (this.selectedFiles.length > 0 && !transactional) {
 
-      attachment_ids = await lastValueFrom(
-        this.attachmentService.getAttachmentIds(this.selectedFiles.length)
-      );
-    }
+    //   attachment_ids = await lastValueFrom(
+    //     this.attachmentService.getAttachmentIds(this.selectedFiles.length)
+    //   );
+    // }
 
-    if (this.selectedFiles.length > 0){
-      if(transactional){
-        attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles));
-        console.log(attachment_ids.length);
-        console.log(attachment_ids.at(0));
-      }
-      else{
-        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles).subscribe({
-          next : () => {
-            console.log("non-transactional uploads complete");
-          }
-        });
-        //no need to await if it's not transactional
-      }
-    }
+    // if (this.selectedFiles.length > 0){
+    //   if(transactional){
+    //     attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles));
+    //     console.log(attachment_ids.length);
+    //     console.log(attachment_ids.at(0));
+    //   }
+    //   else{
+    //     this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles).subscribe({
+    //       next : () => {
+    //         console.log("non-transactional uploads complete");
+    //       }
+    //     });
+    //     //no need to await if it's not transactional
+    //   }
+    // }
 
-    let attachments: any[] = [];
-    attachment_ids.forEach((val, idx) => {
-      let entry = {
-        id: val,
-        mimeType: this.selectedFiles.at(idx)?.type,
-        fileName: this.selectedFiles.at(idx)?.name
-      };
-      attachments.push(entry);
-    });
+    // let attachments: any[] = [];
+    // attachment_ids.forEach((val, idx) => {
+    //   let entry = {
+    //     id: val,
+    //     mimeType: this.selectedFiles.at(idx)?.type,
+    //     fileName: this.selectedFiles.at(idx)?.name
+    //   };
+    //   attachments.push(entry);
+    // });
+    if (this.filesUpdated)
+      this.attachments = await this.uploadFiles(transactional);
 
     let email: any = {
       from: localStorage.getItem("currentUser"),
@@ -187,16 +198,12 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       subject: this.subject,
       body: this.body,
       priority: this.priority,
-      attachments: attachments
+      attachments: this.attachments
     };
 
     if (!transactional)
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-    this.sendMailHelper(email);
-  }
-
-  sendMailHelper(email : any){
     this.emailService.sendEmail(email).subscribe({
       next: (response) => {
         console.log("Email sent successfully:", response);
@@ -215,8 +222,88 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     });
   }
 
+  async uploadFiles(transactional: boolean) {
+    let attachment_ids: string[] = [];
+    if (this.selectedFiles.length > 0 && !transactional) {
+
+      attachment_ids = await lastValueFrom(
+        this.attachmentService.getAttachmentIds(this.selectedFiles.length)
+      );
+    }
+
+    if (this.selectedFiles.length > 0) {
+      if (transactional) {
+        attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles));
+        console.log(attachment_ids.length);
+        console.log(attachment_ids.at(0));
+      }
+      else {
+        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles).subscribe({
+          next: () => {
+            console.log("non-transactional uploads complete");
+          }
+        });
+        //no need to await if it's not transactional
+      }
+    }
+
+    let attachments: any[] = [];
+    attachment_ids.forEach((val, idx) => {
+      let entry = {
+        id: val,
+        mimeType: this.selectedFiles.at(idx)?.type,
+        fileName: this.selectedFiles.at(idx)?.name
+      };
+      attachments.push(entry);
+    });
+    return attachments;
+  }
+
+  sendMailHelper(email: any) {
+
+  }
+
   // Save as draft
-  saveDraft() {
+  // saveDraft() {
+  //   this.errorMessage = '';
+  //   this.successMessage = '';
+
+  //   if (!this.subject.trim() && !this.body.trim() && !this.recipients.trim()) {
+  //     this.errorMessage = 'Draft must have at least some content';
+  //     return;
+  //   }
+
+  //   this.isLoading = true;
+
+  //   const draftEmail: any = {
+  //     to: this.parseRecipients(this.recipients),
+  //     subject: this.subject,
+  //     body: this.body,
+  //     priority: this.priority,
+  //     isDraft: true,
+  //     attachments: this.attachments
+  //   };
+
+  //   console.log('Saving draft...', draftEmail);
+  //   this.emailService.saveDraft(draftEmail).subscribe({
+  //     next: (response) => {
+  //       console.log('Draft saved successfully:', response);
+  //       this.successMessage = 'Draft saved successfully!';
+  //       this.isLoading = false;
+  //       this.successMessage = '';
+  //       this.closeCompose();
+  //       this.notificationService.showWarning('Email drafted!');
+
+  //       this.cdr.detectChanges();
+  //     },
+  //     error: (error) => {
+  //       console.error('Failed to save draft:', error);
+  //       this.errorMessage = error.error?.error || 'Failed to save draft. Please try again.';
+  //       this.isLoading = false;
+  //     }
+  //   });
+  // }
+  async saveDraft(transactional: boolean) {
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -226,6 +313,10 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
+
+    if (this.filesUpdated)
+      this.attachments = await this.uploadFiles(transactional);
+
 
     const draftEmail: any = {
       to: this.parseRecipients(this.recipients),
@@ -256,7 +347,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     });
   }
 
-  editingIsDisabled(){
+  editingIsDisabled() {
     return this.isSending || this.isLoading;
   }
   // Parse recipients from comma-separated string to array

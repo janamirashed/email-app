@@ -88,4 +88,16 @@ public class AttachmentRepository {
         return null;
     }
 
+    public boolean attachmentExists(String attachment_id){
+        try {
+            Path path = Paths.get(attachmentRoot, attachment_id + ".json");
+            return path.toFile().exists();
+        }
+        catch (Exception e) {
+            System.err.println("Error getting attachment stream" + e.getMessage());
+            return false;
+        }
+
+    }
+
 }

@@ -44,7 +44,7 @@ public class AttachmentService {
          * to avoid consuming more memory than needed
          */
         for(Map.Entry<String,Date> entry : this.generatedIds.entrySet()){
-            if (new Date().getTime() - entry.getValue().getTime() >= 60 * 1e3 * 60)
+            if (entry.getValue().after(new Date()))
                 continue;
             this.generatedIds.remove(entry.getKey());
         }
@@ -62,7 +62,8 @@ public class AttachmentService {
             return null;
 
         generatedIds.remove(id);
-        this.acknowledged.put(id, new Date());
+        long expirationTime = (long) (new Date().getTime() + 60*1e3*5);
+        this.acknowledged.put(id, new Date(expirationTime));
         //prevents reuse
         AttachmentMetadata attachmentMetadata = new AttachmentMetadata();
 
@@ -94,7 +95,8 @@ public class AttachmentService {
         Long size = attachmentRepository.saveAttachment(attachmentMetadata, inputStream);
 
         if (size > 0){
-            this.acknowledged.put(id, new Date());
+            long expirationTime = (long) (new Date().getTime() + 60*1e3*5);
+            this.acknowledged.put(id, new Date(expirationTime));
         }
         //acknowledged only after completion
         attachmentRepository.saveAttachmentMetadata(attachmentMetadata);
@@ -140,7 +142,7 @@ public class AttachmentService {
         /*
          * as a way to clean up the acknowledgement set on check.
          */
-        return acknowledged.containsKey(attachment_id);
+        return acknowledged.containsKey(attachment_id) || attachmentRepository.attachmentExists(attachment_id);
     }
 
 
