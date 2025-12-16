@@ -1,1 +1,63 @@
-/* Email List - Minimal styles */
+.context-menu {
+  min-width: 180px;
+  animation: fadeInScale 0.15s ease-out;
+  max-width: 250px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.context-menu button {
+  cursor: pointer;
+  user-select: none;
+}
+
+.context-menu button:active {
+  transform: scale(0.98);
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.context-menu {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Scrollbar for context menu */
+.context-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.context-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.context-menu::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.context-menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.context-menu button {
+  white-space: nowrap;
+}
+
+.context-menu button:first-child {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.context-menu button:last-child {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
@@ -33,6 +33,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
   draggedEmailId: string | null = null;
   dragX: number = 0;
   dragY: number = 0;
+
+  // Context Menu Properties
+  showContextMenu = false;
+  contextMenuX = 0;
+  contextMenuY = 0;
+  contextMenuEmail: any = null;
 
   constructor(
     private location: Location,
@@ -96,6 +102,116 @@ export class EmailListComponent implements OnInit, OnDestroy {
       this.emailService.refreshUnreadCount();
       this.cdr.detectChanges();
     });
+  }
+
+  @HostListener('document:contextmenu', ['$event'])
+  onRightClick(event: MouseEvent): boolean {
+    const target = event.target as HTMLElement;
+    const emailRow = target.closest('[data-email-id]');
+
+    if (emailRow) {
+      event.preventDefault();
+      const emailId = emailRow.getAttribute('data-email-id');
+      this.contextMenuEmail = this.emails.find(e => e.messageId === emailId);
+
+      if (this.contextMenuEmail) {
+        this.contextMenuX = event.clientX;
+        this.contextMenuY = event.clientY;
+        this.showContextMenu = true;
+        this.cdr.detectChanges();
+      }
+    }
+    return false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClickMenu(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.context-menu') && this.showContextMenu) {
+      this.showContextMenu = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  closeContextMenu() {
+    this.showContextMenu = false;
+    this.contextMenuEmail = null;
+  }
+
+  contextMarkAsRead() {
+    if (this.contextMenuEmail) {
+      this.emailService.markAsRead(this.contextMenuEmail.messageId).subscribe({
+        next: () => {
+          this.contextMenuEmail.isRead = true;
+          this.emailService.refreshUnreadCount();
+          this.cdr.detectChanges();
+          this.closeContextMenu();
+        },
+        error: (error) => console.error('Failed to mark as read:', error)
+      });
+    }
+  }
+
+  contextMarkAsUnread() {
+    if (this.contextMenuEmail) {
+      this.emailService.markAsUnread(this.contextMenuEmail.messageId).subscribe({
+        next: () => {
+          this.contextMenuEmail.isRead = false;
+          this.emailService.refreshUnreadCount();
+          this.cdr.detectChanges();
+          this.closeContextMenu();
+        },
+        error: (error) => console.error('Failed to mark as unread:', error)
+      });
+    }
+  }
+
+  contextToggleStar() {
+    if (this.contextMenuEmail) {
+      const action = this.contextMenuEmail.isStarred
+        ? this.emailService.unstarEmail(this.contextMenuEmail.messageId)
+        : this.emailService.starEmail(this.contextMenuEmail.messageId);
+
+      action.subscribe({
+        next: () => {
+          this.contextMenuEmail.isStarred = !this.contextMenuEmail.isStarred;
+          this.cdr.detectChanges();
+          this.closeContextMenu();
+        },
+        error: (error) => console.error('Failed to toggle star:', error)
+      });
+    }
+  }
+
+  contextReply() {
+    if (this.contextMenuEmail) {
+      this.closeContextMenu();
+      // Will be implemented with compose service if needed
+      console.log('Reply to:', this.contextMenuEmail.from);
+    }
+  }
+
+  async contextDelete() {
+    if (this.contextMenuEmail) {
+      const confirmed = await this.confirmationService.confirm({
+        title: 'Delete Email',
+        message: 'Move this email to trash?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+
+      if (confirmed) {
+        this.emailService.deleteEmail(this.contextMenuEmail.messageId).subscribe({
+          next: () => {
+            this.emails = this.emails.filter(e => e.messageId !== this.contextMenuEmail.messageId);
+            this.cdr.detectChanges();
+            this.closeContextMenu();
+          },
+          error: (error) => console.error('Failed to delete email:', error)
+        });
+      }
+    }
   }
 
   // Drag and drop handlers
@@ -321,8 +437,8 @@ export class EmailListComponent implements OnInit, OnDestroy {
             this.loadEmails();
             this.cdr.detectChanges();
           }
-            this.selectedEmails.clear();
-            this.loadEmails();
+          this.selectedEmails.clear();
+          this.loadEmails();
 
         },
         error: (error) => {
