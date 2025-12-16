@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,14 +67,17 @@ public class EmailController {
 
 
             String messageId = emailService.sendEmail(username, email);
-
+            if(email.isDraft()){
+                email.setDraft(false);
+                emailService.permanentlyDeleteEmail(username,email.getMessageId());
+            }
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("messageId", messageId);
             response.put("message", "Email sent successfully");
 
             log.info("Email {} sent successfully", messageId);
-            eventService.publishEvent(new SSE("Sent","",email.getTo()));
+            eventService.publishEvent(new SSE("Sent",email.getTo()));
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             log.error("Invalid email: {}", e.getMessage());
@@ -120,7 +124,9 @@ public class EmailController {
                     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
             }
             // if not proceed normally
-
+            ArrayList<String> list = new ArrayList<>();
+            list.add(username+"@jaryn.com");
+            this.eventService.publishEvent(new SSE("Draft",list));
             String messageId = emailService.saveDraft(username, email);
 
             Map<String, Object> response = new HashMap<>();
@@ -428,25 +434,26 @@ public class EmailController {
      * SEND DRAFT
      * POST /api/email/{messageId}/send-draft
      */
-    @PostMapping("/{messageId}/send-draft")
-    public ResponseEntity<?> sendDraft(@PathVariable String messageId, Authentication authentication) {
-        try {
-            String username = getCurrentUsername(authentication);
-            emailService.sendDraft(username, messageId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Draft sent successfully");
-
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (IOException e) {
-            log.error("Failed to send draft: {}", e.getMessage());
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("error", "Failed to send draft");
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @PostMapping("/{messageId}/send-draft")
+//    public ResponseEntity<?> sendDraft(@PathVariable String messageId, Authentication authentication) {
+//        try {
+//            String username = getCurrentUsername(authentication);
+//            emailService.sendDraft(username, messageId);
+//
+//            Map<String, Object> response = new HashMap<>();
+//            response.put("success", true);
+//            response.put("message", "Draft sent successfully");
+//            ArrayList<String> list = new ArrayList<>();
+//            list.add(username+"@jaryn.com");
+//            return new ResponseEntity<>(response, HttpStatus.OK);
+//        } catch (IOException e) {
+//            log.error("Failed to send draft: {}", e.getMessage());
+//            Map<String, Object> error = new HashMap<>();
+//            error.put("success", false);
+//            error.put("error", "Failed to send draft");
+//            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
 
     /**

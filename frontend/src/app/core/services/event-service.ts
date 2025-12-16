@@ -1,9 +1,9 @@
 import { inject, Injectable, NgZone } from '@angular/core';
-import { EMPTY, Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs';
+import {Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs';
 import { AuthService } from './auth-service';
 import { map } from 'rxjs/operators';
 import { sseEvent } from '../models/sse-event.model';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +15,8 @@ export class EventService {
   private inboxRefresh$ = new Subject<void>();
   private folderRefresh$ = new Subject<void>();
   router = inject(Router);
-  constructor(private ngZone: NgZone, private authService: AuthService) {
+  constructor(private ngZone: NgZone, private authService: AuthService ,
+  private route: ActivatedRoute) {
 
   }
   /**
@@ -31,14 +32,19 @@ export class EventService {
       ),
       tap((payload: sseEvent) => {
         // Emit inbox refresh if current user received an email
-        if (payload.type === 'Sent' && payload.to && payload.to.length > 0) {
+        if ((payload.type === 'Sent' || payload.type === 'Draft' )&& payload.to && payload.to.length > 0) {
           const currentUserEmail = localStorage.getItem('currentUser') + "@jaryn.com";
           console.log(currentUserEmail + ' ' + payload.to);
-          if (currentUserEmail && payload.to.includes(currentUserEmail)) {
-            console.log('New email received for current user, refreshing inbox');
-            this.inboxRefresh$.next();
+          if (payload.to.includes(currentUserEmail)) {
+            if (currentUserEmail) {
+              console.log('New email received for current user, refreshing inbox');
+            } else if (currentUserEmail) {
+              console.log('New email drafted by current user, refreshing draft');
+            }
+            this.folderRefresh$.next();
           }
         }
+
       }),
       takeUntil(this.stopStream$),
       retry({
@@ -127,13 +133,6 @@ export class EventService {
   }
 
   /**
-   * Observable that emits when inbox should be refreshed (when current user receives email)
-   */
-  public getInboxRefresh(): Observable<void> {
-    return this.inboxRefresh$.asObservable();
-  }
-
-  /**
    * Observable that emits when email list should be refreshed (e.g., after drag-and-drop move)
    */
   public getEmailListRefresh(): Observable<void> {
@@ -153,4 +152,22 @@ export class EventService {
   public stopEvents(): void {
     this.stopStream$.next();
   }
+
+clearEmailSelection(messageIds: string[]) {
+  if(this.route.snapshot.queryParamMap.get("messageId")){
+    if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())){
+      this.router.navigate(
+        [],
+        {
+          relativeTo: this.route,
+          queryParams: {},
+          queryParamsHandling: ''
+        }
+      );
+    }
+
+  }
+}
+
+
 }

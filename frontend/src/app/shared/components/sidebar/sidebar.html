@@ -1,25 +1,24 @@
 <aside class="flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300 ease-in-out"
-  [class.w-64]="isOpen" [class.w-0]="!isOpen" [class.md:w-20]="!isOpen" [class.border-r-0]="!isOpen && false"
+  [class.w-64]="isOpen" [class.w-20]="!isOpen" [class.md:w-20]="!isOpen" [class.border-r-0]="!isOpen && false"
   [class.overflow-hidden]="isOpen" [class.overflow-visible]="!isOpen">
   <div class="w-full flex flex-col h-full">
     <!-- Compose Button -->
     <div class="p-4 flex justify-center">
       <button (click)="openCompose()"
-              class="btn-primary flex items-center justify-center transition-all duration-300 group relative"
-              [ngClass]="isOpen ? 'w-full rounded-md px-4' : 'w-14 h-14 rounded-full p-0'">
+        class="btn-primary flex items-center justify-center transition-all duration-300 group relative"
+        [ngClass]="isOpen ? 'w-full rounded-md px-4' : 'w-14 h-14 rounded-full p-0'">
 
-        <svg class="transition-all duration-300"
-             [ngClass]="isOpen ? 'h-5 w-5 mr-2' : 'h-21 w-21'"
-             fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="transition-all duration-300" [ngClass]="isOpen ? 'h-5 w-5 mr-2' : 'h-21 w-21'" fill="none"
+          stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
           </path>
         </svg>
 
         <span [class.hidden]="!isOpen" class="whitespace-nowrap transition-opacity duration-300">
-    Compose
-  </span>
-          <!-- Tooltip -->
+          Compose
+        </span>
+        <!-- Tooltip -->
         <div [class.hidden]="isOpen"
           class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
           Compose
@@ -37,7 +36,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-          <span [class.hidden]="!isOpen" class="whitespace-nowrap">Inbox</span>
+          <span [class.hidden]="!isOpen" class="whitespace-nowrap ml-3">
+            Inbox</span>
         </div>
         @if(systemFolders[0].count && systemFolders[0].count! > 0){
         <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
@@ -216,7 +216,7 @@
 
     <!-- Create Folder Modal -->
     @if (showCreateFolderModal) {
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] fade-in"
       (click)="closeCreateFolderModal()">
       <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
         <h2 class="text-xl font-bold text-gray-900 mb-4">Create New Folder</h2>
@@ -235,7 +235,7 @@
 
     <!-- Rename Folder Modal -->
     @if (showRenameFolderModal) {
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] fade-in"
       (click)="closeRenameFolderModal()">
       <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
         <h2 class="text-xl font-bold text-gray-900 mb-4">Rename Folder</h2>

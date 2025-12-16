@@ -1,5 +1,4 @@
 export interface sseEvent {
-  type: 'Token_Expired' | 'Sent' | string;
-  token: string;
+  type: 'Draft' | 'Sent' | string;
   to: string[]; // Array of recipient emails
 }

@@ -6,7 +6,9 @@ export interface ComposeData {
   recipients?: string;
   subject?: string;
   body?: string;
+  draft?: boolean;
   attachments?: Attachment[];
+  messageId?: string;
 }
 
 @Injectable({

@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, NgZone, OnDestroy, HostListener } from '@angular/core';
+import { CommonModule} from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EventService } from '../../../../core/services/event-service';
@@ -8,6 +8,7 @@ import { EmailComposeService } from '../../../../core/services/email-compose.ser
 import { FolderService } from '../../../../core/services/folder.service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 import { Subscription } from 'rxjs';
+import {NotificationService} from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-email-list',
@@ -49,7 +50,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
   moveErrorMessage = '';
 
   constructor(
-    private location: Location,
     private emailService: EmailService,
     private eventService: EventService,
     private confirmationService: ConfirmationService,
@@ -58,7 +58,8 @@ export class EmailListComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private composeService: EmailComposeService,
-    private folderService: FolderService
+    private folderService: FolderService,
+    private notificationService: NotificationService,
   ) { }
 
   currentUserEmail: string = '';
@@ -84,22 +85,14 @@ export class EmailListComponent implements OnInit, OnDestroy {
       this.loadEmails();
       this.cdr.detectChanges(); // Trigger change detection after route change
 
-      this.eventService.getInboxRefresh().subscribe(() => {
-        console.log('Inbox refresh event received from SSE');
-        if (this.currentFolder === 'inbox') {
-          this.loadEmails();
-          this.emailService.refreshUnreadCount();
-          this.cdr.detectChanges();
-        }
-      })
 
     });
 
     // Subscribe to read events
     this.readSubscription = this.emailService.messageRead$.subscribe(messageId => {
       const email = this.emails.find(e => e.messageId === messageId);
-      if (email && !email.isRead) {
-        email.isRead = true;
+      if (email && !email.read) {
+        email.read = true;
         this.cdr.detectChanges();
       }
     });
@@ -153,7 +146,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
     if (this.contextMenuEmail) {
       this.emailService.markAsRead(this.contextMenuEmail.messageId).subscribe({
         next: () => {
-          this.contextMenuEmail.isRead = true;
+          this.contextMenuEmail.read = true;
           this.emailService.refreshUnreadCount();
           this.cdr.detectChanges();
           this.closeContextMenu();
@@ -167,7 +160,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
     if (this.contextMenuEmail) {
       this.emailService.markAsUnread(this.contextMenuEmail.messageId).subscribe({
         next: () => {
-          this.contextMenuEmail.isRead = false;
+          this.contextMenuEmail.read = false;
           this.emailService.refreshUnreadCount();
           this.cdr.detectChanges();
           this.closeContextMenu();
@@ -179,13 +172,15 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   contextToggleStar() {
     if (this.contextMenuEmail) {
-      const action = this.contextMenuEmail.isStarred
+      const action = this.contextMenuEmail.starred
         ? this.emailService.unstarEmail(this.contextMenuEmail.messageId)
         : this.emailService.starEmail(this.contextMenuEmail.messageId);
 
       action.subscribe({
         next: () => {
-          this.contextMenuEmail.isStarred = !this.contextMenuEmail.isStarred;
+          this.contextMenuEmail.starred = !this.contextMenuEmail.starred;
+          this.eventService.triggerEmailListRefresh();
+          this.eventService.clearEmailSelection(this.contextMenuEmail.messageId);
           this.cdr.detectChanges();
           this.closeContextMenu();
         },
@@ -223,13 +218,9 @@ export class EmailListComponent implements OnInit, OnDestroy {
   }
 
   loadFoldersForMove() {
-    this.folderService.getAllFolders().subscribe({
-      next: (response) => {
-        const allFolders = response.folders || [];
-        this.folders = allFolders.filter((folder: any) =>
-          (folder.type === 'CUSTOM' || folder.type === 'custom') &&
-          folder.name.toLowerCase() !== 'contacts'
-        );
+    this.folderService.getCustomFoldersForMove().subscribe({
+      next: (customFolders) => {
+        this.folders = customFolders;
         this.isLoadingFolders = false;
         this.cdr.detectChanges();
       },
@@ -266,19 +257,19 @@ export class EmailListComponent implements OnInit, OnDestroy {
         // Close dialog and clear data
         this.showMoveDialog = false;
         this.moveErrorMessage = '';
+        this.eventService.clearEmailSelection(this.contextMenuEmail.messageId);
         this.contextMenuEmail = null;
         this.showContextMenu = false;
         this.selectedEmails.clear();
-
         console.log('Triggering change detection...');
         this.cdr.detectChanges();
 
         // Reload emails
         console.log('Reloading emails...');
-        setTimeout(() => {
-          this.loadEmails();
-          console.log('Emails reloaded');
-        }, 500);
+        this.loadEmails();
+        console.log('Emails reloaded');
+        this.notificationService.showSuccess(`Email moved to ${folderName}`);
+
       },
       error: (error: any) => {
         console.log('=== MOVE ERROR ===');
@@ -288,6 +279,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
         console.error('Error response:', error.error);
 
         this.moveErrorMessage = `Error: ${error.error?.error || error.message || 'Failed to move email'}`;
+        this.notificationService.showError('Failed to move email');
         this.cdr.detectChanges();
       }
     });
@@ -299,7 +291,10 @@ export class EmailListComponent implements OnInit, OnDestroy {
   }
 
   async contextDelete() {
-    if (this.contextMenuEmail) {
+    let email = this.contextMenuEmail
+    if (email) {
+      this.cdr.detectChanges();
+      this.closeContextMenu();
       const confirmed = await this.confirmationService.confirm({
         title: 'Delete Email',
         message: 'Move this email to trash?',
@@ -309,11 +304,11 @@ export class EmailListComponent implements OnInit, OnDestroy {
       });
 
       if (confirmed) {
-        this.emailService.deleteEmail(this.contextMenuEmail.messageId).subscribe({
+        this.emailService.deleteEmail(email.messageId).subscribe({
           next: () => {
-            this.emails = this.emails.filter(e => e.messageId !== this.contextMenuEmail.messageId);
+            this.emails = this.emails.filter(e => e.messageId !== email.messageId);
+            this.eventService.clearEmailSelection(email.messageId);
             this.cdr.detectChanges();
-            this.closeContextMenu();
           },
           error: (error) => console.error('Failed to delete email:', error)
         });
@@ -406,12 +401,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
         this.pageSize = response.pageSize || 20;
         this.totalPages = response.totalPages || 0;
         this.totalEmails = response.totalEmails || 0;
-
-        this.emails.forEach((email: any) => {
-          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
-          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
-        });
-
         this.isLoading = false;
         console.log('Emails loaded:', this.emails);
         this.cdr.detectChanges();
@@ -437,12 +426,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
         this.pageSize = response.pageSize || 20;
         this.totalPages = response.totalPages || 0;
         this.totalEmails = response.totalEmails || 0;
-
-        this.emails.forEach((email: any) => {
-          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
-          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
-        });
-
         this.isLoading = false;
         console.log('Starred emails loaded (filtered):', this.emails);
         this.cdr.detectChanges();
@@ -536,9 +519,13 @@ export class EmailListComponent implements OnInit, OnDestroy {
           console.log(`Deleted ${messageIds.length} emails`);
           // Clear selection if any deleted email was being viewed
           if (this.selectedEmailId && messageIds.includes(this.selectedEmailId)) {
-            this.selectedEmailId = null;
             // Remove messageId query param to show 'Select an email to read'
-            this.location.back();
+            let stringID = this.selectedEmailId as string
+            if (stringID){
+              let messageIds: string[] = new Array(stringID);
+              this.eventService.clearEmailSelection(messageIds);
+            }
+            this.selectedEmailId = null;
             // Reload emails after navigation completes
             this.selectedEmails.clear();
             this.loadEmails();
@@ -562,7 +549,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
     // Check if all selected emails are starred
     const selectedEmailObjects = this.emails.filter(e => this.selectedEmails.has(e.messageId));
-    const allStarred = selectedEmailObjects.every(e => e.isStarred);
+    const allStarred = selectedEmailObjects.every(e => e.starred);
 
     // If all are starred, unstar them. Otherwise, star them.
     if (allStarred) {
@@ -572,7 +559,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
           next: () => {
             const email = this.emails.find(e => e.messageId === messageId);
             if (email) {
-              email.isStarred = false;
+              email.starred = false;
 
               // If we're in the starred folder, reload to remove the email from the list
               if (this.currentFolder === 'starred') {
@@ -604,7 +591,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
           next: () => {
             const email = this.emails.find(e => e.messageId === messageId);
             if (email) {
-              email.isStarred = true;
+              email.starred = true;
               this.cdr.detectChanges();
             }
           },
@@ -625,7 +612,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
         next: () => {
           const email = this.emails.find(e => e.messageId === messageId);
           if (email) {
-            email.isRead = true;
+            email.read = true;
             this.emailService.refreshUnreadCount();
             this.cdr.detectChanges();
           }
@@ -646,7 +633,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
         next: () => {
           const email = this.emails.find(e => e.messageId === messageId);
           if (email) {
-            email.isRead = false;
+            email.read = false;
             this.emailService.refreshUnreadCount();
             this.cdr.detectChanges();
 
@@ -663,7 +650,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
   toggleStar(email: any, event: Event) {
     event.stopPropagation();
 
-    if (email.isStarred) {
+    if (email.starred) {
       // Unstar the email
       this.emailService.unstarEmail(email.messageId).subscribe({
         next: () => {
@@ -689,7 +676,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
             }
           } else {
             // Otherwise just update the local state
-            email.isStarred = false;
+            email.starred = false;
             this.cdr.detectChanges();
           }
         },
@@ -703,7 +690,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
       this.emailService.starEmail(email.messageId).subscribe({
         next: () => {
           console.log('Email starred successfully:', email.messageId);
-          email.isStarred = true;
+          email.starred = true;
           this.cdr.detectChanges();
         },
         error: (error) => {

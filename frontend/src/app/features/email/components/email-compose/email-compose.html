@@ -66,10 +66,40 @@
     </div>
 
     <!-- Body -->
-    <div class="ngx-editor-wrapper border border-gray-300 rounded-lg overflow-hidden">
+    <div class="ngx-editor-wrapper border border-gray-300 rounded-lg overflow-hidden relative">
+      @if (!showHtmlSource) {
       <ngx-editor-menu [editor]="editor" [toolbar]="toolbar"></ngx-editor-menu>
+      } @else {
+      <div class="bg-gray-100 p-2 border-b border-gray-300 flex items-center justify-between h-[42px]">
+        <span class="text-xs font-semibold text-gray-500 uppercase px-2">HTML Source</span>
+      </div>
+      }
+
+      <!-- Toggle Button -->
+      @if (!showHtmlSource) {
+      <button (click)="toggleHtmlSource()"
+        class="absolute top-9 right-2 z-10 px-2 py-1 bg-white rounded shadow border border-gray-200 hover:bg-gray-50 text-gray-600 text-xs font-medium transition-colors"
+        title="Toggle HTML Source">
+        {{ showHtmlSource ? 'Visual Editor' : 'Source Code' }}
+      </button>
+      }
+      @else
+      {
+      <button (click)="toggleHtmlSource()"
+        class="absolute top-2 right-2 z-10 px-2 py-1 bg-white rounded shadow border border-gray-200 hover:bg-gray-50 text-gray-600 text-xs font-medium transition-colors"
+        title="Toggle HTML Source">
+        {{ showHtmlSource ? 'Visual Editor' : 'Source Code' }}
+      </button>
+      }
+
+      @if (!showHtmlSource) {
       <ngx-editor [editor]="editor" [(ngModel)]="body" [disabled]="isLoading" [placeholder]="'Write your message...'"
         class="min-h-[300px] max-h-[500px] overflow-y-auto"></ngx-editor>
+      } @else {
+      <textarea [(ngModel)]="body"
+        class="w-full h-[300px] p-4 font-mono text-sm outline-none resize-none focus:bg-gray-50 transition-colors"
+        placeholder="Enter HTML here..."></textarea>
+      }
     </div>
 
     <!-- Attachments -->
@@ -133,8 +163,26 @@
         </span>
       </div>
       }
-
-
     </div>
   </div>
+
+  <!-- HTML Switch Warning Modal -->
+  @if (showHtmlWarningModal) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] fade-in"
+    (click)="cancelSwitchToVisual()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 p-6" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">Switch to Visual Editor?</h3>
+      <p class="text-sm text-gray-600 mb-6">
+        Switching to the visual editor may modify your HTML code. Some custom formatting might be lost.
+      </p>
+      <div class="flex justify-end gap-3">
+        <button (click)="cancelSwitchToVisual()" class="btn-secondary">Cancel</button>
+        <button (click)="confirmSwitchToVisual()"
+          class="btn-primary bg-yellow-600 hover:bg-yellow-700 border-yellow-600">
+          Switch Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

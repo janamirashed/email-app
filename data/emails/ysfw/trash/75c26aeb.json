@@ -1,0 +1,16 @@
+{
+  "messageId" : "75c26aeb",
+  "from" : "ysfw@jaryn.com",
+  "to" : [ "asdsad@jaryn.com" ],
+  "subject" : "hg",
+  "body" : "<p>s</p>",
+  "timestamp" : [ 2025, 12, 16, 13, 12, 38, 641476500 ],
+  "priority" : 3,
+  "folder" : "trash",
+  "originalFolder" : "sent",
+  "attachments" : [ ],
+  "deletedAt" : [ 2025, 12, 16, 16, 30, 7, 490647900 ],
+  "draft" : false,
+  "starred" : false,
+  "read" : false
+}

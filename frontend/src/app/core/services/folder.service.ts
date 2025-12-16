@@ -47,4 +47,25 @@ export class FolderService {
             headers: this.getHeaders()
         });
     }
+
+    // Get custom folders for move-to-folder dialog (excludes system folders and contacts)
+    getCustomFoldersForMove(): Observable<any[]> {
+        return new Observable((observer) => {
+            this.getAllFolders().subscribe({
+                next: (response) => {
+                    const allFolders = response.folders || [];
+                    const customFolders = allFolders.filter((folder: any) =>
+                        (folder.type === 'CUSTOM' || folder.type === 'custom') &&
+                        folder.name.toLowerCase() !== 'contacts'
+                    );
+                    observer.next(customFolders);
+                    observer.complete();
+                },
+                error: (error) => {
+                    observer.error(error);
+                }
+            });
+        });
+    }
+
 }
