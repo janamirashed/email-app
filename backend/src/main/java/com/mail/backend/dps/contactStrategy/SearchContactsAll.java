@@ -14,7 +14,7 @@ public class SearchContactsAll implements ContactSearchStrategy {
                                 contact.getName().toLowerCase().contains(lowerKeyword))
                                 ||
                                 contact.getEmail() != null &&
-                                        contact.getEmail().toLowerCase().contains(lowerKeyword))
+                                        contact.getEmail().replace("@jaryn.com","").toLowerCase().contains(lowerKeyword))
                 .toList();
     }
 }

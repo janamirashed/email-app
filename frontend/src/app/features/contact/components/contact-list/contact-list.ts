@@ -1,7 +1,9 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Contact } from '../../../../core/models/contact.model';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { ContactService } from '../../../../core/services/contact.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
@@ -12,9 +14,13 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
   imports: [CommonModule, FormsModule],
   templateUrl: './contact-list.html',
 })
-export class ContactList implements OnInit {
+export class ContactList implements OnInit, OnDestroy {
   searchTerm: string = '';
+  searchIn: string = 'all';
   sortBy: 'name' | 'email' | 'date' = 'name';
+
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
   showAddDialog = false;
   showEditDialog = false;
   editingContact: Contact | null = null;
@@ -37,6 +43,18 @@ export class ContactList implements OnInit {
 
   ngOnInit() {
     this.loadContacts();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(keyword => {
+      this.executeSearch(keyword);
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadContacts() {
@@ -48,7 +66,6 @@ export class ContactList implements OnInit {
         this.contacts = contacts;
         this.filteredContacts = contacts;
         this.isLoading = false;
-        this.applySearch();
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -56,31 +73,50 @@ export class ContactList implements OnInit {
         this.errorMessage = 'Failed to load contacts. Please try again.';
         this.isLoading = false;
         this.cdr.detectChanges();
-
       }
     });
   }
 
-  applySearch() {
-    if (!this.searchTerm.trim()) {
-      this.filteredContacts = this.contacts;
+  executeSearch(keyword: string) {
+    if (!keyword.trim()) {
+      this.loadContacts();
       return;
     }
 
-    const keyword = this.searchTerm.toLowerCase();
-    this.filteredContacts = this.contacts.filter(contact =>
-      contact.name.toLowerCase().includes(keyword) ||
-      contact.email.toLowerCase().includes(keyword)
-    );
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.contactService.searchContacts(keyword, this.searchIn, this.sortBy).subscribe({
+      next: (results) => {
+        this.contacts = results;
+        this.filteredContacts = results;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error searching contacts:', error);
+        this.errorMessage = 'Search failed. Please try again.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  refreshData() {
+    if (this.searchTerm.trim()) {
+      this.executeSearch(this.searchTerm);
+    } else {
+      this.loadContacts();
+    }
   }
 
   onSearchChange() {
-    this.applySearch();
+    this.searchSubject.next(this.searchTerm);
   }
 
   onSort(criteria: 'name' | 'email' | 'date') {
     this.sortBy = criteria;
-    this.loadContacts();
+    this.refreshData();
   }
 
   addContact() {
@@ -102,14 +138,12 @@ export class ContactList implements OnInit {
 
       this.contactService.addContact(newContact).subscribe({
         next: (contact) => {
-          this.contacts.push(contact);
-          this.applySearch();
           this.showAddDialog = false;
           this.newContactName = '';
           this.newContactEmail = '';
           this.isLoading = false;
           this.showSuccess('Contact added successfully');
-          console.log('Created contact:', contact);
+          this.refreshData();
           this.cdr.detectChanges();
         },
         error: (error) => {
@@ -161,20 +195,14 @@ export class ContactList implements OnInit {
 
       this.contactService.updateContact(this.editingContact.id, updatedContact).subscribe({
         next: (contact) => {
-          const index = this.contacts.findIndex(c => c.id === this.editingContact!.id);
-          if (index !== -1) {
-            this.contacts[index] = contact;
-            this.applySearch();
-          }
           this.showEditDialog = false;
           this.editingContact = null;
           this.newContactName = '';
           this.newContactEmail = '';
           this.isLoading = false;
           this.showSuccess('Contact updated successfully');
-          console.log('Updated contact:', contact);
+          this.refreshData();
           this.cdr.detectChanges();
-
         },
         error: (error) => {
           console.error('Error updating contact:', error);
@@ -208,13 +236,10 @@ export class ContactList implements OnInit {
 
       this.contactService.deleteContact(contact.id).subscribe({
         next: () => {
-          this.contacts = this.contacts.filter(c => c.id !== contact.id);
-          this.applySearch();
           this.isLoading = false;
           this.showSuccess('Contact deleted successfully');
-          console.log('Deleted contact:', contact.name);
+          this.refreshData();
           this.cdr.detectChanges();
-
         },
         error: (error) => {
           console.error('Error deleting contact:', error);

@@ -34,9 +34,15 @@
     }
 
     <!-- Search -->
-    <div class="mb-6">
+    <div class="mb-6 flex gap-2 w-full">
+      <select [(ngModel)]="searchIn" (change)="onSearchChange()"
+        class="input !w-32 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+        <option value="all">All</option>
+        <option value="name">Name</option>
+        <option value="email">Email</option>
+      </select>
       <input type="text" placeholder="Search contacts..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
-        class="input max-w-md">
+        class="input flex-1 min-w-0">
     </div>
 
     <!-- Loading State -->
@@ -55,8 +61,7 @@
       <div (click)="composeEmailTo(contact)"
         class="card flex items-center justify-between p-4 hover:shadow-md transition group cursor-pointer">
         <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+          <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
             {{ contact.name.charAt(0) }}
           </div>
           <div>

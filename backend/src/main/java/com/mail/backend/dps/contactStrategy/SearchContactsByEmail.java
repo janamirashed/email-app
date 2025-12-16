@@ -10,7 +10,7 @@ public class SearchContactsByEmail implements ContactSearchStrategy {
         String lowerKeyword = keyword.toLowerCase();
         return contacts.stream()
                 .filter(contact -> contact.getEmail() != null &&
-                        contact.getEmail().toLowerCase().contains(lowerKeyword))
+                        contact.getEmail().replace("@jaryn.com","").toLowerCase().contains(lowerKeyword))
                 .toList();
     }
 }
