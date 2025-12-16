@@ -9,9 +9,9 @@ export interface Email {
   body: string;
   timestamp?: string;
   priority?: number; // 1-4 (1=Highest, 4=Lowest)
-  isRead?: boolean;
-  isStarred?: boolean;
-  isDraft?: boolean;
+  read?: boolean;
+  starred?: boolean;
+  draft?: boolean;
   folder?: string;
   attachments?: Attachment[];
   deletedAt?: string;

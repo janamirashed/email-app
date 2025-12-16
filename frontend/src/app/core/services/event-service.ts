@@ -1,5 +1,5 @@
 import { inject, Injectable, NgZone } from '@angular/core';
-import { EMPTY, Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs';
+import {Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs';
 import { AuthService } from './auth-service';
 import { map } from 'rxjs/operators';
 import { sseEvent } from '../models/sse-event.model';
@@ -31,14 +31,19 @@ export class EventService {
       ),
       tap((payload: sseEvent) => {
         // Emit inbox refresh if current user received an email
-        if (payload.type === 'Sent' && payload.to && payload.to.length > 0) {
+        if ((payload.type === 'Sent' || payload.type === 'Draft' )&& payload.to && payload.to.length > 0) {
           const currentUserEmail = localStorage.getItem('currentUser') + "@jaryn.com";
           console.log(currentUserEmail + ' ' + payload.to);
-          if (currentUserEmail && payload.to.includes(currentUserEmail)) {
-            console.log('New email received for current user, refreshing inbox');
-            this.inboxRefresh$.next();
+          if (payload.to.includes(currentUserEmail)) {
+            if (currentUserEmail) {
+              console.log('New email received for current user, refreshing inbox');
+            } else if (currentUserEmail) {
+              console.log('New email drafted by current user, refreshing draft');
+            }
+            this.folderRefresh$.next();
           }
         }
+
       }),
       takeUntil(this.stopStream$),
       retry({
@@ -124,13 +129,6 @@ export class EventService {
         controller.abort();
       };
     });
-  }
-
-  /**
-   * Observable that emits when inbox should be refreshed (when current user receives email)
-   */
-  public getInboxRefresh(): Observable<void> {
-    return this.inboxRefresh$.asObservable();
   }
 
   /**

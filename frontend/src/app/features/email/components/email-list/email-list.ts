@@ -68,22 +68,14 @@ export class EmailListComponent implements OnInit, OnDestroy {
       this.loadEmails();
       this.cdr.detectChanges(); // Trigger change detection after route change
 
-      this.eventService.getInboxRefresh().subscribe(() => {
-        console.log('Inbox refresh event received from SSE');
-        if (this.currentFolder === 'inbox') {
-          this.loadEmails();
-          this.emailService.refreshUnreadCount();
-          this.cdr.detectChanges();
-        }
-      })
 
     });
 
     // Subscribe to read events
     this.readSubscription = this.emailService.messageRead$.subscribe(messageId => {
       const email = this.emails.find(e => e.messageId === messageId);
-      if (email && !email.isRead) {
-        email.isRead = true;
+      if (email && !email.read) {
+        email.read = true;
         this.cdr.detectChanges();
       }
     });
@@ -183,12 +175,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
         this.pageSize = response.pageSize || 20;
         this.totalPages = response.totalPages || 0;
         this.totalEmails = response.totalEmails || 0;
-
-        this.emails.forEach((email: any) => {
-          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
-          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
-        });
-
         this.isLoading = false;
         console.log('Emails loaded:', this.emails);
         this.cdr.detectChanges();
@@ -214,12 +200,6 @@ export class EmailListComponent implements OnInit, OnDestroy {
         this.pageSize = response.pageSize || 20;
         this.totalPages = response.totalPages || 0;
         this.totalEmails = response.totalEmails || 0;
-
-        this.emails.forEach((email: any) => {
-          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
-          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
-        });
-
         this.isLoading = false;
         console.log('Starred emails loaded (filtered):', this.emails);
         this.cdr.detectChanges();
@@ -339,7 +319,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
     // Check if all selected emails are starred
     const selectedEmailObjects = this.emails.filter(e => this.selectedEmails.has(e.messageId));
-    const allStarred = selectedEmailObjects.every(e => e.isStarred);
+    const allStarred = selectedEmailObjects.every(e => e.starred);
 
     // If all are starred, unstar them. Otherwise, star them.
     if (allStarred) {
@@ -349,7 +329,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
           next: () => {
             const email = this.emails.find(e => e.messageId === messageId);
             if (email) {
-              email.isStarred = false;
+              email.starred = false;
 
               // If we're in the starred folder, reload to remove the email from the list
               if (this.currentFolder === 'starred') {
@@ -381,7 +361,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
           next: () => {
             const email = this.emails.find(e => e.messageId === messageId);
             if (email) {
-              email.isStarred = true;
+              email.starred = true;
               this.cdr.detectChanges();
             }
           },
@@ -402,7 +382,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
         next: () => {
           const email = this.emails.find(e => e.messageId === messageId);
           if (email) {
-            email.isRead = true;
+            email.read = true;
             this.emailService.refreshUnreadCount();
             this.cdr.detectChanges();
           }
@@ -423,7 +403,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
         next: () => {
           const email = this.emails.find(e => e.messageId === messageId);
           if (email) {
-            email.isRead = false;
+            email.read = false;
             this.emailService.refreshUnreadCount();
             this.cdr.detectChanges();
 
@@ -440,7 +420,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
   toggleStar(email: any, event: Event) {
     event.stopPropagation();
 
-    if (email.isStarred) {
+    if (email.starred) {
       // Unstar the email
       this.emailService.unstarEmail(email.messageId).subscribe({
         next: () => {
@@ -466,7 +446,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
             }
           } else {
             // Otherwise just update the local state
-            email.isStarred = false;
+            email.starred = false;
             this.cdr.detectChanges();
           }
         },
@@ -480,7 +460,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
       this.emailService.starEmail(email.messageId).subscribe({
         next: () => {
           console.log('Email starred successfully:', email.messageId);
-          email.isStarred = true;
+          email.starred = true;
           this.cdr.detectChanges();
         },
         error: (error) => {

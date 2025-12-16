@@ -10,6 +10,7 @@ import { Subscription, lastValueFrom, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Attachment } from '../../../../core/models/attachment.model';
 import { Editor, Toolbar, NgxEditorModule } from 'ngx-editor';
+import {EventService} from '../../../../core/services/event-service';
 
 @Component({
   selector: 'app-email-compose',
@@ -24,7 +25,8 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   subject: string = '';
   body: string = '';
   priority: number = 3;
-
+  draft: boolean = false;
+  messageId: string='';
   // Editor
   editor!: Editor;
   toolbar: Toolbar = [
@@ -68,7 +70,8 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     private emailService: EmailService,
     private cdr: ChangeDetectorRef,
     private notificationService: NotificationService,
-    private contactService: ContactService
+    private contactService: ContactService,
+    private eventService: EventService,
   ) {
 
     this.isUploading = this.attachmentService.isUploading;
@@ -100,6 +103,12 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
           }
           if (data.body) {
             this.body = data.body;
+          }
+          if (data.draft) {
+            this.draft = data.draft;
+          }
+          if (data.messageId) {
+            this.messageId = data.messageId;
           }
           if (data.attachments) {
             this.attachments = data.attachments;
@@ -198,12 +207,14 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       subject: this.subject,
       body: this.body,
       priority: this.priority,
-      attachments: this.attachments
+      attachments: this.attachments,
+      draft: this.draft,
+      messageId: this.messageId
     };
 
     if (!transactional)
       await new Promise(resolve => setTimeout(resolve, 3000));
-
+      console.log("Sending:",email)
     this.emailService.sendEmail(email).subscribe({
       next: (response) => {
         console.log("Email sent successfully:", response);
@@ -212,6 +223,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         this.notificationService.showSuccess('Email sent successfully!');
         this.isSending = false;
         console.log("isSending : " + this.isSending);
+        this.eventService.triggerEmailListRefresh();
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -280,7 +292,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   //     subject: this.subject,
   //     body: this.body,
   //     priority: this.priority,
-  //     isDraft: true,
+  //     draft: true,
   //     attachments: this.attachments
   //   };
 
@@ -323,7 +335,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       subject: this.subject,
       body: this.body,
       priority: this.priority,
-      isDraft: true,
+      draft: true,
       attachments: this.attachments
     };
 

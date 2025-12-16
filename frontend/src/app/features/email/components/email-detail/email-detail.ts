@@ -120,8 +120,11 @@ export class EmailDetailComponent implements OnInit {
       recipients: recipients,
       subject: this.email.subject,
       body: this.email.body,
-      attachments: this.email.attachments
+      draft: this.email.draft,
+      attachments: this.email.attachments,
+      messageId: this.email.messageId
     });
+    console.log(this.email);
   }
 
   // Delete email

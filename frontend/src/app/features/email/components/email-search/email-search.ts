@@ -108,8 +108,8 @@ export class EmailSearch implements OnInit {
         this.emails = Array.from(uniqueEmails.values());
 
         this.emails.forEach((email: any) => {
-          email.isStarred = email.isStarred !== undefined ? email.isStarred : !!email.starred;
-          email.isRead = email.isRead !== undefined ? email.isRead : !!email.read;
+          email.starred = email.starred !== undefined ? email.starred : !!email.starred;
+          email.read = email.read !== undefined ? email.read : !!email.read;
         });
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -147,10 +147,10 @@ export class EmailSearch implements OnInit {
   toggleStar(email: any, event: Event) {
     event.stopPropagation();
 
-    if (email.isStarred) {
+    if (email.starred) {
       this.emailService.unstarEmail(email.messageId).subscribe({
         next: () => {
-          email.isStarred = false;
+          email.starred = false;
           this.cdr.detectChanges();
         },
         error: (error) => console.error('Failed to unstar email:', error)
@@ -158,7 +158,7 @@ export class EmailSearch implements OnInit {
     } else {
       this.emailService.starEmail(email.messageId).subscribe({
         next: () => {
-          email.isStarred = true;
+          email.starred = true;
           this.cdr.detectChanges();
         },
         error: (error) => console.error('Failed to star email:', error)
