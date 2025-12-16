@@ -1,16 +1,16 @@
 {
-  "messageId" : "91679a3c",
+  "messageId" : "35b4999b",
   "from" : "ysfw@jaryn.com",
   "to" : [ "asdsad@jaryn.com" ],
   "subject" : "hg",
   "body" : "<p>s</p>",
-  "timestamp" : [ 2025, 12, 16, 15, 5, 23, 599800700 ],
+  "timestamp" : [ 2025, 12, 16, 14, 26, 4, 687008700 ],
   "priority" : 3,
-  "folder" : "sent",
-  "originalFolder" : null,
+  "folder" : "b",
+  "originalFolder" : "sent",
   "attachments" : [ ],
   "deletedAt" : null,
-  "read" : false,
   "draft" : false,
-  "starred" : false
+  "starred" : false,
+  "read" : false
 }

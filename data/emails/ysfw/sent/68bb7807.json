@@ -10,7 +10,7 @@
   "originalFolder" : null,
   "attachments" : [ ],
   "deletedAt" : null,
-  "read" : false,
   "draft" : false,
-  "starred" : false
+  "starred" : false,
+  "read" : true
 }

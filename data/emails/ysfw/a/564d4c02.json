@@ -6,11 +6,11 @@
   "body" : "<p>das</p>",
   "timestamp" : [ 2025, 12, 16, 15, 16, 48, 874742400 ],
   "priority" : 3,
-  "folder" : "sent",
-  "originalFolder" : null,
+  "folder" : "a",
+  "originalFolder" : "sent",
   "attachments" : [ ],
   "deletedAt" : null,
-  "read" : false,
   "draft" : false,
-  "starred" : false
+  "starred" : false,
+  "read" : true
 }

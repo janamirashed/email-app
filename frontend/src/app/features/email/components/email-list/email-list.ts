@@ -8,6 +8,7 @@ import { EmailComposeService } from '../../../../core/services/email-compose.ser
 import { FolderService } from '../../../../core/services/folder.service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 import { Subscription } from 'rxjs';
+import {NotificationService} from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-email-list',
@@ -58,7 +59,8 @@ export class EmailListComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private composeService: EmailComposeService,
-    private folderService: FolderService
+    private folderService: FolderService,
+    private notificationService: NotificationService,
   ) { }
 
   currentUserEmail: string = '';
@@ -215,13 +217,9 @@ export class EmailListComponent implements OnInit, OnDestroy {
   }
 
   loadFoldersForMove() {
-    this.folderService.getAllFolders().subscribe({
-      next: (response) => {
-        const allFolders = response.folders || [];
-        this.folders = allFolders.filter((folder: any) =>
-          (folder.type === 'CUSTOM' || folder.type === 'custom') &&
-          folder.name.toLowerCase() !== 'contacts'
-        );
+    this.folderService.getCustomFoldersForMove().subscribe({
+      next: (customFolders) => {
+        this.folders = customFolders;
         this.isLoadingFolders = false;
         this.cdr.detectChanges();
       },
@@ -267,10 +265,10 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
         // Reload emails
         console.log('Reloading emails...');
-        setTimeout(() => {
-          this.loadEmails();
-          console.log('Emails reloaded');
-        }, 500);
+        this.loadEmails();
+        console.log('Emails reloaded');
+        this.notificationService.showSuccess(`Email moved to ${folderName}`);
+
       },
       error: (error: any) => {
         console.log('=== MOVE ERROR ===');
@@ -280,6 +278,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
         console.error('Error response:', error.error);
 
         this.moveErrorMessage = `Error: ${error.error?.error || error.message || 'Failed to move email'}`;
+        this.notificationService.showError('Failed to move email');
         this.cdr.detectChanges();
       }
     });
@@ -291,7 +290,10 @@ export class EmailListComponent implements OnInit, OnDestroy {
   }
 
   async contextDelete() {
-    if (this.contextMenuEmail) {
+    let email = this.contextMenuEmail
+    if (email) {
+      this.cdr.detectChanges();
+      this.closeContextMenu();
       const confirmed = await this.confirmationService.confirm({
         title: 'Delete Email',
         message: 'Move this email to trash?',
@@ -301,11 +303,10 @@ export class EmailListComponent implements OnInit, OnDestroy {
       });
 
       if (confirmed) {
-        this.emailService.deleteEmail(this.contextMenuEmail.messageId).subscribe({
+        this.emailService.deleteEmail(email.messageId).subscribe({
           next: () => {
-            this.emails = this.emails.filter(e => e.messageId !== this.contextMenuEmail.messageId);
+            this.emails = this.emails.filter(e => e.messageId !== email.messageId);
             this.cdr.detectChanges();
-            this.closeContextMenu();
           },
           error: (error) => console.error('Failed to delete email:', error)
         });

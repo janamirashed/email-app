@@ -6,10 +6,10 @@
   "body" : "<p>s</p>",
   "timestamp" : [ 2025, 12, 16, 12, 0, 50, 271772700 ],
   "priority" : 3,
-  "folder" : "inbox",
-  "originalFolder" : null,
+  "folder" : "trash",
+  "originalFolder" : "inbox",
   "attachments" : [ ],
-  "deletedAt" : null,
+  "deletedAt" : [ 2025, 12, 16, 15, 57, 5, 25138500 ],
   "draft" : false,
   "starred" : false,
   "read" : true

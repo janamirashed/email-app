@@ -188,27 +188,19 @@ export class EmailDetailComponent implements OnInit {
   loadFolders() {
     this.isLoadingFolders = true;
     console.log('Loading folders for move dialog...');
-    this.folderService.getAllFolders().subscribe({
-      next: (response) => {
-        console.log('Move dialog - Folders API response:', response);
-        // Backend returns { success: true, totalFolders: N, folders: [...] }
-        // Filter to show only custom folders (system folders are already shown separately)
-        // Also exclude the 'contacts' folder
-        const allFolders = response.folders || [];
-        this.folders = allFolders.filter((folder: any) =>
-          (folder.type === 'CUSTOM' || folder.type === 'custom') &&
-          folder.name.toLowerCase() !== 'contacts'
-        );
+    this.folderService.getCustomFoldersForMove().subscribe({
+      next: (customFolders) => {
+        console.log('Move dialog - Custom folders loaded:', customFolders);
+        this.folders = customFolders;
         this.isLoadingFolders = false;
-        this.cdr.detectChanges()
-        console.log('Move dialog - Custom folders loaded:', this.folders);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Move dialog - Failed to load folders:', error);
         console.error('Move dialog - Error details:', error.error);
         this.moveErrorMessage = 'Failed to load folders';
         this.isLoadingFolders = false;
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       }
     });
   }
