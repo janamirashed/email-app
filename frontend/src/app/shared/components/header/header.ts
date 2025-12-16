@@ -16,7 +16,7 @@ export class HeaderComponent implements OnInit {
   userInitials: string = '';
   userName: string = '';
   userEmail: string = '';
-  simpleSearchTerm: string = '';
+  searchTerm: string = '';
   showAdvancedSearch: boolean = false;
   showUserMenu: boolean = false;
 
@@ -26,6 +26,7 @@ export class HeaderComponent implements OnInit {
     subject: '',
     body: ''
   };
+
   constructor(
     private authService: AuthService,
     private sidebarService: SidebarService,
@@ -59,7 +60,6 @@ export class HeaderComponent implements OnInit {
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
 
-    // Close Advanced Search if clicked outside
     const clickedInsideSearch = target.closest('.max-w-2xl');
     if (!clickedInsideSearch && this.showAdvancedSearch) {
       this.showAdvancedSearch = false;
@@ -73,7 +73,6 @@ export class HeaderComponent implements OnInit {
 
   importanceLevel: string = '3'; // Default to Normal (3)
 
-
   toggleAdvancedSearch(event: MouseEvent) {
     event.stopPropagation();
     this.showAdvancedSearch = !this.showAdvancedSearch;
@@ -83,11 +82,10 @@ export class HeaderComponent implements OnInit {
     this.showAdvancedSearch = false;
     this.router.navigate(['/search'], {
       queryParams: {
-        keyword: this.simpleSearchTerm
+        keyword: this.searchTerm
       }
     });
   }
-
   onAdvancedSearch() {
     this.showAdvancedSearch = false;
 
@@ -100,6 +98,7 @@ export class HeaderComponent implements OnInit {
 
     this.router.navigate(['/search'], { queryParams });
   }
+
 
 
   toggleUserMenu(event: MouseEvent) {
