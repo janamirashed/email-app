@@ -202,18 +202,19 @@ export class EmailService {
   }
 
   // GET /api/email/search?keyword=test&searchIn=all
-  searchEmails(parameters: {sender?:string, receiver?:string, subject?:string, body?:string, keyword?:string, sortBy?:string}): Observable<any> {
-    let params = new HttpParams()
-    if(parameters.sender) params = new HttpParams().set('sender', parameters.sender);
-    if(parameters.receiver) params = new HttpParams().set('receiver', parameters.receiver);
-    if(parameters.subject) params = new HttpParams().set('subject', parameters.subject);
-    if(parameters.body) params = new HttpParams().set('body', parameters.body);
-    if(parameters.keyword) params = new HttpParams().set('keyword', parameters.keyword);
-    if (parameters.sortBy) params = new HttpParams().set('sortBy', parameters.sortBy);
+  searchEmails(parameters: {sender?:string, receiver?:string, subject?:string, body?:string, folder?:string, keyword?:string, sortBy?:string}): Observable<any> {
+    let httpParams = new HttpParams();
+    if(parameters.sender)httpParams = httpParams.set('sender', parameters.sender);
+    if(parameters.receiver) httpParams = httpParams.set('receiver', parameters.receiver);
+    if(parameters.subject) httpParams = httpParams.set('subject', parameters.subject);
+    if(parameters.body) httpParams = httpParams.set('body', parameters.body);
+    if (parameters.folder) httpParams = httpParams.set('folder', parameters.folder);
+    if(parameters.keyword) httpParams =httpParams.set('keyword', parameters.keyword);
+    if (parameters.sortBy) httpParams = httpParams.set('sortBy', parameters.sortBy);
 
     return this.http.get(`${this.baseUrl}/search`, {
       headers: this.getHeaders(),
-      params: params
+      params: httpParams
     });
   }
 }

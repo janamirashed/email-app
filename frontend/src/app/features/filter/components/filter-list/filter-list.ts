@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { FilterService } from '../../../../core/services/filter.service';
 import { FolderService } from '../../../../core/services/folder.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
   selector: 'app-filter-list',
@@ -33,13 +34,56 @@ export class FilterListComponent implements OnInit {
     private filterService: FilterService,
     private folderService: FolderService,
     private confirmationService: ConfirmationService,
+    private router: Router,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
   ) { }
 
   ngOnInit() {
     this.loadFilters();
     this.loadFolders();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['create'] === 'true') {
+        this.openCreateDialogFromSearch(params);
+      }
+    });
   }
+
+  openCreateDialogFromSearch(params: any) {
+    this.newFilterName = '';
+    this.newFilterAction = 'move';
+    this.newFilterConditionOperator = 'contains';
+
+    //temp logic till we complete filter to match our searchFilter
+    if (params['from']) {
+      this.newFilterConditionField = 'from';
+      this.newFilterConditionValue = params['from'];
+      this.newFilterName = 'From: ' + params['from'];
+    }
+    else if (params['subject']) {
+      this.newFilterConditionField = 'subject';
+      this.newFilterConditionValue = params['subject'];
+      this.newFilterName = 'Subject: ' + params['subject'];
+    }
+    else if (params['body']) {
+      this.newFilterConditionField = 'body';
+      this.newFilterConditionValue = params['body'];
+      this.newFilterName = 'Body: ' + params['body'];
+    }
+
+    setTimeout(() => {
+      this.showCreateDialog = true;
+
+      // Cleanup URL immediately
+      this.router.navigate([], {
+        queryParams: { create: null, from: null, subject: null, body: null },
+        queryParamsHandling: 'merge'
+      });
+    }, 0);
+  }
+
+
 
   loadFolders() {
     this.folderService.getAllFolders().subscribe({

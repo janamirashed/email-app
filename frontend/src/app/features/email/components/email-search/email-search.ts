@@ -23,6 +23,8 @@ export class EmailSearch implements OnInit {
   body: string = '';
   isLoading: boolean = false;
   errorMessage: string = '';
+  folder: string = '';
+
 
   selectedEmails: Set<string> = new Set();
   Math = Math;
@@ -45,10 +47,13 @@ export class EmailSearch implements OnInit {
       this.receiver = params['receiver'];
       this.subject = params['subject'];
       this.body = params['body'];
+      this.folder = params['folder'];
       this.keyword = params['keyword'];
 
-      if (this.sender || this.receiver || this.subject || this.body || this.keyword) {
-        this.searchEmails();
+      if (this.sender || this.receiver || this.subject || this.body || this.keyword || this.folder) {
+        setTimeout(() => {
+          this.searchEmails();
+        }, 0);
       }
     });
   }
@@ -83,6 +88,7 @@ export class EmailSearch implements OnInit {
       receiver: this.receiver,
       subject: this.subject,
       body: this.body,
+      folder: this.folder,
       keyword: this.keyword
     };
 

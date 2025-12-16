@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth-service';
 import { SidebarService } from '../../../core/services/sidebar.service';
-
+import {FolderService} from '../../../core/services/folder.service';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -20,16 +20,20 @@ export class HeaderComponent implements OnInit {
   showAdvancedSearch: boolean = false;
   showUserMenu: boolean = false;
 
+  availableFolders: any[] = [];
+
   advancedParams = {
     sender: '',
     receiver: '',
     subject: '',
-    body: ''
+    body: '',
+    folder: 'all',
   };
 
   constructor(
     private authService: AuthService,
     private sidebarService: SidebarService,
+    private folderService: FolderService,
     private router: Router
   ) { }
 
@@ -53,6 +57,19 @@ export class HeaderComponent implements OnInit {
       this.userInitials = 'U';
       this.userName = 'User';
     }
+
+    this.loadFolders();
+  }
+
+  loadFolders() {
+    this.folderService.getAllFolders().subscribe({
+      next: (response: any) => {
+        if (response && response.folders) {
+          this.availableFolders = response.folders.filter((f: any) => f.type === 'CUSTOM');
+        }
+      },
+      error: (err: any) => console.error('Failed to load folders', err)
+    });
   }
 
   // Close dropdown when clicking outside
@@ -76,6 +93,10 @@ export class HeaderComponent implements OnInit {
   toggleAdvancedSearch(event: MouseEvent) {
     event.stopPropagation();
     this.showAdvancedSearch = !this.showAdvancedSearch;
+    //move text of main search bar to "include words" field
+    if (this.showAdvancedSearch && this.searchTerm) {
+      this.advancedParams.body = this.searchTerm;
+    }
   }
 
   onSearch() {
@@ -94,12 +115,30 @@ export class HeaderComponent implements OnInit {
     if(this.advancedParams.sender) queryParams.sender = this.advancedParams.sender;
     if(this.advancedParams.receiver) queryParams.receiver = this.advancedParams.receiver;
     if(this.advancedParams.subject) queryParams.subject = this.advancedParams.subject;
-    if(this.advancedParams.body) queryParams.body = this.advancedParams.body;
-
+    if(this.advancedParams.body) {
+      queryParams.body = this.advancedParams.body;
+    } else if (this.searchTerm) {
+      queryParams.body = this.searchTerm;
+    }
+    if(this.advancedParams.folder && this.advancedParams.folder !== 'all') {
+      queryParams.folder = this.advancedParams.folder;
+    }
     this.router.navigate(['/search'], { queryParams });
   }
 
+  onCreateFilter() {
+    this.showAdvancedSearch = false;
 
+    const queryParams: any = {};
+    // We pass all filled fields. The Filter page will decide how to handle them.
+    if (this.advancedParams.sender) queryParams.from = this.advancedParams.sender;
+    if (this.advancedParams.subject) queryParams.subject = this.advancedParams.subject;
+    if (this.advancedParams.body) queryParams.body = this.advancedParams.body;
+
+    queryParams.create = 'true';
+
+    this.router.navigate(['/filters'], { queryParams });
+  }
 
   toggleUserMenu(event: MouseEvent) {
     event.stopPropagation();

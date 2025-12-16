@@ -1,0 +1,9 @@
+{
+  "id" : "filter-3455430a",
+  "name" : "HAS LANA",
+  "property" : "body",
+  "matcher" : "contains",
+  "value" : "lana",
+  "action" : "star",
+  "newFolder" : null
+}

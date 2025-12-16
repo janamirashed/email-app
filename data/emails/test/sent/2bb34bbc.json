@@ -11,6 +11,6 @@
   "attachments" : [ ],
   "deletedAt" : null,
   "starred" : false,
-  "read" : false,
+  "read" : true,
   "draft" : false
 }

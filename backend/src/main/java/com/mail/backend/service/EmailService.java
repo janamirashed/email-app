@@ -182,7 +182,7 @@ public class EmailService {
 
     // SEARCH EMAILS
     public List<Email> searchEmails(String username, String sender, String receiver,
-                                    String subject, String body, String sortBy) throws IOException {
+                                    String subject, String body,String folder, String sortBy) throws IOException {
         List<Email> allEmails = emailRepository.getAllEmails(username);
 
         // Chain filters using the Filter Pattern
@@ -198,6 +198,25 @@ public class EmailService {
         if (body != null && !body.isEmpty()) {
             finalFilter = new AndFilter(finalFilter, new BodyFilter(body));
         }
+        //chaining for folders/status
+        if (folder != null && !folder.isEmpty() && !folder.equalsIgnoreCase("all")) {
+            switch (folder.toLowerCase()) {
+                case "starred":
+                    finalFilter = new AndFilter(finalFilter, new StarredFilter());
+                    break;
+                case "read":
+                    finalFilter = new AndFilter(finalFilter, new ReadStatusFilter(true));
+                    break;
+                case "unread":
+                    finalFilter = new AndFilter(finalFilter, new ReadStatusFilter(false));
+                    break;
+                default:
+                    //it's a specific folder (Inbox, Sent, Custom, ..etc)
+                    finalFilter = new AndFilter(finalFilter, new FolderFilter(folder));
+                    break;
+            }
+        }
+
 
         // Execute the filter chain
         List<Email> results = finalFilter.meetCriteria(allEmails);

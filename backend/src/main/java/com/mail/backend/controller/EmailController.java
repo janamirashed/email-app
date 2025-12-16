@@ -222,6 +222,7 @@ public class EmailController {
             @RequestParam(required = false) String receiver,
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String body,
+            @RequestParam(required = false) String folder,
             @RequestParam(required = false) String keyword, //also "All Search"
             @RequestParam(defaultValue = "date") String sortBy,
             Authentication authentication) {
@@ -234,7 +235,7 @@ public class EmailController {
                 effectiveBody = keyword;
             }
 
-            List<Email> results = emailService.searchEmails(username, sender, receiver, subject, effectiveBody, sortBy);
+            List<Email> results = emailService.searchEmails(username, sender, receiver, subject, effectiveBody, folder, sortBy);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
