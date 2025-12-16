@@ -251,12 +251,12 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
     if (this.selectedFiles.length > 0) {
       if (transactional) {
-        attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles));
+        attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles, this.recipients + "," + localStorage.getItem("currentUser")));
         console.log(attachment_ids.length);
         console.log(attachment_ids.at(0));
       }
       else {
-        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles).subscribe({
+        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles, this.recipients + "," + localStorage.getItem("currentUser")).subscribe({
           next: () => {
             console.log("non-transactional uploads complete");
           }
@@ -265,13 +265,9 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       }
     }
 
-    let attachments: any[] = [];
+    let attachments: Attachment[] = [];
     attachment_ids.forEach((val, idx) => {
-      let entry = {
-        id: val,
-        mimeType: this.selectedFiles.at(idx)?.type,
-        fileName: this.selectedFiles.at(idx)?.name
-      };
+      let entry: Attachment = new Attachment(val, this.selectedFiles.at(idx)?.type, this.selectedFiles.at(idx)?.name, this.parseRecipients(this.recipients));
       attachments.push(entry);
     });
     return attachments;

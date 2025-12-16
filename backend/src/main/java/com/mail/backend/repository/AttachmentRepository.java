@@ -42,20 +42,6 @@ public class AttachmentRepository {
 
     public InputStream getAttachmentStream(String attachmentId){
 
-//        try{
-//            try (var stream = Files.list(Path.of(attachmentRoot))) {
-//                Optional<Path> match = stream
-//                        .filter(p -> p.getFileName().toString().startsWith(attachmentId))
-//                        .findFirst();
-//
-//                if (match.isPresent()) {
-//                    return new FileInputStream(match.get().toFile());
-//                } else {
-//                    System.err.println("Attachment not found for ID: " + attachmentId);
-//                    return null;
-//                }
-//            }
-//        }
         try {
             String ext = MimeType.toFileExtension(getAttachmentMetadata(attachmentId).getMimeType());
             Path path = Paths.get(attachmentRoot, attachmentId + "." + ext);

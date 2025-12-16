@@ -1,6 +1,7 @@
 package com.mail.backend.config;
 
 import com.mail.backend.config.filter.JwtFilter;
+import com.mail.backend.config.filter.ThrottleRequestsFilter;
 import com.mail.backend.service._UserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,9 @@ public class SecurityConfig {
     JwtFilter jwtFilter;
 
     @Autowired
+    ThrottleRequestsFilter throttleRequestsFilter;
+
+    @Autowired
     private _UserDetailsService userDetailsService;
 
     @Bean
@@ -42,6 +46,7 @@ public class SecurityConfig {
                 httpBasic(Customizer.withDefaults()).
                 sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(throttleRequestsFilter, JwtFilter.class)
                 .cors(Customizer.withDefaults())
                 .build();
     }
