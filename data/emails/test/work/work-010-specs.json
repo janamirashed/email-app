@@ -1,0 +1,16 @@
+{
+  "messageId" : "work-010-specs",
+  "from" : "colleague@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "Project Specs v2",
+  "body" : "<p>Here are the updated specs for the dashboard.</p>",
+  "timestamp" : [ 2025, 12, 18, 14, 0 ],
+  "priority" : 2,
+  "folder" : "work",
+  "originalFolder" : "inbox",
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

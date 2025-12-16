@@ -1,0 +1,16 @@
+{
+  "messageId" : "inbox-004-newsletter",
+  "from" : "news@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "Weekly Tech: Angular 18 Released",
+  "body" : "<p>Top stories: Angular 18, React 19, and AI advancements.</p>",
+  "timestamp" : [ 2025, 12, 18, 9, 0 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

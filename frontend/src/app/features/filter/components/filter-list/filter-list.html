@@ -1,6 +1,5 @@
 <div class="h-full p-6 bg-slate-50 overflow-y-auto">
   <div class="max-w-5xl mx-auto">
-    <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Filters & Rules</h1>
@@ -11,31 +10,30 @@
       </button>
     </div>
 
-    <!-- Existing Filters -->
     <div class="card mb-6">
       <table class="w-full">
         <thead class="bg-gray-50 border-b border-gray-200">
-          <tr>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Condition</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
-            <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
-          </tr>
+        <tr>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Condition</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
+          <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
+        </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let rule of existingRules">
-            <tr class="border-b border-gray-100 hover:bg-gray-50">
-              <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ getFilterName(rule) }}</td>
-              <td class="px-4 py-3 text-sm text-gray-600">{{ getFilterCondition(rule) }}</td>
-              <td class="px-4 py-3 text-sm text-indigo-600 font-medium">{{ getFilterAction(rule) }}</td>
-              <td class="px-4 py-3 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <button (click)="editFilter(rule)" class="text-gray-600 hover:text-blue-600 text-sm">Edit</button>
-                  <button (click)="deleteFilter(rule)" class="text-gray-600 hover:text-red-600 text-sm">Delete</button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
+        <ng-container *ngFor="let rule of existingRules">
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ getFilterName(rule) }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">{{ getFilterCondition(rule) }}</td>
+            <td class="px-4 py-3 text-sm text-indigo-600 font-medium">{{ getFilterAction(rule) }}</td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button (click)="editFilter(rule)" class="text-gray-600 hover:text-blue-600 text-sm">Edit</button>
+                <button (click)="deleteFilter(rule)" class="text-gray-600 hover:text-red-600 text-sm">Delete</button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
         </tbody>
       </table>
 
@@ -43,135 +41,261 @@
         <p class="text-sm">No filters created yet</p>
       </div>
     </div>
-
-    <div class="text-sm text-gray-500">
-      <p>💡 <strong>Tip:</strong> Filters automatically organize emails as they arrive</p>
-    </div>
   </div>
 
-  <!-- Create Filter Dialog -->
-  <div *ngIf="showCreateDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
+  <!-- Create Dialog -->
+  <div *ngIf="showCreateDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] fade-in"
        (click)="closeCreateDialog()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6" (click)="$event.stopPropagation()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
       <h2 class="text-xl font-bold text-gray-900 mb-6">Create New Filter</h2>
 
+      <!-- Filter Name -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-3">Filter Name:</label>
-        <div class="flex gap-3">
-          <input
-            type="text"
-            [(ngModel)]="newFilterName"
-            placeholder="e.g. Work emails"
-            class="input flex-1">
-        </div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Name <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="newFilterName"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="e.g. Work emails"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
       </div>
 
+      <!-- Conditions -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-3">When message matches:</label>
-        <div class="flex gap-3">
-          <select [(ngModel)]="newFilterConditionField" class="input flex-1">
-            <option value="subject">Subject</option>
-            <option value="from">From</option>
-            <option value="body">Body</option>
-          </select>
-          <select [(ngModel)]="newFilterConditionOperator" class="input flex-1">
-            <option value="contains">contains</option>
-            <option value="exactly">is exactly</option>
-            <option value="startswith">starts with</option>
-            <option value="endswith">ends with</option>
-
-          </select>
-          <input type="text" [(ngModel)]="newFilterConditionValue" placeholder="Value..." class="input flex-1">
+        <div class="flex justify-between items-center mb-3">
+          <label class="block text-sm font-medium text-gray-700">When message matches <span class="text-red-500">*</span></label>
+          <button (click)="addCondition()" class="text-xs text-blue-600 font-medium hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Condition
+          </button>
         </div>
+
+        <div class="space-y-3">
+          <div *ngFor="let condition of conditions; let i = index; trackBy: trackByIndex" class="flex gap-2 items-start">
+            <!-- Field Select -->
+            <select
+              [(ngModel)]="condition.field"
+              [ngModelOptions]="{standalone: true}"
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
+              style="min-width: 120px;">
+              <option value="subject">Subject</option>
+              <option value="from">From</option>
+              <option value="to">To</option>
+              <option value="body">Body</option>
+            </select>
+
+            <!-- Operator Select -->
+            <select
+              [(ngModel)]="condition.operator"
+              [ngModelOptions]="{standalone: true}"
+              class="px-3 py-2 border rounded-lg outline-none transition"
+              [class.border-gray-300]="conditions.length === 1"
+              [class.bg-white]="conditions.length === 1"
+              [class.focus:ring-2]="conditions.length === 1"
+              [class.focus:ring-blue-500]="conditions.length === 1"
+              [class.focus:border-transparent]="conditions.length === 1"
+              [class.bg-gray-100]="conditions.length > 1"
+              [class.text-gray-400]="conditions.length > 1"
+              [class.border-gray-200]="conditions.length > 1"
+              [class.cursor-not-allowed]="conditions.length > 1"
+              [disabled]="conditions.length > 1"
+              style="min-width: 130px;">
+              <option value="contains">contains</option>
+              <option value="exactly">is exactly</option>
+              <option value="startswith">starts with</option>
+              <option value="endswith">ends with</option>
+            </select>
+
+            <!-- Value Input -->
+            <input
+              type="text"
+              [(ngModel)]="condition.value"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Type text to match..."
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+
+            <!-- Remove Button -->
+            <button
+              *ngIf="conditions.length > 1"
+              (click)="removeCondition(i)"
+              class="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition flex-shrink-0"
+              title="Remove condition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <p *ngIf="conditions.length > 1" class="text-xs text-gray-500 mt-3 ml-1 flex items-center gap-1">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+          Multiple conditions use 'contains' logic automatically and all must match (AND).
+        </p>
       </div>
 
       <!-- Actions -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-3">Then do:</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Then do <span class="text-red-500">*</span></label>
         <div class="flex gap-3">
-          <select [(ngModel)]="newFilterAction" class="input flex-1">
+          <select
+            [(ngModel)]="newFilterAction"
+            [ngModelOptions]="{standalone: true}"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white">
             <option value="move">Move to folder</option>
             <option value="markread">Mark as read</option>
             <option value="star">Star</option>
             <option value="delete">Delete</option>
           </select>
-          <select *ngIf="newFilterAction === 'move'" [(ngModel)]="newFilterActionValue" class="input flex-1">
+          <select
+            *ngIf="newFilterAction === 'move'"
+            [(ngModel)]="newFilterActionValue"
+            [ngModelOptions]="{standalone: true}"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
+            [class.border-red-300]="newFilterAction === 'move' && !newFilterActionValue">
             <option value="">Choose folder...</option>
             <option *ngFor="let folder of folders" [value]="folder.name">{{ folder.name }}</option>
           </select>
         </div>
+        <p *ngIf="newFilterAction === 'move' && !newFilterActionValue" class="text-xs text-red-500 mt-1 ml-1">Please select a folder</p>
       </div>
 
-      <!-- Buttons -->
+      <!-- Dialog Actions -->
       <div class="flex justify-end gap-3 pt-4 border-t">
-        <button (click)="closeCreateDialog()" class="btn-secondary">Cancel</button>
-        <button (click)="saveFilter()"
-          [disabled]="!newFilterConditionValue.trim() || (newFilterAction === 'move' && !newFilterActionValue)"
-          class="btn-primary">Save
-          Filter</button>
+        <button (click)="closeCreateDialog()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+          Cancel
+        </button>
+        <button
+          (click)="saveFilter()"
+          [disabled]="!isValid()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600">
+          Save Filter
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Edit Filter Dialog -->
-  <div *ngIf="showEditDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in"
-    (click)="closeEditDialog()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6" (click)="$event.stopPropagation()">
+  <!-- Edit Dialog -->
+  <div *ngIf="showEditDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] fade-in" (click)="closeEditDialog()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
       <h2 class="text-xl font-bold text-gray-900 mb-6">Edit Filter</h2>
 
+      <!-- Filter Name -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-3">Filter Name:</label>
-        <div class="flex gap-3">
-          <input
-            type="text"
-            [(ngModel)]="newFilterName"
-            placeholder="e.g. Work emails"
-            class="input flex-1">
-        </div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Name <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="newFilterName"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="e.g. Work emails"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
       </div>
+
       <!-- Conditions -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-3">When message matches:</label>
-        <div class="flex gap-3">
-          <select [(ngModel)]="newFilterConditionField" class="input flex-1">
-            <option value="subject">Subject</option>
-            <option value="from">From</option>
-            <option value="body">Body</option>
-          </select>
-          <select [(ngModel)]="newFilterConditionOperator" class="input flex-1">
-            <option value="contains">contains</option>
-            <option value="exactly">is exactly</option>
-            <option value="startswith">starts with</option>
-            <option value="endswith">ends with</option>
-          </select>
-          <input type="text" [(ngModel)]="newFilterConditionValue" placeholder="Value..." class="input flex-1">
+        <div class="flex justify-between items-center mb-3">
+          <label class="block text-sm font-medium text-gray-700">When message matches <span class="text-red-500">*</span></label>
+          <button (click)="addCondition()" class="text-xs text-blue-600 font-medium hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Condition
+          </button>
         </div>
+
+        <div class="space-y-3">
+          <div *ngFor="let condition of conditions; let i = index; trackBy: trackByIndex" class="flex gap-2 items-start">
+            <!-- Field Select -->
+            <select
+              [(ngModel)]="condition.field"
+              [ngModelOptions]="{standalone: true}"
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
+              style="min-width: 120px;">
+              <option value="subject">Subject</option>
+              <option value="from">From</option>
+              <option value="to">To</option>
+              <option value="body">Body</option>
+            </select>
+
+            <!-- Operator Select -->
+            <select
+              [(ngModel)]="condition.operator"
+              [ngModelOptions]="{standalone: true}"
+              class="px-3 py-2 border rounded-lg outline-none transition"
+              [class.border-gray-300]="conditions.length === 1"
+              [class.bg-white]="conditions.length === 1"
+              [class.focus:ring-2]="conditions.length === 1"
+              [class.focus:ring-blue-500]="conditions.length === 1"
+              [class.focus:border-transparent]="conditions.length === 1"
+              [class.bg-gray-100]="conditions.length > 1"
+              [class.text-gray-400]="conditions.length > 1"
+              [class.border-gray-200]="conditions.length > 1"
+              [class.cursor-not-allowed]="conditions.length > 1"
+              [disabled]="conditions.length > 1"
+              style="min-width: 130px;">
+              <option value="contains">contains</option>
+              <option value="exactly">is exactly</option>
+              <option value="startswith">starts with</option>
+              <option value="endswith">ends with</option>
+            </select>
+
+            <!-- Value Input -->
+            <input
+              type="text"
+              [(ngModel)]="condition.value"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Type text to match..."
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+
+            <!-- Remove Button -->
+            <button
+              *ngIf="conditions.length > 1"
+              (click)="removeCondition(i)"
+              class="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition flex-shrink-0"
+              title="Remove condition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <p *ngIf="conditions.length > 1" class="text-xs text-gray-500 mt-3 ml-1 flex items-center gap-1">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+          Multiple conditions use 'contains' logic automatically and all must match (AND).
+        </p>
       </div>
 
       <!-- Actions -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-3">Then do:</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Then do <span class="text-red-500">*</span></label>
         <div class="flex gap-3">
-          <select [(ngModel)]="newFilterAction" class="input flex-1">
+          <select
+            [(ngModel)]="newFilterAction"
+            [ngModelOptions]="{standalone: true}"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white">
             <option value="move">Move to folder</option>
             <option value="markread">Mark as read</option>
             <option value="star">Star</option>
             <option value="delete">Delete</option>
           </select>
-          <select *ngIf="newFilterAction === 'move'" [(ngModel)]="newFilterActionValue" class="input flex-1">
+          <select
+            *ngIf="newFilterAction === 'move'"
+            [(ngModel)]="newFilterActionValue"
+            [ngModelOptions]="{standalone: true}"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
+            [class.border-red-300]="newFilterAction === 'move' && !newFilterActionValue">
             <option value="">Choose folder...</option>
             <option *ngFor="let folder of folders" [value]="folder.name">{{ folder.name }}</option>
           </select>
         </div>
+        <p *ngIf="newFilterAction === 'move' && !newFilterActionValue" class="text-xs text-red-500 mt-1 ml-1">Please select a folder</p>
       </div>
 
-      <!-- Buttons -->
+      <!-- Dialog Actions -->
       <div class="flex justify-end gap-3 pt-4 border-t">
-        <button (click)="closeEditDialog()" class="btn-secondary">Cancel</button>
-        <button (click)="updateFilter()"
-          [disabled]="!newFilterConditionValue.trim() || (newFilterAction === 'move' && !newFilterActionValue)"
-          class="btn-primary">Update
-          Filter</button>
+        <button (click)="closeEditDialog()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+          Cancel
+        </button>
+        <button
+          (click)="updateFilter()"
+          [disabled]="!isValid()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600">
+          Update Filter
+        </button>
       </div>
     </div>
   </div>

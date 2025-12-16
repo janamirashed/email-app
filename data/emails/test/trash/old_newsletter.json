@@ -1,0 +1,16 @@
+{
+  "messageId": "trash-009-old",
+  "from": "news@jaryn.com",
+  "to": ["test@jaryn.com"],
+  "subject": "Weekly Tech: React 19 Rumors",
+  "body": "<p>Old news.</p>",
+  "timestamp": [2025, 11, 01, 9, 0, 0, 0],
+  "priority": 3,
+  "folder": "trash",
+  "originalFolder": "inbox",
+  "attachments": [],
+  "deletedAt": "2025-11-02T09:00:00",
+  "starred": false,
+  "read": true,
+  "draft": false
+}

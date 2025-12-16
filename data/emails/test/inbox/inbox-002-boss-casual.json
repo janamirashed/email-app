@@ -1,0 +1,16 @@
+{
+  "messageId" : "inbox-002-boss-casual",
+  "from" : "boss@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "Team Lunch on Friday?",
+  "body" : "<p>Hey, thinking of going to that new taco place. Thoughts?</p>",
+  "timestamp" : [ 2025, 12, 20, 12, 0 ],
+  "priority" : 3,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

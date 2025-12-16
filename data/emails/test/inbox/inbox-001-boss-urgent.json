@@ -1,0 +1,16 @@
+{
+  "messageId" : "inbox-001-boss-urgent",
+  "from" : "boss@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "Urgent: Q4 Financial Report",
+  "body" : "<p>This is extremely <strong>urgent</strong>. I need the report by EOD.</p>",
+  "timestamp" : [ 2025, 12, 20, 8, 30 ],
+  "priority" : 1,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "read" : true,
+  "starred" : false,
+  "draft" : false
+}

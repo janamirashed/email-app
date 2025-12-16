@@ -7,6 +7,12 @@ import { FolderService } from '../../../../core/services/folder.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import {ActivatedRoute, Router} from '@angular/router';
 
+interface FilterCondition {
+  field: string;
+  operator: string;
+  value: string;
+}
+
 @Component({
   selector: 'app-filter-list',
   standalone: true,
@@ -18,11 +24,9 @@ export class FilterListComponent implements OnInit {
   folders: any[] = []; // Using any[] to handle potential object structure from API
 
   // Form inputs for new/edit filter
-  newFilterName: string = '';
-  newFilterConditionField: string = 'subject';
-  newFilterConditionOperator: string = 'contains';
-  newFilterConditionValue: string = '';
+  conditions: FilterCondition[] = [];
 
+  newFilterName: string = '';
   newFilterAction: string = 'move';
   newFilterActionValue: string = '';
 
@@ -42,7 +46,6 @@ export class FilterListComponent implements OnInit {
   ngOnInit() {
     this.loadFilters();
     this.loadFolders();
-
     this.route.queryParams.subscribe(params => {
       if (params['create'] === 'true') {
         this.openCreateDialogFromSearch(params);
@@ -50,34 +53,58 @@ export class FilterListComponent implements OnInit {
     });
   }
 
+  trackByIndex(index: number, obj: any): any {
+    return index;
+  }
+  addCondition() {
+    this.conditions.push({ field: 'subject', operator: 'contains', value: '' });
+    if (this.conditions.length > 1) {
+      this.conditions.forEach(c => c.operator = 'contains');
+    }
+  }
+
+  removeCondition(index: number) {
+    if (this.conditions.length > 1) {
+      this.conditions.splice(index, 1);
+    }
+  }
+  isValid(): boolean {
+    const hasValidConditions = this.conditions.some(c => c.value && c.value.trim() !== '');
+    const hasValidAction = this.newFilterAction !== 'move' || (this.newFilterActionValue !== null && this.newFilterActionValue !== undefined && this.newFilterActionValue.trim() !== '');
+    const hasValidName = !!(this.newFilterName && this.newFilterName.trim() !== '');
+
+    return hasValidConditions && hasValidAction && hasValidName;
+  }
   openCreateDialogFromSearch(params: any) {
     this.newFilterName = '';
     this.newFilterAction = 'move';
-    this.newFilterConditionOperator = 'contains';
+    this.newFilterActionValue = '';
+    this.conditions = [];
 
-    //temp logic till we complete filter to match our searchFilter
     if (params['from']) {
-      this.newFilterConditionField = 'from';
-      this.newFilterConditionValue = params['from'];
-      this.newFilterName = 'From: ' + params['from'];
+      this.conditions.push({ field: 'from', operator: 'contains', value: params['from'] });
+      if (!this.newFilterName) this.newFilterName = 'From: ' + params['from'];
     }
-    else if (params['subject']) {
-      this.newFilterConditionField = 'subject';
-      this.newFilterConditionValue = params['subject'];
-      this.newFilterName = 'Subject: ' + params['subject'];
+    if (params['receiver']) {
+      this.conditions.push({ field: 'to', operator: 'contains', value: params['receiver'] });
+      if (!this.newFilterName) this.newFilterName = 'To: ' + params['receiver'];
     }
-    else if (params['body']) {
-      this.newFilterConditionField = 'body';
-      this.newFilterConditionValue = params['body'];
-      this.newFilterName = 'Body: ' + params['body'];
+    if (params['subject']) {
+      this.conditions.push({ field: 'subject', operator: 'contains', value: params['subject'] });
+      if (!this.newFilterName) this.newFilterName += (this.newFilterName ? ' + ' : '') + 'Subject: ' + params['subject'];
     }
+    if (params['body']) {
+      this.conditions.push({ field: 'body', operator: 'contains', value: params['body'] });
+    }
+    if (this.conditions.length === 0) {
+      this.addCondition();
+    }
+
 
     setTimeout(() => {
       this.showCreateDialog = true;
-
-      // Cleanup URL immediately
       this.router.navigate([], {
-        queryParams: { create: null, from: null, subject: null, body: null },
+        queryParams: { create: null, from: null, receiver: null, subject: null, body: null },
         queryParamsHandling: 'merge'
       });
     }, 0);
@@ -127,91 +154,140 @@ export class FilterListComponent implements OnInit {
 
   openCreateDialog() {
     this.newFilterName = '';
-    this.newFilterConditionField = 'subject';
-    this.newFilterConditionOperator = 'contains';
-    this.newFilterConditionValue = '';
+    this.conditions = [];
+    this.addCondition(); // Start with 1
     this.newFilterAction = 'move';
     this.newFilterActionValue = '';
     this.showCreateDialog = true;
   }
 
+
   closeCreateDialog() {
     this.showCreateDialog = false;
+    this.resetForm();
+  }
+  closeEditDialog() { this.showEditDialog = false; this.resetForm();}
+
+  private resetForm() {
+    this.newFilterName = '';
+    this.newFilterAction = 'move';
+    this.newFilterActionValue = '';
+    this.conditions = [];
+    this.editingFilter = null;
   }
 
+
   saveFilter() {
-    if (this.newFilterConditionValue.trim()) {
-      const newFilter: Filter = {
-        name: this.newFilterName,
-        property: this.newFilterConditionField,
-        matcher: this.newFilterConditionOperator,
-        value: this.newFilterConditionValue,
+    const validConditions = this.conditions.filter(c => c.value.trim() !== '');
+    if (validConditions.length === 0) return;
+
+    let filterToSave: Filter;
+
+    if (validConditions.length === 1) {
+      const c = validConditions[0];
+      filterToSave = {
+        name: this.newFilterName || `${c.field} ${c.operator} ${c.value}`,
+        property: c.field,
+        matcher: c.operator,
+        value: c.value,
         action: this.newFilterAction,
         newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
       };
+    } else {
+      //complex
+      // Format: "from:bob;subject:hi"
+      const packedValue = validConditions
+        .map(c => `${c.field}:${c.value}`)
+        .join(';');
 
-      this.filterService.addFilter(newFilter).subscribe({
-        next: (savedFilter) => {
-          this.existingRules.push(savedFilter);
-          this.closeCreateDialog();
-          this.cdr.detectChanges();
-          console.log('Created filter:', savedFilter);
-        },
-        error: (error) => {
-          console.error('Failed to create filter:', error);
-          alert('Failed to create filter: ' + (error.error?.error || error.message));
-        }
-      });
+      filterToSave = {
+        name: this.newFilterName || 'Complex Rule',
+        property: 'composite',
+        matcher: 'complex', //backend to split by ';'
+        value: packedValue,
+        action: this.newFilterAction,
+        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
+      };
     }
+
+    this.filterService.addFilter(filterToSave).subscribe({
+      next: (savedFilter) => {
+        this.existingRules.push(savedFilter);
+        this.closeCreateDialog();
+        this.cdr.detectChanges();
+      },
+      error: (error) => alert('Failed: ' + error.message)
+    });
   }
 
   editFilter(filter: Filter) {
     this.editingFilter = filter;
-
-    // Populate form with filter data
     this.newFilterName = filter.name || '';
-    this.newFilterConditionField = filter.property;
-    this.newFilterConditionOperator = filter.matcher;
-    this.newFilterConditionValue = filter.value;
     this.newFilterAction = filter.action;
     this.newFilterActionValue = filter.newFolder || '';
+
+    this.conditions = [];
+
+    if (filter.property === 'composite' && filter.matcher === 'complex') {
+      // unpack: "from:bob;subject:hi"
+      const parts = filter.value.split(';');
+      parts.forEach(part => {
+        const [key, val] = part.split(':');
+        if (key && val) {
+          this.conditions.push({ field: key, operator: 'contains', value: val });
+        }
+      });
+    } else {
+      //standard single rule
+      this.conditions.push({
+        field: filter.property,
+        operator: filter.matcher,
+        value: filter.value
+      });
+    }
 
     this.showEditDialog = true;
   }
 
-  closeEditDialog() {
-    this.showEditDialog = false;
-    this.editingFilter = null;
-  }
-
   updateFilter() {
-    if (this.editingFilter && this.newFilterConditionValue.trim()) {
-      const updatedFilter: Filter = {
+    const validConditions = this.conditions.filter(c => c.value.trim() !== '');
+    if (validConditions.length === 0) return;
+
+    let filterToSave: Filter;
+
+    if (validConditions.length === 1) {
+      const c = validConditions[0];
+      filterToSave = {
         name: this.newFilterName,
-        property: this.newFilterConditionField,
-        matcher: this.newFilterConditionOperator,
-        value: this.newFilterConditionValue,
+        property: c.field,
+        matcher: c.operator,
+        value: c.value,
         action: this.newFilterAction,
         newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
       };
-
-      this.filterService.updateFilter(this.editingFilter.id!, updatedFilter).subscribe({
-        next: (result) => {
-          const index = this.existingRules.findIndex(f => f.id === this.editingFilter!.id);
-          if (index !== -1) {
-            this.existingRules[index] = { ...updatedFilter, id: this.editingFilter!.id };
-          }
-          console.log('Updated filter:', result);
-          this.closeEditDialog();
-          this.cdr.detectChanges();
-
-        },
-        error: (error) => {
-          console.error('Failed to update filter:', error);
-          alert('Failed to update filter: ' + (error.error?.error || error.message));
-        }
-      });
+    } else {
+      const packedValue = validConditions.map(c => `${c.field}:${c.value}`).join(';');
+      filterToSave = {
+        name: this.newFilterName,
+        property: 'composite',
+        matcher: 'complex',
+        value: packedValue,
+        action: this.newFilterAction,
+        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
+      };
     }
+
+    this.filterService.updateFilter(this.editingFilter!.id!, filterToSave).subscribe({
+      next: (result) => {
+        const index = this.existingRules.findIndex(f => f.id === this.editingFilter!.id);
+        if (index !== -1) {
+          this.existingRules[index] = { ...filterToSave, id: this.editingFilter!.id };
+        }
+        this.closeEditDialog();
+        this.cdr.detectChanges();
+      },
+      error: (error) => alert('Failed: ' + error.message)
+    });
   }
 
   async deleteFilter(filter: Filter) {
@@ -244,8 +320,11 @@ export class FilterListComponent implements OnInit {
     return `${filter.name}`;
   }
 
-  getFilterCondition(filter: Filter): string {
-    return `${filter.property} ${filter.matcher}: ${filter.value}`;
+  getFilterCondition(filter: Filter) {
+    if (filter.property === 'composite') {
+      return filter.value.split(';').join(' AND ');
+    }
+    return `${filter.property} ${filter.matcher} ${filter.value}`;
   }
 
   getFilterAction(filter: Filter): string {
