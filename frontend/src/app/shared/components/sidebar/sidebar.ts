@@ -7,6 +7,7 @@ import { EventService } from '../../../core/services/event-service';
 import { FolderService } from '../../../core/services/folder.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmationService } from '../../../core/services/confirmation.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
 import { FormsModule } from '@angular/forms';
 
 interface Folder {
@@ -22,6 +23,7 @@ interface Folder {
   styleUrls: ['./sidebar.css']
 })
 export class SidebarComponent implements OnInit {
+  isOpen = true;
 
   systemFolders = [
     { name: 'Inbox', icon: 'inbox', count: 0, path: 'inbox' },
@@ -56,11 +58,17 @@ export class SidebarComponent implements OnInit {
     private folderService: FolderService,
     private notificationService: NotificationService,
     private confirmationService: ConfirmationService,
+    private sidebarService: SidebarService,
     private location: Location,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
+    this.sidebarService.isOpen$.subscribe(isOpen => {
+      this.isOpen = isOpen;
+      this.cdr.detectChanges();
+    });
+
     this.loadCustomFolders();
 
     // fetching the unread count from the backend with the service
@@ -158,16 +166,17 @@ export class SidebarComponent implements OnInit {
   }
 
   createFolder() {
-    if (this.newFolderName.trim()) {
-      console.log('Sidebar - Creating folder:', this.newFolderName.trim());
-      this.folderService.createFolder(this.newFolderName.trim()).subscribe({
+    const folderName = this.newFolderName.trim();
+    if (folderName) {
+      console.log('Sidebar - Creating folder:', folderName);
+      this.folderService.createFolder(folderName).subscribe({
         next: (response) => {
           console.log('Sidebar - Folder created:', response);
           this.closeCreateFolderModal();
           this.loadCustomFolders(); // Reload folders
 
           // Navigate to the new folder
-          this.router.navigate(['/folder', this.newFolderName.trim()]);
+          this.router.navigate(['/folder', folderName]);
         },
         error: (error) => {
           console.error('Sidebar - Failed to create folder:', error);
@@ -197,6 +206,7 @@ export class SidebarComponent implements OnInit {
         next: (response) => {
           console.log('Sidebar - Folder deleted:', response);
           this.loadCustomFolders(); // Reload folders
+          this.cdr.detectChanges()
           // Navigate to inbox if we're currently viewing the deleted folder
           if (this.router.url.includes(`/folder/${folderName}`)) {
             this.router.navigate(['/inbox']);

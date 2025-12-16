@@ -88,16 +88,20 @@ export class EmailTrashComponent implements OnInit {
   }
 
   clearEmailSelection(messageIds: string[]) {
-    if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())) {
-      this.router.navigate(
-        [],
-        {
-          relativeTo: this.route,
-          queryParams: {},
-          queryParamsHandling: ''
-        }
-      );
+    if(this.route.snapshot.queryParamMap.get("messageId")){
+      if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())){
+        this.router.navigate(
+          [],
+          {
+            relativeTo: this.route,
+            queryParams: {},
+            queryParamsHandling: ''
+          }
+        );
+      }
+
     }
+
   }
 
   // Toggle email selection (checkbox)
@@ -135,20 +139,23 @@ export class EmailTrashComponent implements OnInit {
     }
 
     const messageIds = Array.from(this.selectedEmails);
+    this.isLoading = true;
     this.emailService.bulkRestoreFromTrash(messageIds).subscribe({
       next: () => {
         this.successMessage = `Restored ${messageIds.length} email(s) to original folder(s)`;
         console.log('Emails restored to their original folders');
+        this.isLoading = false;
         this.selectedEmails.clear();
-        this.loadTrashEmails();
         this.clearEmailSelection(messageIds);
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
+        this.loadTrashEmails();
+        this.cdr.detectChanges()
+        // this.successMessage = '';
       },
       error: (error) => {
         console.error('Failed to restore emails:', error);
+        this.isLoading = false;
         this.errorMessage = 'Failed to restore emails';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -177,10 +184,10 @@ export class EmailTrashComponent implements OnInit {
           this.successMessage = `Permanently deleted ${messageIds.length} email(s)`;
           console.log('Emails permanently deleted');
           this.isLoading = false;
-          this.cdr.detectChanges();
           this.selectedEmails.clear();
           this.clearEmailSelection(messageIds);
           this.loadTrashEmails();
+          this.cdr.detectChanges();
         },
         error: (error) => {
           console.error('Failed to delete emails:', error);

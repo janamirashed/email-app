@@ -287,7 +287,7 @@ public class EmailService {
         if (!currentFolder.equals("trash")) {
             emailRepository.moveEmail(username, messageId, currentFolder, "trash");
 
-            String originalFolderToPreserve = email.getOriginalFolder();
+            String originalFolderToPreserve = email.getFolder();
             if (originalFolderToPreserve == null || originalFolderToPreserve.isEmpty()) {
                 originalFolderToPreserve = currentFolder;
             }
