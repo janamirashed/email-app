@@ -24,6 +24,8 @@ export class EmailSearch implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
   folder: string = '';
+  priority: number | null = null;
+  hasAttachment: boolean | null = null;
 
 
   selectedEmails: Set<string> = new Set();
@@ -49,8 +51,10 @@ export class EmailSearch implements OnInit {
       this.body = params['body'];
       this.folder = params['folder'];
       this.keyword = params['keyword'];
-
-      if (this.sender || this.receiver || this.subject || this.body || this.keyword || this.folder) {
+      this.priority = params['priority'] ? Number(params['priority']) : null;
+      this.hasAttachment = params['hasAttachment'] === 'true';
+      if (this.sender || this.receiver || this.subject || this.body ||
+          this.keyword || this.folder || this.priority || this.hasAttachment) {
         setTimeout(() => {
           this.searchEmails();
         }, 0);
@@ -89,7 +93,10 @@ export class EmailSearch implements OnInit {
       subject: this.subject,
       body: this.body,
       folder: this.folder,
-      keyword: this.keyword
+      keyword: this.keyword,
+      priority: this.priority ? String(this.priority) : undefined,
+      hasAttachment: this.hasAttachment !== null ? this.hasAttachment : undefined,
+      sortBy: this.sortBy
     };
 
     this.emailService.searchEmails(searchParams).subscribe({

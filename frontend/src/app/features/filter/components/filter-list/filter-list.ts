@@ -58,8 +58,67 @@ export class FilterListComponent implements OnInit {
   }
   addCondition() {
     this.conditions.push({ field: 'subject', operator: 'contains', value: '' });
-    if (this.conditions.length > 1) {
-      this.conditions.forEach(c => c.operator = 'contains');
+    // Force all text conditions to use 'contains' when multiple exist
+    const textConditions = this.conditions.filter(c =>
+      c.field !== 'priority' && c.field !== 'hasAttachment'
+    );
+    if (textConditions.length > 1) {
+      textConditions.forEach(c => c.operator = 'contains');
+    }
+  }
+
+  onFieldChange(condition: FilterCondition) {
+    condition.value = '';
+  }
+
+  getTextConditionsCount(): number {
+    return this.conditions.filter(c =>
+      c.field !== 'priority' && c.field !== 'hasAttachment'
+    ).length;
+  }
+
+  hasPriorityCondition(): boolean {
+    return this.conditions.some(c => c.field === 'priority');
+  }
+
+  hasAttachmentCondition(): boolean {
+    return this.conditions.some(c => c.field === 'hasAttachment');
+  }
+
+  getPriorityCondition(): FilterCondition {
+    let condition = this.conditions.find(c => c.field === 'priority');
+    if (!condition) {
+      condition = { field: 'priority', operator: 'equals', value: '3' };
+      this.conditions.push(condition);
+    }
+    return condition;
+  }
+
+  getAttachmentCondition(): FilterCondition {
+    let condition = this.conditions.find(c => c.field === 'hasAttachment');
+    if (!condition) {
+      condition = { field: 'hasAttachment', operator: 'equals', value: 'true' };
+      this.conditions.push(condition);
+    }
+    return condition;
+  }
+
+  togglePriorityCondition(event: any) {
+    const checked = event.target.checked;
+    if (checked) {
+      if (!this.hasPriorityCondition()) {
+        this.conditions.push({ field: 'priority', operator: 'equals', value: '3' });
+      }
+    } else {
+      this.conditions = this.conditions.filter(c => c.field !== 'priority');
+    }
+  }
+
+  toggleAttachmentCondition(event: any) {
+    if (this.hasAttachmentCondition()) {
+      this.conditions = this.conditions.filter(c => c.field !== 'hasAttachment');
+    } else {
+      this.conditions.push({ field: 'hasAttachment', operator: 'equals', value: 'true' });
     }
   }
 
@@ -95,6 +154,12 @@ export class FilterListComponent implements OnInit {
     }
     if (params['body']) {
       this.conditions.push({ field: 'body', operator: 'contains', value: params['body'] });
+    }
+    if (params['priority']) {
+      this.conditions.push({ field: 'priority', operator: 'equals', value: params['priority'] });
+    }
+    if (params['hasAttachment']) {
+      this.conditions.push({ field: 'hasAttachment', operator: 'equals', value: 'true' });
     }
     if (this.conditions.length === 0) {
       this.addCondition();

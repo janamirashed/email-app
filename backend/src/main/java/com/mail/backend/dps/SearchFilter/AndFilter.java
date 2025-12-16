@@ -10,6 +10,7 @@ public class AndFilter implements SearchFilter {
     private SearchFilter filter2;
 
     public AndFilter(SearchFilter filter1, SearchFilter filter2) {
+        System.out.println("Building AndFilter with: " + filter2.getClass().getSimpleName());
         this.filter1 = filter1;
         this.filter2 = filter2;
     }

@@ -28,6 +28,8 @@ export class HeaderComponent implements OnInit {
     subject: '',
     body: '',
     folder: 'all',
+    priority: '',
+    hasAttachment: false,
   };
 
   constructor(
@@ -123,6 +125,12 @@ export class HeaderComponent implements OnInit {
     if(this.advancedParams.folder && this.advancedParams.folder !== 'all') {
       queryParams.folder = this.advancedParams.folder;
     }
+    if(this.advancedParams.priority) {
+      queryParams.priority = this.advancedParams.priority;
+    }
+    if(this.advancedParams.hasAttachment) {
+      queryParams.hasAttachment = 'true';
+    }
     this.router.navigate(['/search'], { queryParams });
   }
 
@@ -140,7 +148,8 @@ export class HeaderComponent implements OnInit {
     } else if (this.searchTerm) {
       queryParams.body = this.searchTerm;
     }
-
+    if (this.advancedParams.priority) queryParams.priority = this.advancedParams.priority;
+    if (this.advancedParams.hasAttachment) queryParams.hasAttachment = 'true';
     queryParams.create = 'true';
 
     this.router.navigate(['/filters'], { queryParams }).catch(err => {

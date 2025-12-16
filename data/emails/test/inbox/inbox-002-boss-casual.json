@@ -4,7 +4,7 @@
   "to" : [ "test@jaryn.com" ],
   "subject" : "Team Lunch on Friday?",
   "body" : "<p>Hey, thinking of going to that new taco place. Thoughts?</p>",
-  "timestamp" : [ 2025, 12, 20, 12, 0 ],
+  "timestamp" :[ 2025, 12, 11, 20, 17, 54, 895935200 ],
   "priority" : 3,
   "folder" : "inbox",
   "originalFolder" : null,

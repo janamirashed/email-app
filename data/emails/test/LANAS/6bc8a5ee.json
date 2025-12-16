@@ -6,8 +6,8 @@
   "body" : "<p>THIS IS not <strong>LanaDelRay</strong></p>",
   "timestamp" : [ 2025, 12, 16, 0, 49, 41, 629565300 ],
   "priority" : 1,
-  "folder" : "sent",
-  "originalFolder" : null,
+  "folder" : "LANAS",
+  "originalFolder" : "sent",
   "attachments" : [ {
     "id" : "61b173f1-a9d0-40f5-bfb5-a82fdebcb0cb",
     "fileName" : "4ae4d5421f05c946d5f4ff9e0c2c93f0.jpg",

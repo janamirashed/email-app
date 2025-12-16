@@ -10,7 +10,7 @@
   "originalFolder" : "inbox",
   "attachments" : [ ],
   "deletedAt" : null,
-  "read" : true,
   "starred" : false,
+  "read" : true,
   "draft" : false
 }

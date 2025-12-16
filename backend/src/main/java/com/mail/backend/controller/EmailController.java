@@ -223,19 +223,20 @@ public class EmailController {
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String body,
             @RequestParam(required = false) String folder,
-            @RequestParam(required = false) String keyword, //also "All Search"
+            @RequestParam(required = false) String keyword, //"All Search"
+            @RequestParam(required = false) Integer priority,
+            @RequestParam(required = false) Boolean hasAttachment,
             @RequestParam(defaultValue = "date") String sortBy,
             Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
+            log.info("Search Request -> User: {}, Keyword: {}, Priority: {}, HasAtt: {}",
+                    username, keyword, priority, hasAttachment);
 
-            //Handle only searching with no filtering
-            String effectiveBody = body;
-            if ((sender == null && receiver == null && subject == null && body == null) && keyword != null) {
-                effectiveBody = keyword;
-            }
-
-            List<Email> results = emailService.searchEmails(username, sender, receiver, subject, effectiveBody, folder, sortBy);
+            List<Email> results = emailService.searchEmails(
+                    username, sender, receiver, subject, body, folder,
+                    keyword, priority, hasAttachment, sortBy
+            );
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
