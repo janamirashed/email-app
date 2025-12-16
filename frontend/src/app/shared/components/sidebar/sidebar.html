@@ -34,22 +34,8 @@
         <div class="flex items-center flex-1" [class.justify-center]="!isOpen" [class.gap-3]="isOpen">
           <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-          <span [class.hidden]="!isOpen" class="whitespace-nowrap ml-3">
-            Inbox</span>
-        </div>
-        @if(systemFolders[0].count && systemFolders[0].count! > 0){
-        <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
-          [class.absolute]="!isOpen" [class.top-2]="!isOpen" [class.right-2]="!isOpen" [class.hidden]="!isOpen">
-          {{ systemFolders[0].count }}
-        </span>
-        }
-
-        <!-- Tooltip -->
-        <div [class.hidden]="isOpen"
-          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
-          Inbox
+              class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg top-1/2 -translate-y-1/2">
+              Inbox
         </div>
       </a>
 

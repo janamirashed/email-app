@@ -11,11 +11,12 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Attachment } from '../../../../core/models/attachment.model';
 import { Editor, Toolbar, NgxEditorModule } from 'ngx-editor';
 import { EventService } from '../../../../core/services/event-service';
+import { CodeEditorComponent } from '../../../../shared/components/code-editor/code-editor.component';
 
 @Component({
   selector: 'app-email-compose',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgxEditorModule],
+  imports: [CommonModule, FormsModule, NgxEditorModule, CodeEditorComponent],
   templateUrl: './email-compose.html',
   styleUrl: './email-compose.css'
 })
@@ -63,6 +64,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   // HTML Source Mode
   showHtmlSource: boolean = false;
   showHtmlWarningModal: boolean = false;
+  showDiscardWarningModal: boolean = false;
 
   private composeSubscription!: Subscription;
   private composeDataSubscription!: Subscription;
@@ -223,7 +225,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       next: (response) => {
         console.log("Email sent successfully:", response);
         this.isLoading = false;
-        this.closeCompose();
+        this.closeCompose(true);
         this.notificationService.showSuccess('Email sent successfully!');
         this.isSending = false;
         console.log("isSending : " + this.isSending);
@@ -352,7 +354,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         this.successMessage = 'Draft saved successfully!';
         this.isLoading = false;
         this.successMessage = '';
-        this.closeCompose();
+        this.closeCompose(true);
         this.notificationService.showWarning('Email drafted!');
 
         this.cdr.detectChanges();
@@ -383,9 +385,26 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   }
 
   // Close compose panel
-  closeCompose() {
+  closeCompose(force: boolean = false) {
+    if (!force && this.hasContent()) {
+      this.showDiscardWarningModal = true;
+      return;
+    }
     this.resetForm();
     this.composeService.closeCompose();
+  }
+
+  hasContent(): boolean {
+    return !!(this.recipients || this.subject || this.body || this.attachments.length > 0);
+  }
+
+  confirmDiscard() {
+    this.closeCompose(true);
+    this.showDiscardWarningModal = false;
+  }
+
+  cancelDiscard() {
+    this.showDiscardWarningModal = false;
   }
 
   // Reset form to initial state
@@ -402,6 +421,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
     this.showContactDropdown = false;
     this.filteredContacts = [];
     this.showHtmlSource = false;
+    this.showDiscardWarningModal = false;
   }
 
   toggleHtmlSource() {
