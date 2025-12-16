@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EventService } from '../../../../core/services/event-service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
+import { EmailComposeService } from '../../../../core/services/email-compose.service';
+import { FolderService } from '../../../../core/services/folder.service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 import { Subscription } from 'rxjs';
 
@@ -34,6 +36,18 @@ export class EmailListComponent implements OnInit, OnDestroy {
   dragX: number = 0;
   dragY: number = 0;
 
+  // Context Menu Properties
+  showContextMenu = false;
+  contextMenuX = 0;
+  contextMenuY = 0;
+  contextMenuEmail: any = null;
+
+  // Move to folder dialog
+  showMoveDialog = false;
+  folders: any[] = [];
+  isLoadingFolders = false;
+  moveErrorMessage = '';
+
   constructor(
     private location: Location,
     private emailService: EmailService,
@@ -42,7 +56,9 @@ export class EmailListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private composeService: EmailComposeService,
+    private folderService: FolderService
   ) { }
 
   currentUserEmail: string = '';
@@ -88,6 +104,213 @@ export class EmailListComponent implements OnInit, OnDestroy {
       this.emailService.refreshUnreadCount();
       this.cdr.detectChanges();
     });
+  }
+
+  @HostListener('document:contextmenu', ['$event'])
+  onRightClick(event: MouseEvent): boolean {
+    const target = event.target as HTMLElement;
+    const emailRow = target.closest('[data-email-id]');
+
+    if (emailRow) {
+      event.preventDefault();
+      const emailId = emailRow.getAttribute('data-email-id');
+      this.contextMenuEmail = this.emails.find(e => e.messageId === emailId);
+
+      if (this.contextMenuEmail) {
+        this.contextMenuX = event.clientX;
+        this.contextMenuY = event.clientY;
+        this.showContextMenu = true;
+        this.cdr.detectChanges();
+      }
+    }
+    return false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClickMenu(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.context-menu') && this.showContextMenu) {
+      this.showContextMenu = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  closeContextMenu() {
+    this.showContextMenu = false;
+    this.contextMenuEmail = null;
+    this.cdr.detectChanges();
+  }
+
+  contextMarkAsRead() {
+    if (this.contextMenuEmail) {
+      this.emailService.markAsRead(this.contextMenuEmail.messageId).subscribe({
+        next: () => {
+          this.contextMenuEmail.isRead = true;
+          this.emailService.refreshUnreadCount();
+          this.cdr.detectChanges();
+          this.closeContextMenu();
+        },
+        error: (error) => console.error('Failed to mark as read:', error)
+      });
+    }
+  }
+
+  contextMarkAsUnread() {
+    if (this.contextMenuEmail) {
+      this.emailService.markAsUnread(this.contextMenuEmail.messageId).subscribe({
+        next: () => {
+          this.contextMenuEmail.isRead = false;
+          this.emailService.refreshUnreadCount();
+          this.cdr.detectChanges();
+          this.closeContextMenu();
+        },
+        error: (error) => console.error('Failed to mark as unread:', error)
+      });
+    }
+  }
+
+  contextToggleStar() {
+    if (this.contextMenuEmail) {
+      const action = this.contextMenuEmail.isStarred
+        ? this.emailService.unstarEmail(this.contextMenuEmail.messageId)
+        : this.emailService.starEmail(this.contextMenuEmail.messageId);
+
+      action.subscribe({
+        next: () => {
+          this.contextMenuEmail.isStarred = !this.contextMenuEmail.isStarred;
+          this.cdr.detectChanges();
+          this.closeContextMenu();
+        },
+        error: (error) => console.error('Failed to toggle star:', error)
+      });
+    }
+  }
+
+  contextReply() {
+    if (this.contextMenuEmail) {
+      console.log('contextReply called with email:', this.contextMenuEmail);
+      // Open compose with pre-filled recipient and subject
+      const composeData: any = {
+        recipients: this.contextMenuEmail.from,
+        subject: `Re: ${this.contextMenuEmail.subject}`,
+        body: ''
+      };
+      console.log('Opening compose with data:', composeData);
+      this.composeService.openCompose(composeData);
+      this.closeContextMenu();
+    } else {
+      console.log('No contextMenuEmail found');
+    }
+  }
+
+  openContextMoveDialog() {
+    if (this.contextMenuEmail) {
+      this.showMoveDialog = true;
+      this.isLoadingFolders = true;
+      this.moveErrorMessage = '';
+      // Don't close context menu yet - we need the email data!
+      this.showContextMenu = false; // Just hide it
+      this.loadFoldersForMove();
+    }
+  }
+
+  loadFoldersForMove() {
+    this.folderService.getAllFolders().subscribe({
+      next: (response) => {
+        const allFolders = response.folders || [];
+        this.folders = allFolders.filter((folder: any) =>
+          (folder.type === 'CUSTOM' || folder.type === 'custom') &&
+          folder.name.toLowerCase() !== 'contacts'
+        );
+        this.isLoadingFolders = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load folders:', error);
+        this.moveErrorMessage = 'Failed to load folders';
+        this.isLoadingFolders = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  moveContextEmailToFolder(folderName: string) {
+    console.log('=== MOVE FOLDER START ===');
+    console.log('folderName:', folderName);
+    console.log('contextMenuEmail:', this.contextMenuEmail);
+
+    if (!this.contextMenuEmail) {
+      console.log('ERROR: No contextMenuEmail found');
+      this.moveErrorMessage = 'Error: No email selected';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const messageId = this.contextMenuEmail.messageId;
+    console.log('messageId:', messageId);
+    console.log('Calling emailService.moveEmail...');
+
+    this.emailService.moveEmail(messageId, folderName).subscribe({
+      next: (response: any) => {
+        console.log('=== MOVE SUCCESS ===');
+        console.log('Response:', response);
+
+        // Close dialog and clear data
+        this.showMoveDialog = false;
+        this.moveErrorMessage = '';
+        this.contextMenuEmail = null;
+        this.showContextMenu = false;
+        this.selectedEmails.clear();
+
+        console.log('Triggering change detection...');
+        this.cdr.detectChanges();
+
+        // Reload emails
+        console.log('Reloading emails...');
+        setTimeout(() => {
+          this.loadEmails();
+          console.log('Emails reloaded');
+        }, 500);
+      },
+      error: (error: any) => {
+        console.log('=== MOVE ERROR ===');
+        console.error('Full error object:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        console.error('Error response:', error.error);
+
+        this.moveErrorMessage = `Error: ${error.error?.error || error.message || 'Failed to move email'}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeMoveDialog() {
+    this.showMoveDialog = false;
+    this.moveErrorMessage = '';
+  }
+
+  async contextDelete() {
+    if (this.contextMenuEmail) {
+      const confirmed = await this.confirmationService.confirm({
+        title: 'Delete Email',
+        message: 'Move this email to trash?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+
+      if (confirmed) {
+        this.emailService.deleteEmail(this.contextMenuEmail.messageId).subscribe({
+          next: () => {
+            this.emails = this.emails.filter(e => e.messageId !== this.contextMenuEmail.messageId);
+            this.cdr.detectChanges();
+            this.closeContextMenu();
+          },
+          error: (error) => console.error('Failed to delete email:', error)
+        });
+      }
+    }
   }
 
   // Drag and drop handlers
@@ -301,8 +524,8 @@ export class EmailListComponent implements OnInit, OnDestroy {
             this.loadEmails();
             this.cdr.detectChanges();
           }
-            this.selectedEmails.clear();
-            this.loadEmails();
+          this.selectedEmails.clear();
+          this.loadEmails();
 
         },
         error: (error) => {

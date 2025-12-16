@@ -6,13 +6,13 @@
       <h2 class="text-base font-semibold text-gray-900 capitalize">{{ currentFolder }}</h2>
       <div class="ml-auto flex items-center gap-1">
         <button (click)="previousPage()" [disabled]="currentPage === 1"
-          class="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40">
+                class="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <button (click)="nextPage()" [disabled]="currentPage >= totalPages"
-          class="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40">
+                class="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
@@ -26,49 +26,49 @@
         <div class="flex items-center gap-2">
           <input type="checkbox" [checked]="areAllSelected()" (change)="selectAllEmails($event)" class="rounded">
           @if (selectedEmails.size > 0) {
-          <span class="text-xs text-gray-600">{{ selectedEmails.size }} selected</span>
+            <span class="text-xs text-gray-600">{{ selectedEmails.size }} selected</span>
           }
         </div>
 
         @if (selectedEmails.size > 0) {
-        <div class="flex items-center gap-1">
-          <button (click)="bulkDelete()" title="Delete"
-            class="p-1.5 rounded hover:bg-red-100 text-gray-600 hover:text-red-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
-          <button (click)="markSelectedAsRead()" title="Mark read"
-            class="p-1.5 rounded hover:bg-blue-100 text-gray-600 hover:text-blue-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </button>
-          <button (click)="markSelectedAsUnread()" title="Mark unread"
-            class="p-1.5 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-800">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <button (click)="starSelected()" title="Star"
-            class="p-1.5 rounded hover:bg-yellow-100 text-gray-600 hover:text-yellow-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-            </svg>
-          </button>
-        </div>
+          <div class="flex items-center gap-1">
+            <button (click)="bulkDelete()" title="Delete"
+                    class="p-1.5 rounded hover:bg-red-100 text-gray-600 hover:text-red-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+            <button (click)="markSelectedAsRead()" title="Mark read"
+                    class="p-1.5 rounded hover:bg-blue-100 text-gray-600 hover:text-blue-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+            <button (click)="markSelectedAsUnread()" title="Mark unread"
+                    class="p-1.5 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-800">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </button>
+            <button (click)="starSelected()" title="Star"
+                    class="p-1.5 rounded hover:bg-yellow-100 text-gray-600 hover:text-yellow-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </button>
+          </div>
         }
 
         @if (selectedEmails.size === 0) {
-        <button (click)="loadEmails()" title="Refresh" class="p-1.5 rounded hover:bg-gray-200 text-gray-600">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
+          <button (click)="loadEmails()" title="Refresh" class="p-1.5 rounded hover:bg-gray-200 text-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         }
       </div>
 
@@ -76,11 +76,11 @@
       <div class="flex items-center gap-3 mt-2 text-xs border-t pt-2">
         <span class="text-gray-500 font-medium">Sort:</span>
         <button (click)="changeSortBy('date')" [class.font-semibold]="sortBy === 'date'"
-          [class.text-blue-600]="sortBy === 'date'" class="text-gray-600 hover:text-blue-600">
+                [class.text-blue-600]="sortBy === 'date'" class="text-gray-600 hover:text-blue-600">
           Date
         </button>
         <button (click)="changeSortBy('priority')" [class.font-semibold]="sortBy === 'priority'"
-          [class.text-blue-600]="sortBy === 'priority'" class="text-gray-600 hover:text-blue-600">
+                [class.text-blue-600]="sortBy === 'priority'" class="text-gray-600 hover:text-blue-600">
           Priority
         </button>
       </div>
@@ -89,90 +89,240 @@
     <!-- Email Items -->
     <div class="flex-1 overflow-y-auto" (dragover)="onEmailDragOver($event)">
       @if (isLoading) {
-      <div class="flex items-center justify-center h-40">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
+        <div class="flex items-center justify-center h-40">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
       }
 
       @if (!isLoading && emails.length === 0) {
-      <div class="flex items-center justify-center h-40 text-gray-500 text-sm">
-        No emails found
-      </div>
+        <div class="flex items-center justify-center h-40 text-gray-500 text-sm">
+          No emails found
+        </div>
       }
 
       @for (email of emails; track email.messageId) {
-      <div (click)="selectEmail(email)" draggable="true" (dragstart)="onEmailDragStart($event, email.messageId)"
-        (dragend)="onEmailDragEnd($event)" [class.bg-blue-50]="email.messageId === selectedEmailId"
-        [class.border-l-4]="email.messageId === selectedEmailId"
-        [class.border-l-blue-600]="email.messageId === selectedEmailId" [class.font-semibold]="!email.read"
-        class="flex items-start gap-2 px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 group transition-all duration-200">
-        <input type="checkbox" [checked]="selectedEmails.has(email.messageId)"
-          (change)="toggleEmailSelection(email.messageId, $event)" (click)="$event.stopPropagation()"
-          class="mt-1 rounded">
+        <div [attr.data-email-id]="email.messageId" (click)="selectEmail(email)" draggable="true"
+             (dragstart)="onEmailDragStart($event, email.messageId)"
+             (dragend)="onEmailDragEnd($event)" [class.bg-blue-50]="email.messageId === selectedEmailId"
+             [class.border-l-4]="email.messageId === selectedEmailId"
+             [class.border-l-blue-600]="email.messageId === selectedEmailId" [class.font-semibold]="!email.isRead"
+             class="flex items-start gap-2 px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 group transition-all duration-200">
+          <input type="checkbox" [checked]="selectedEmails.has(email.messageId)"
+                 (change)="toggleEmailSelection(email.messageId, $event)" (click)="$event.stopPropagation()"
+                 class="mt-1 rounded">
 
-        <!-- Star button -->
-        <button (click)="toggleStar(email, $event)" class="mt-1 flex-shrink-0">
-          <svg class="w-4 h-4" [class.text-yellow-500]="email.starred" [class.text-gray-400]="!email.starred"
-            [attr.fill]="email.starred ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-        </button>
+          <!-- Star button -->
+          <button (click)="toggleStar(email, $event)" class="mt-1 flex-shrink-0">
+            <svg class="w-4 h-4" [class.text-yellow-500]="email.isStarred" [class.text-gray-400]="!email.isStarred"
+                 [attr.fill]="email.isStarred ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          </button>
 
-        <!-- Priority Indicator -->
-        <div class="mt-1 flex-shrink-0" [ngClass]="getPriorityColor(email.priority)"
-          [title]="'Priority: ' + email.priority">
-          <!-- High Priority (1) - Exclamation mark -->
-          @if (getPriorityIcon(email.priority) === 'high') {
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-              clip-rule="evenodd" />
-          </svg>
-          }
-          <!-- Medium Priority (2) - Arrow up -->
-          @if (getPriorityIcon(email.priority) === 'medium') {
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-              d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
-              clip-rule="evenodd" />
-          </svg>
-          }
-          <!-- Normal Priority (3) - Minus/Dash -->
-          @if (getPriorityIcon(email.priority) === 'normal') {
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
-          </svg>
-          }
-          <!-- Low Priority (4-5) - Arrow down -->
-          @if (getPriorityIcon(email.priority) === 'low') {
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-              d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
-              clip-rule="evenodd" />
-          </svg>
-          }
-        </div>
-
-        <div class="flex-1 min-w-0">
-          <div class="flex justify-between items-start mb-1">
-            <span class="text-sm truncate">{{ getParticipant(email) }}</span>
-            <span class="text-xs text-gray-500 ml-2 flex-shrink-0">{{ formatDate(email.timestamp) }}</span>
+          <!-- Priority Indicator -->
+          <div class="mt-1 flex-shrink-0" [ngClass]="getPriorityColor(email.priority)"
+               [title]="'Priority: ' + email.priority">
+            <!-- High Priority (1) - Exclamation mark -->
+            @if (getPriorityIcon(email.priority) === 'high') {
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd" />
+              </svg>
+            }
+            <!-- Medium Priority (2) - Arrow up -->
+            @if (getPriorityIcon(email.priority) === 'medium') {
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                      d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd" />
+              </svg>
+            }
+            <!-- Normal Priority (3) - Minus/Dash -->
+            @if (getPriorityIcon(email.priority) === 'normal') {
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+              </svg>
+            }
+            <!-- Low Priority (4-5) - Arrow down -->
+            @if (getPriorityIcon(email.priority) === 'low') {
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                      d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd" />
+              </svg>
+            }
           </div>
-          <div class="text-sm text-gray-600 truncate">{{ email.subject || '(No Subject)' }}</div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start mb-1">
+              <span class="text-sm truncate">{{ getParticipant(email) }}</span>
+              <span class="text-xs text-gray-500 ml-2 flex-shrink-0">{{ formatDate(email.timestamp) }}</span>
+            </div>
+            <div class="text-sm text-gray-600 truncate">{{ email.subject || '(No Subject)' }}</div>
+          </div>
         </div>
-      </div>
       }
 
       <!-- Drag Badge that follows cursor -->
       @if (draggedEmailId) {
-      <div [style.left.px]="dragX + 20" [style.top.px]="dragY + 20"
-        class="fixed bg-blue-600 text-white px-6 py-3 rounded-lg shadow-2xl z-50 pointer-events-none font-semibold whitespace-nowrap">
-        Move {{ selectedEmails.size }} email{{ selectedEmails.size !== 1 ? 's' : '' }}
-      </div>
+        <div [style.left.px]="dragX + 20" [style.top.px]="dragY + 20"
+             class="fixed bg-blue-600 text-white px-6 py-3 rounded-lg shadow-2xl z-50 pointer-events-none font-semibold whitespace-nowrap">
+          Move {{ selectedEmails.size }} email{{ selectedEmails.size !== 1 ? 's' : '' }}
+        </div>
       }
     </div>
   </div>
+
+  <!-- Context Menu -->
+  @if (showContextMenu && contextMenuEmail) {
+    <div class="context-menu fixed bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[100]"
+         [style.left.px]="contextMenuX"
+         [style.top.px]="contextMenuY">
+
+      <!-- Mark as Read/Unread -->
+      @if (!contextMenuEmail.isRead) {
+        <button (click)="contextMarkAsRead()"
+                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Mark as Read
+        </button>
+      } @else {
+        <button (click)="contextMarkAsUnread()"
+                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          Mark as Unread
+        </button>
+      }
+
+      <!-- Star/Unstar -->
+      <button (click)="contextToggleStar()"
+              class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition">
+        <svg class="w-4 h-4"
+             [class.text-yellow-500]="contextMenuEmail.isStarred"
+             [class.text-gray-400]="!contextMenuEmail.isStarred"
+             [attr.fill]="contextMenuEmail.isStarred ? 'currentColor' : 'none'"
+             stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+        {{ contextMenuEmail.isStarred ? 'Unstar' : 'Star' }}
+      </button>
+
+      <!-- Divider -->
+      <div class="border-t border-gray-100 my-1"></div>
+
+      <!-- Reply -->
+      @if (currentFolder !== 'drafts' && currentFolder !== 'sent') {
+        <button (click)="contextReply(); $event.stopPropagation()"
+                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+          </svg>
+          Reply
+        </button>
+      }
+
+      <!-- Move to Folder -->
+      @if (currentFolder !== 'drafts') {
+        <button (click)="openContextMoveDialog(); $event.stopPropagation()"
+                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+          Move to Folder
+        </button>
+      }
+
+      <!-- Divider -->
+      <div class="border-t border-gray-100 my-1"></div>
+
+      <!-- Delete -->
+      <button (click)="contextDelete()"
+              class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Delete
+      </button>
+    </div>
+  }
+
+  <!-- Move to Folder Dialog (triggered from context menu) -->
+  @if (showMoveDialog) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="closeMoveDialog()">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-gray-900">Move to Folder</h2>
+          <button (click)="closeMoveDialog()" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Error Message -->
+        @if (moveErrorMessage) {
+          <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {{ moveErrorMessage }}
+          </div>
+        }
+
+        <!-- Loading State -->
+        @if (isLoadingFolders) {
+          <div class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        }
+
+        <!-- Folder Selection -->
+        @if (!isLoadingFolders) {
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Folder</label>
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+              <!-- Custom Folders -->
+              @if (folders.length > 0) {
+                <div>
+                  @for (folder of folders; track $index) {
+                    <button type="button" (click)="moveContextEmailToFolder(folder.name); $event.stopPropagation()"
+                            class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 border border-gray-200 transition mb-2 hover:border-blue-300 active:bg-blue-100">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        <span class="text-sm font-medium text-gray-900">{{ folder.name }}</span>
+                      </div>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="text-center py-8 text-gray-500 text-sm">
+                  <p>No custom folders yet.</p>
+                  <p class="mt-1">Create folders from the sidebar to organize your emails.</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Close Button -->
+        @if (!isLoadingFolders) {
+          <div class="flex justify-end">
+            <button type="button" (click)="closeMoveDialog()" class="btn-secondary">Close</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
 
   <!-- Email Detail -->
   <div class="flex-1 min-w-0 bg-white">
