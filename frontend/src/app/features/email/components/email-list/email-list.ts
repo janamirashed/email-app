@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EventService } from '../../../../core/services/event-service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
+import { EmailComposeService } from '../../../../core/services/email-compose.service';
+import { FolderService } from '../../../../core/services/folder.service';
 import { EmailDetailComponent } from '../email-detail/email-detail';
 import { Subscription } from 'rxjs';
 
@@ -40,6 +42,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
   contextMenuY = 0;
   contextMenuEmail: any = null;
 
+  // Move to folder dialog
+  showMoveDialog = false;
+  folders: any[] = [];
+  isLoadingFolders = false;
+  moveErrorMessage = '';
+
   constructor(
     private location: Location,
     private emailService: EmailService,
@@ -48,7 +56,9 @@ export class EmailListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private composeService: EmailComposeService,
+    private folderService: FolderService
   ) { }
 
   currentUserEmail: string = '';
@@ -136,6 +146,7 @@ export class EmailListComponent implements OnInit, OnDestroy {
   closeContextMenu() {
     this.showContextMenu = false;
     this.contextMenuEmail = null;
+    this.cdr.detectChanges();
   }
 
   contextMarkAsRead() {
@@ -185,10 +196,106 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   contextReply() {
     if (this.contextMenuEmail) {
+      console.log('contextReply called with email:', this.contextMenuEmail);
+      // Open compose with pre-filled recipient and subject
+      const composeData: any = {
+        recipients: this.contextMenuEmail.from,
+        subject: `Re: ${this.contextMenuEmail.subject}`,
+        body: ''
+      };
+      console.log('Opening compose with data:', composeData);
+      this.composeService.openCompose(composeData);
       this.closeContextMenu();
-      // Will be implemented with compose service if needed
-      console.log('Reply to:', this.contextMenuEmail.from);
+    } else {
+      console.log('No contextMenuEmail found');
     }
+  }
+
+  openContextMoveDialog() {
+    if (this.contextMenuEmail) {
+      this.showMoveDialog = true;
+      this.isLoadingFolders = true;
+      this.moveErrorMessage = '';
+      // Don't close context menu yet - we need the email data!
+      this.showContextMenu = false; // Just hide it
+      this.loadFoldersForMove();
+    }
+  }
+
+  loadFoldersForMove() {
+    this.folderService.getAllFolders().subscribe({
+      next: (response) => {
+        const allFolders = response.folders || [];
+        this.folders = allFolders.filter((folder: any) =>
+          (folder.type === 'CUSTOM' || folder.type === 'custom') &&
+          folder.name.toLowerCase() !== 'contacts'
+        );
+        this.isLoadingFolders = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load folders:', error);
+        this.moveErrorMessage = 'Failed to load folders';
+        this.isLoadingFolders = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  moveContextEmailToFolder(folderName: string) {
+    console.log('=== MOVE FOLDER START ===');
+    console.log('folderName:', folderName);
+    console.log('contextMenuEmail:', this.contextMenuEmail);
+
+    if (!this.contextMenuEmail) {
+      console.log('ERROR: No contextMenuEmail found');
+      this.moveErrorMessage = 'Error: No email selected';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const messageId = this.contextMenuEmail.messageId;
+    console.log('messageId:', messageId);
+    console.log('Calling emailService.moveEmail...');
+
+    this.emailService.moveEmail(messageId, folderName).subscribe({
+      next: (response: any) => {
+        console.log('=== MOVE SUCCESS ===');
+        console.log('Response:', response);
+
+        // Close dialog and clear data
+        this.showMoveDialog = false;
+        this.moveErrorMessage = '';
+        this.contextMenuEmail = null;
+        this.showContextMenu = false;
+        this.selectedEmails.clear();
+
+        console.log('Triggering change detection...');
+        this.cdr.detectChanges();
+
+        // Reload emails
+        console.log('Reloading emails...');
+        setTimeout(() => {
+          this.loadEmails();
+          console.log('Emails reloaded');
+        }, 500);
+      },
+      error: (error: any) => {
+        console.log('=== MOVE ERROR ===');
+        console.error('Full error object:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        console.error('Error response:', error.error);
+
+        this.moveErrorMessage = `Error: ${error.error?.error || error.message || 'Failed to move email'}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeMoveDialog() {
+    this.showMoveDialog = false;
+    this.moveErrorMessage = '';
   }
 
   async contextDelete() {
