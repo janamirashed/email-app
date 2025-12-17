@@ -95,19 +95,19 @@ src/app
     *   **Implementation:** `EmailService` uses `EventService` to publish `SSE` (Server-Sent Events). When an email is received or a draft is saved, an event is published to notify connected frontend clients in real-time.
 
 6.  **Filter Pattern (Structural):**
-    *   **Usage:** Allows developers to filter a set of objects using different criteria and chaining them.
+    *   **Usage:** Allows filtering a set of objects by different criteria and chaining them.
     *   **Implementation:** The `SearchFilter` interface allows for composable search criteria. Implementations like `AndFilter`, `OrFilter`, `SubjectFilter`, and `SenderFilter` are chained together in `EmailService.searchEmails` to build complex, dynamic search queries.
 
 7.  **Proxy Pattern:**
     *   **Usage:** Controls access to the original object, allowing for additional operations like validation or security.
-    *   **Implementation:** `AttachmentService` acts as a proxy for `AttachmentRepository`. It manages the lifecycle of attachments by generating time-bound IDs, enforcing expiration policies (5-minute validity), and requiring explicit acknowledgement before finalizing persistence. It also proxies the encryption/decryption responsibilities for secure storage.
+    *   **Implementation:** `AttachmentService` acts as a proxy for `AttachmentRepository`. It manages the lifecycle of attachments by generating time-bound IDs, enforcing expiration policies (5-minute validity), and requiring explicit acknowledgement and keep track of recently saved attachments to validate the email service check without the need to access the actual file again. It also proxies the encryption/decryption responsibilities for secure storage.
 
 **Data Persistence:**
 The application uses a hybrid persistence approach:
 *   **PostgreSQL:** Stores User accounts and authentication data.
 *   **File System Storage:**
     *   **Emails:** Stored as JSON files in a structured directory format: `data/emails/{username}/{folder}/{messageId}.json`.
-    *   **Attachments:** Stored as binary files (`.bin`) in `data/attachment/`, paired with metadata JSON files.
+    *   **Attachments:** Stored as binary files (`.bin`) in `data/attachment_data_store/`, paired with metadata JSON files.
     *   **Repositories:** Custom implementations (`EmailRepository`, `AttachmentRepository`) use Java NIO (`java.nio.file`) to manage these file operations, providing a database-like abstraction over the file system.
 
 **Data Flow:**
