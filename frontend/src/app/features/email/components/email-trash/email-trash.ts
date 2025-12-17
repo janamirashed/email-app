@@ -281,6 +281,12 @@ export class EmailTrashComponent implements OnInit {
 // Context menu actions
   contextRestore() {
     if (this.contextMenuEmail) {
+      if (this.selectedEmails.size > 0) {
+        this.restoreSelected();
+        this.closeContextMenu();
+        return;
+      }
+
       this.emailService.bulkRestoreFromTrash([this.contextMenuEmail.messageId]).subscribe({
         next: () => {
           this.successMessage = 'Email restored to original folder';
@@ -300,6 +306,13 @@ export class EmailTrashComponent implements OnInit {
 
   async contextDelete() {
     if (this.contextMenuEmail) {
+      if (this.selectedEmails.size > 0) {
+        this.closeContextMenu();
+        await this.permanentlyDeleteSelected();
+        return;
+      }
+
+      this.closeContextMenu();
       const confirmed = await this.confirmationService.confirm({
         title: 'Permanently Delete Email',
         message: 'This email will be permanently deleted and cannot be recovered.',
