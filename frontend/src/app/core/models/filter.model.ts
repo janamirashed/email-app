@@ -6,4 +6,5 @@ export interface Filter {
   matcher: string;   // 'contains', 'is exactly', 'starts with'
   action: string;    // 'move', 'star', 'delete', 'markread'
   newFolder?: string; // Only used when action is 'move'
+  forwardedTo?: string[]; // Only used when action is 'forward'
 }

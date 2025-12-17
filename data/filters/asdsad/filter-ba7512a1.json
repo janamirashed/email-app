@@ -1,0 +1,10 @@
+{
+  "id" : "filter-ba7512a1",
+  "name" : "forwarding?",
+  "property" : "subject",
+  "matcher" : "contains",
+  "value" : "a",
+  "action" : "forward",
+  "newFolder" : null,
+  "forwardedTo" : [ "ysfw@jaryn.com", "justAnother@jaryn.com" ]
+}

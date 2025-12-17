@@ -1,9 +1,0 @@
-{
-  "id" : "filter-dbf8082d",
-  "name" : "ysfw is my friend",
-  "property" : "from",
-  "matcher" : "exactly",
-  "value" : "ysfw@jaryn.com",
-  "action" : "star",
-  "newFolder" : null
-}

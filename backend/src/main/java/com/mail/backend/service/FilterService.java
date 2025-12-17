@@ -52,11 +52,13 @@ public class FilterService {
             throw new IllegalArgumentException("filter does not exist");
         }
         Filter filter = filterRepository.getFilter(username,filterId);
+        filter.setName(updatedFilter.getName());
         filter.setProperty(updatedFilter.getProperty());
         filter.setValue(updatedFilter.getValue());
         filter.setMatcher(updatedFilter.getMatcher());
         filter.setAction(updatedFilter.getAction());
         filter.setNewFolder(updatedFilter.getNewFolder());
+        filter.setForwardedTo(updatedFilter.getForwardedTo());
         filterRepository.saveFilter(username,filter);
         log.info("Filter {} updated for user {}", filter.getId(), username);
         return filter;
@@ -82,7 +84,8 @@ public class FilterService {
             "move", new Move(),
             "star", new Star(),
             "delete", new Delete(),
-            "markread", new MarkRead()
+            "markread", new MarkRead(),
+            "forward", new Forward()
     );
 
     public Email applyFilters(String username, Email email) throws Exception {

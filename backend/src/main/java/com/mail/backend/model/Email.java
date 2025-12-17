@@ -22,6 +22,8 @@ public class Email {
     private String originalFolder;
     private List<AttachmentMetadata> attachments;
     private LocalDateTime deletedAt; // For trash auto-delete after 30 days
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private List<String> forwardedTo;
 
     public Email() {
         this.to = new ArrayList<>();

@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule} from '@angular/common';
-import {ActivatedRoute, Router} from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { FolderService } from '../../../../core/services/folder.service';
@@ -8,12 +8,13 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import {EventService} from '../../../../core/services/event-service';
+import { EventService } from '../../../../core/services/event-service';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-email-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './email-detail.html',
   styleUrl: './email-detail.css'
 })
@@ -29,6 +30,13 @@ export class EmailDetailComponent implements OnInit {
   isLoadingFolders = false;
   moveSuccessMessage = '';
   moveErrorMessage = '';
+
+  // Forward email
+  showForwardDialog = false;
+  forwardRecipients = '';
+  isLoadingForward = false;
+  forwardSuccessMessage = '';
+  forwardErrorMessage = '';
 
   constructor(
     private emailService: EmailService,
@@ -146,7 +154,7 @@ export class EmailDetailComponent implements OnInit {
           console.log('Email deleted');
           // Navigate back or close detail view
           let stringID = this.messageId as string
-          if (stringID){
+          if (stringID) {
             let messageIds: string[] = new Array(stringID);
             this.eventService.clearEmailSelection(messageIds);
             this.eventService.triggerEmailListRefresh();
@@ -221,7 +229,7 @@ export class EmailDetailComponent implements OnInit {
 
         this.showMoveDialog = false;
         let stringID = this.messageId as string
-        if (stringID){
+        if (stringID) {
           let messageIds: string[] = new Array(stringID);
           this.eventService.clearEmailSelection(messageIds);
         }
@@ -241,6 +249,60 @@ export class EmailDetailComponent implements OnInit {
     this.showMoveDialog = false;
     this.moveSuccessMessage = '';
     this.moveErrorMessage = '';
+  }
+
+  // Open forward dialog
+  openForwardDialog() {
+    this.showForwardDialog = true;
+    this.forwardRecipients = '';
+    this.forwardSuccessMessage = '';
+    this.forwardErrorMessage = '';
+  }
+
+  closeForwardDialog() {
+    this.showForwardDialog = false;
+    this.forwardRecipients = '';
+    this.forwardSuccessMessage = '';
+    this.forwardErrorMessage = '';
+  }
+
+  // Forward email
+  forwardEmail() {
+    if (!this.email || !this.forwardRecipients.trim()) return;
+
+    // Split recipients by comma and clean up
+    const recipientsList = this.forwardRecipients
+      .split(',')
+      .map(r => r.trim())
+      .filter(r => r.length > 0);
+
+    if (recipientsList.length === 0) {
+      this.forwardErrorMessage = 'Please enter at least one recipient';
+      return;
+    }
+
+    this.isLoadingForward = true;
+    this.forwardErrorMessage = '';
+
+    this.emailService.forwardEmail(this.email, recipientsList).subscribe({
+      next: (response) => {
+        console.log('Email forwarded successfully', response);
+        this.isLoadingForward = false;
+        this.forwardSuccessMessage = 'Email forwarded successfully';
+        this.notificationService.showSuccess('Email forwarded successfully');
+
+        setTimeout(() => {
+          this.closeForwardDialog();
+        }, 1500);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to forward email:', error);
+        this.isLoadingForward = false;
+        this.forwardErrorMessage = error.error?.error || 'Failed to forward email';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // Download attachment

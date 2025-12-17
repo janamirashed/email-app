@@ -2,13 +2,16 @@ package com.mail.backend.model;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class Filter {
-    String id;
-    String name;
-    String property;
-    String matcher;
-    String value;
-    String action;
-    String newFolder;
+    private String id;
+    private String name;
+    private String property;
+    private String matcher;
+    private String value;
+    private String action;
+    private String newFolder;
+    private List<String> forwardedTo;
 }

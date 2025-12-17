@@ -9,6 +9,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { ConfirmationService } from '../../../core/services/confirmation.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { FormsModule } from '@angular/forms';
+import {Subscription} from 'rxjs';
 
 interface Folder {
   name: string;
@@ -61,6 +62,7 @@ export class SidebarComponent implements OnInit {
     private sidebarService: SidebarService,
     private cdr: ChangeDetectorRef
   ) { }
+  private emailListRefreshSubscription?: Subscription;
 
   ngOnInit() {
     this.sidebarService.isOpen$.subscribe(isOpen => {
@@ -81,6 +83,12 @@ export class SidebarComponent implements OnInit {
         inbox.count = count;
         this.cdr.detectChanges();
       }
+    });
+    // Subscribe to email list refresh events (triggered by drag-and-drop moves)
+    this.emailListRefreshSubscription = this.eventService.getEmailListRefresh().subscribe(() => {
+      console.log('Email list refresh event received from drag-and-drop');
+      this.emailService.refreshUnreadCount();
+      this.cdr.detectChanges();
     });
   }
 

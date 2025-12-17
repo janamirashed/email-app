@@ -3,6 +3,7 @@ package com.mail.backend.service;
 import com.mail.backend.dps.SearchFilter.*;
 import com.mail.backend.dps.strategy.*;
 import com.mail.backend.model.Email;
+import com.mail.backend.model.SSE;
 import com.mail.backend.repository.EmailRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,6 +21,9 @@ public class EmailService {
 
     @Autowired
     private EmailRepository emailRepository;
+
+    @Autowired
+    private EventService eventService;
 
     @Autowired
     private FilterService filterService;
@@ -47,7 +52,7 @@ public class EmailService {
                 .attachments(emailRequest.getAttachments())
                 .inSent()
                 .build();
-
+        eventService.publishEvent(new SSE("Received",email.getTo()));
         // Save to sender's sent folder
         try{
             emailRepository.saveEmail(username, filterService.applyFilters(username, email));
@@ -84,7 +89,13 @@ public class EmailService {
                         .build();
 
                 String recipientUsername = extractUsername(recipient);
-                emailRepository.saveEmail(recipientUsername, filterService.applyFilters(recipientUsername, recipientCopy));
+                Email filteredemail = filterService.applyFilters(recipientUsername, recipientCopy);
+                emailRepository.saveEmail(recipientUsername, filteredemail);
+                List<String> forwardingRecipients = filteredemail.getForwardedTo();
+                if (forwardingRecipients != null && !forwardingRecipients.isEmpty()) {
+                    filteredemail.setForwardedTo(null);
+                    forwardEmail(recipientUsername,recipientCopy,forwardingRecipients);
+                }
 
                 successfulDeliveries++;
                 log.info("Email {} delivered successfully to {} [Queue position: {}/{}]",
@@ -108,6 +119,34 @@ public class EmailService {
 
         return messageId;
     }
+    //Forward Email
+    public String forwardEmail(String username, Email emailRequest,List<String> newRecipients) throws IOException {
+        if (emailRequest.getTo() == null || emailRequest.getTo().isEmpty()) {
+            throw new IllegalArgumentException("Recipients list cannot be empty");
+        }
+        if (emailRequest.getSubject() == null || emailRequest.getSubject().trim().isEmpty()) {
+            throw new IllegalArgumentException("Subject cannot be empty");
+        }
+        emailRequest.setBody(
+                "<div style=\"font-family: Arial, sans-serif;\">"
+                        + "<p><strong>---Forwarded Message---</strong></p>"
+                        + "<p>"
+                        + "<strong>From:</strong> " + emailRequest.getFrom() + "<br>"
+                        + "<strong>Subject:</strong> " + emailRequest.getSubject() + "<br>"
+                        + "<strong>To:</strong> " + emailRequest.getTo() + "<br>"
+                        + "<strong>Date:</strong> "
+                        + emailRequest.getTimestamp().format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm"))
+                        + "</p>"
+                        + "<hr>"
+                        + "<div>"
+                        + emailRequest.getBody()
+                        + "</div>"
+                        + "</div>"
+        );
+        emailRequest.setTo(newRecipients);
+        emailRequest.setSubject("FWD: "+emailRequest.getSubject());
+        return sendEmail(username, emailRequest);
+    }
 
     // SAVE DRAFT
     public String saveDraft(String username, Email emailRequest) throws IOException {
@@ -125,7 +164,9 @@ public class EmailService {
                 .attachments(emailRequest.getAttachments())
                 .inDrafts()
                 .build();
-
+        ArrayList<String> list = new ArrayList<>();
+        list.add(username+"@jaryn.com");
+        this.eventService.publishEvent(new SSE("Draft",list));
         emailRepository.saveEmail(username, draft);
         log.info("Draft {} saved by {}", messageId, username);
         return messageId;

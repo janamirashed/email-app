@@ -47,6 +47,15 @@ export class EmailService {
     });
   }
 
+  // POST /api/email/forward
+  forwardEmail(email: Email, newRecipients: string[]): Observable<any> {
+    const params = new HttpParams().set('newRecipients', newRecipients.join(','));
+    return this.http.post(`${this.baseUrl}/forward`, email, {
+      headers: this.getHeaders(),
+      params: params
+    });
+  }
+
   // GET /api/email/inbox?page=1&limit=20&sortBy=date
   getInboxEmails(page: number = 1, limit: number = 10, sortBy: string = 'date'): Observable<any> {
     const params = new HttpParams()
@@ -202,14 +211,14 @@ export class EmailService {
   }
 
   // GET /api/email/search?keyword=test&searchIn=all
-  searchEmails(parameters: {sender?:string, receiver?:string, subject?:string, body?:string, folder?:string, keyword?:string, priority?:string, hasAttachment?:boolean, sortBy?:string}): Observable<any> {
+  searchEmails(parameters: { sender?: string, receiver?: string, subject?: string, body?: string, folder?: string, keyword?: string, priority?: string, hasAttachment?: boolean, sortBy?: string }): Observable<any> {
     let httpParams = new HttpParams();
-    if(parameters.sender)httpParams = httpParams.set('sender', parameters.sender);
-    if(parameters.receiver) httpParams = httpParams.set('receiver', parameters.receiver);
-    if(parameters.subject) httpParams = httpParams.set('subject', parameters.subject);
-    if(parameters.body) httpParams = httpParams.set('body', parameters.body);
+    if (parameters.sender) httpParams = httpParams.set('sender', parameters.sender);
+    if (parameters.receiver) httpParams = httpParams.set('receiver', parameters.receiver);
+    if (parameters.subject) httpParams = httpParams.set('subject', parameters.subject);
+    if (parameters.body) httpParams = httpParams.set('body', parameters.body);
     if (parameters.folder) httpParams = httpParams.set('folder', parameters.folder);
-    if(parameters.keyword) httpParams =httpParams.set('keyword', parameters.keyword);
+    if (parameters.keyword) httpParams = httpParams.set('keyword', parameters.keyword);
     if (parameters.sortBy) httpParams = httpParams.set('sortBy', parameters.sortBy);
     if (parameters.priority) httpParams = httpParams.set('priority', parameters.priority.toString());
     if (parameters.hasAttachment !== null && parameters.hasAttachment !== undefined) {
