@@ -169,6 +169,23 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
   async sendMail(transactional: boolean) {
 
+    // clearing error if in case it was there
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (!this.subject.trim()) {
+      this.errorMessage = 'Subject cannot be empty';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (!this.recipients.trim()) {
+      this.errorMessage = 'Please add at least one recipient';
+      this.cdr.detectChanges();
+      return;
+    }
+
+
     this.isSending = true;
     console.log("isSending : " + this.isSending);
     // let attachment_ids: string[] = [];
@@ -238,6 +255,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         console.error('Failed to send email:', error);
         this.errorMessage = error.error?.error || 'Failed to send email. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -325,6 +343,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
     if (!this.subject.trim() && !this.body.trim() && !this.recipients.trim()) {
       this.errorMessage = 'Draft must have at least some content';
+      this.cdr.detectChanges();
       return;
     }
 
@@ -332,7 +351,6 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
     if (this.filesUpdated)
       this.attachments = await this.uploadFiles(transactional);
-
 
     const draftEmail: any = {
       to: this.parseRecipients(this.recipients),
@@ -349,16 +367,16 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         console.log('Draft saved successfully:', response);
         this.successMessage = 'Draft saved successfully!';
         this.isLoading = false;
-        this.successMessage = '';
+        this.errorMessage = '';
         this.closeCompose(true);
         this.notificationService.showWarning('Email drafted!');
-
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to save draft:', error);
         this.errorMessage = error.error?.error || 'Failed to save draft. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
