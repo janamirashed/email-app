@@ -184,7 +184,18 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
       return;
     }
-
+    let validEmails = true;
+    this.parseRecipients(this.recipients).forEach(email => {
+      if (!this.isValidEmail(email)) {
+        validEmails = false;
+        this.errorMessage = 'Invalid email format';
+        this.cdr.detectChanges();
+        return;
+      }
+    });
+    if (!validEmails) {
+      return;
+    }
 
     this.isSending = true;
     console.log("isSending : " + this.isSending);
@@ -340,7 +351,13 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   async saveDraft(transactional: boolean) {
     this.errorMessage = '';
     this.successMessage = '';
-
+    this.parseRecipients(this.recipients).forEach(email => {
+      if (!this.isValidEmail(email)) {
+        this.errorMessage = 'Invalid email format';
+        this.cdr.detectChanges();
+        return;
+      }
+    });
     if (!this.subject.trim() && !this.body.trim() && !this.recipients.trim()) {
       this.errorMessage = 'Draft must have at least some content';
       this.cdr.detectChanges();

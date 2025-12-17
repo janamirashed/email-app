@@ -7,6 +7,7 @@ import { FilterViewComponent } from './components/filter-view/filter-view';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
 import { AuthGuard } from './core/services/auth-gaurd';
 import { GuestGuard } from './core/services/guest.guard';
+import { NyanCat } from './nyan-cat/nyan-cat';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inbox', pathMatch: 'full' },
@@ -82,6 +83,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/email/components/email-search/email-search').then(m => m.EmailSearch),
         canActivate: [AuthGuard]
       },
+      {
+        path: '**',
+        component: NyanCat,
+        canActivate: [AuthGuard]
+      }
     ]
   }
 ];
