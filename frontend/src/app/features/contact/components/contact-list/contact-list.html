@@ -6,9 +6,19 @@
         <h1 class="text-3xl font-bold text-gray-900">Contacts</h1>
         <p class="text-sm text-gray-600 mt-1">Manage your email contacts</p>
       </div>
-      <button (click)="addContact()" class="btn-primary" [disabled]="isLoading">
-        + Add Contact
-      </button>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+          <span class="text-sm text-gray-500 font-medium">Sort by:</span>
+          <select [(ngModel)]="sortBy" (change)="onSort(sortBy)"
+            class="text-sm border-none focus:ring-0 text-gray-700 font-medium bg-transparent p-0 cursor-pointer outline-none">
+            <option value="name">Name</option>
+            <option value="date">Date Added</option>
+          </select>
+        </div>
+        <button (click)="addContact()" class="btn-primary" [disabled]="isLoading">
+          + Add Contact
+        </button>
+      </div>
     </div>
 
     <!-- Success Message -->
@@ -66,7 +76,15 @@
           </div>
           <div>
             <div class="font-semibold text-gray-900">{{ contact.name }}</div>
-            <div class="text-sm text-gray-600">{{ contact.email }}</div>
+            <div class="text-sm text-gray-600 flex flex-col">
+              @for (email of contact.email; track email; let i = $index) {
+              @if (i < 2) { <span>{{ email }}</span>
+                }
+                }
+                @if (contact.email.length > 2) {
+                <span class="text-xs text-gray-500">+{{ contact.email.length - 2 }} more</span>
+                }
+            </div>
           </div>
         </div>
         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
@@ -92,82 +110,135 @@
     }
     }
   </div>
-
-  <!-- Add Contact Dialog -->
-  @if (showAddDialog) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="cancelDialog()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">Add New Contact</h2>
-
-      @if (errorMessage) {
-      <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
-        {{ errorMessage }}
-      </div>
-      }
-
-      <div class="space-y-4 mb-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-          <input type="text" [(ngModel)]="newContactName" placeholder="John Doe" class="input" autofocus
-            [disabled]="isLoading">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <input type="email" [(ngModel)]="newContactEmail" placeholder="john@example.com" class="input"
-            (keyup.enter)="saveNewContact()" [disabled]="isLoading">
-        </div>
-      </div>
-      <div class="flex justify-end gap-3">
-        <button (click)="cancelDialog()" class="btn-secondary" [disabled]="isLoading">Cancel</button>
-        <button (click)="saveNewContact()" [disabled]="!newContactName.trim() || !newContactEmail.trim() || isLoading"
-          class="btn-primary">
-          @if (isLoading) {
-          <span>Adding...</span>
-          } @else {
-          <span>Add</span>
-          }
-        </button>
-      </div>
-    </div>
-  </div>
-  }
-
-  <!-- Edit Contact Dialog -->
-  @if (showEditDialog) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="cancelDialog()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">Edit Contact</h2>
-
-      @if (errorMessage) {
-      <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
-        {{ errorMessage }}
-      </div>
-      }
-
-      <div class="space-y-4 mb-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-          <input type="text" [(ngModel)]="newContactName" placeholder="John Doe" class="input" autofocus
-            [disabled]="isLoading">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <input type="email" [(ngModel)]="newContactEmail" placeholder="john@example.com" class="input"
-            (keyup.enter)="saveEditContact()" [disabled]="isLoading">
-        </div>
-      </div>
-      <div class="flex justify-end gap-3">
-        <button (click)="cancelDialog()" class="btn-secondary" [disabled]="isLoading">Cancel</button>
-        <button (click)="saveEditContact()" [disabled]="!newContactName.trim() || !newContactEmail.trim() || isLoading"
-          class="btn-primary">
-          @if (isLoading) {
-          <span>Saving...</span>
-          } @else {
-          <span>Save</span>
-          }
-        </button>
-      </div>
-    </div>
-  </div>
-  }
 </div>
+
+<!-- Add Contact Dialog -->
+@if (showAddDialog) {
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="cancelDialog()">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Add New Contact</h2>
+
+    @if (errorMessage) {
+    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+      {{ errorMessage }}
+    </div>
+    }
+
+    <div class="space-y-4 mb-6 max-h-[60vh] overflow-y-auto">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+        <input type="text" [(ngModel)]="newContactName" placeholder="John Doe" class="input" autofocus
+          [disabled]="isLoading">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Emails</label>
+        <div class="space-y-2">
+          @for (email of newContactEmails; track trackByIndex($index, email); let i = $index) {
+          <div class="flex gap-2">
+            <input type="email" [(ngModel)]="newContactEmails[i]" placeholder="john@example.com" class="input flex-1"
+              [disabled]="isLoading">
+            @if (newContactEmails.length > 1) {
+            <button (click)="removeEmailField(i)" class="text-red-500 hover:text-red-700 px-2" [disabled]="isLoading">
+              ×
+            </button>
+            }
+          </div>
+          }
+        </div>
+        <button (click)="addEmailField()" class="text-blue-600 text-sm mt-2 hover:underline" [disabled]="isLoading">
+          + Add another email
+        </button>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3">
+      <button (click)="cancelDialog()" class="btn-secondary" [disabled]="isLoading">Cancel</button>
+      <button (click)="saveNewContact()" [disabled]="!newContactName.trim() || isLoading" class="btn-primary">
+        @if (isLoading) {
+        <span>Adding...</span>
+        } @else {
+        <span>Add</span>
+        }
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Edit Contact Dialog -->
+@if (showEditDialog) {
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="cancelDialog()">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" (click)="$event.stopPropagation()">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Edit Contact</h2>
+
+    @if (errorMessage) {
+    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+      {{ errorMessage }}
+    </div>
+    }
+
+    <div class="space-y-4 mb-6 max-h-[60vh] overflow-y-auto">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+        <input type="text" [(ngModel)]="newContactName" placeholder="John Doe" class="input" autofocus
+          [disabled]="isLoading">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Emails</label>
+        <div class="space-y-2">
+          @for (email of newContactEmails; track trackByIndex($index, email); let i = $index) {
+          <div class="flex gap-2">
+            <input type="email" [(ngModel)]="newContactEmails[i]" placeholder="john@example.com" class="input flex-1"
+              [disabled]="isLoading">
+            @if (newContactEmails.length > 1) {
+            <button (click)="removeEmailField(i)" class="text-red-500 hover:text-red-700 px-2" [disabled]="isLoading">
+              ×
+            </button>
+            }
+          </div>
+          }
+        </div>
+        <button (click)="addEmailField()" class="text-blue-600 text-sm mt-2 hover:underline" [disabled]="isLoading">
+          + Add another email
+        </button>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3">
+      <button (click)="cancelDialog()" class="btn-secondary" [disabled]="isLoading">Cancel</button>
+      <button (click)="saveEditContact()" [disabled]="!newContactName.trim() || isLoading" class="btn-primary">
+        @if (isLoading) {
+        <span>Saving...</span>
+        } @else {
+        <span>Save</span>
+        }
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Email Selection Dialog -->
+@if (showEmailSelectionDialog && selectedContactForEmail) {
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" (click)="cancelEmailSelection()">
+  <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 p-6" (click)="$event.stopPropagation()">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Select Email</h2>
+    <p class="text-gray-600 mb-4">Which email address would you like to use for <span class="font-semibold">{{
+        selectedContactForEmail.name }}</span>?</p>
+
+    <div class="space-y-2">
+      @for (email of selectedContactForEmail.email; track email) {
+      <button (click)="selectEmail(email)"
+        class="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition flex items-center gap-3 group">
+        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">
+          ✉
+        </div>
+        <span class="font-medium text-gray-700 group-hover:text-blue-700 break-all">{{ email }}</span>
+      </button>
+      }
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <button (click)="cancelEmailSelection()" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+}
