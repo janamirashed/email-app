@@ -129,26 +129,6 @@ The application uses a hybrid persistence approach:
 
 ---
 
-## 📖 Class & Function Documentation
-
-### `EmailController`
-Exposes REST endpoints for email operations.
-*   `sendEmail(Email email)`: Sends a new email.
-*   `getInbox(int page, int limit)`: Retrieves paginated inbox.
-*   `searchEmails(String keyword, ...)`: Advanced search functionality using Filter pattern chaining.
-
-### `FilterService`
-Manages user-defined filtering rules.
-*   `applyFilters(User user, Email email)`: Iterates through user filters and executes matching actions.
-*   `addFilter(User user, Filter filter)`: Validates and persists new rules.
-
-### `Email` (Model)
-Represents the core email entity.
-*   **Fields:** `messageId`, `subject`, `body`, `attachments`, `priority`.
-*   **Methods:** `builder()` for fluent construction.
-
----
-
 ## ⚙️ Setup & Execution
 
 ### Prerequisites
