@@ -25,7 +25,7 @@ public class EncryptedFilesManager {
     public EncryptedFilesManager (boolean enabled){
         this.enabled = enabled;
         this.objectMapper = new ObjectMapper();
-        System.out.println("Starting encrypted file manager");
+//        System.out.println("Starting encrypted file manager");
         try {
             Dotenv dotenv = Dotenv.load();
             byte[] secretKey = Base64.getDecoder().decode(dotenv.get("EMAIL_ENCRYPTION_SECRET"));
@@ -38,7 +38,7 @@ public class EncryptedFilesManager {
     }
 
     public void writeEncrypted(Path path, String str, OpenOption... options) throws Exception {
-        System.out.println("Writing Encrypted");
+//        System.out.println("Writing Encrypted");
         String finalStr;
         if (enabled) {
             byte[] iv = new byte[12];
@@ -60,7 +60,7 @@ public class EncryptedFilesManager {
         Files.writeString(path, finalStr, options);
     }
     public String readDecrypted(Path path) throws Exception {
-        System.out.println("Reading Decrypted");
+//        System.out.println("Reading Decrypted");
         String finalStr;
         String fileStr = Files.readString(path);
         System.out.println(fileStr);
@@ -80,7 +80,7 @@ public class EncryptedFilesManager {
         }else {
             finalStr = fileStr;
         }
-        System.out.println(finalStr);
+//        System.out.println(finalStr);
         return finalStr;
     }
 }
