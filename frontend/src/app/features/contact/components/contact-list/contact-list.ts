@@ -7,6 +7,7 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { ContactService } from '../../../../core/services/contact.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
+import { EmailService } from '../../../../core/services/email.service';
 
 @Component({
   selector: 'app-contact-list',
@@ -38,7 +39,8 @@ export class ContactList implements OnInit, OnDestroy {
     private contactService: ContactService,
     private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef,
-    private composeService: EmailComposeService
+    private composeService: EmailComposeService,
+    private emailService: EmailService
   ) { }
 
   ngOnInit() {
@@ -141,16 +143,24 @@ export class ContactList implements OnInit, OnDestroy {
   }
 
   saveNewContact() {
-    const validEmails = this.newContactEmails.map(e => e.trim()).filter(e => e.length > 0);
+    // const validEmails = this.newContactEmails.map(e => e.trim()).filter(e => this.emailService.isValidEmail(e));
 
-    if (this.newContactName.trim() && validEmails.length > 0) {
+    const validEmails = this.emailService.ensureValidEmails(this.newContactEmails);
+    if (!validEmails) {
+      this.errorMessage = 'Invalid email format';
+      this.cdr.detectChanges();
+      return;
+    }
+
+
+    if (this.newContactName.trim()) {
       this.isLoading = true;
       this.errorMessage = '';
 
       const newContact: Contact = {
         id: null,
         name: this.newContactName.trim(),
-        email: validEmails
+        email: this.newContactEmails
       };
 
       this.contactService.addContact(newContact).subscribe({

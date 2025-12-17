@@ -27,6 +27,9 @@ public class EmailService {
 
     @Autowired
     private FilterService filterService;
+    @Autowired
+    private UserService userService;
+
     // SEND EMAIL - Save to sent folder and create copy in recipient's inbox
     public String sendEmail(String username, Email emailRequest) throws IOException {
         // Validate
@@ -72,6 +75,10 @@ public class EmailService {
         // Process recipients from the queue
         while (!recipientQueue.isEmpty()) {
             String recipient = recipientQueue.poll();
+            if (recipient.equals(username) || recipient.equals(username + "@jaryn.com"))
+                throw new IllegalArgumentException("A user can't send an email to himself");
+            if (!userService.existsByUsername(recipient))
+                throw new IllegalArgumentException("you can't send an email to a non-existing user");
 
             try {
                 // Create copy for recipient's inbox using Builder Pattern
@@ -151,6 +158,12 @@ public class EmailService {
     // SAVE DRAFT
     public String saveDraft(String username, Email emailRequest) throws IOException {
         String messageId = generateMessageId();
+        for(String recipient : emailRequest.getTo()){
+            if (recipient.equals(username) || recipient.equals(username + "@jaryn.com"))
+                throw new IllegalArgumentException("A user can't send an email to himself");
+            if (!userService.existsByUsername(recipient))
+                throw new IllegalArgumentException("you can't send an email to a non-existing user");
+        }
 
         // Build draft using Builder Pattern
         Email draft = Email.builder()
@@ -412,7 +425,7 @@ public class EmailService {
         if (!currentFolder.equals("trash")) {
             emailRepository.moveEmail(username, messageId, currentFolder, "trash");
 
-            String originalFolderToPreserve = email.getFolder();
+            String originalFolderToPreserve = email.getOriginalFolder();
             if (originalFolderToPreserve == null || originalFolderToPreserve.isEmpty()) {
                 originalFolderToPreserve = currentFolder;
             }
@@ -508,11 +521,11 @@ public class EmailService {
         }
     }
 
-    // CLEANUP TRASH - Auto delete after 30 days
-    public void cleanupTrash(String username) throws IOException {
-        emailRepository.cleanupTrash(username);
-        log.info("Trash cleanup completed for {}", username);
-    }
+//    // CLEANUP TRASH - Auto delete after 30 days
+//    public void cleanupTrash(String username) throws IOException {
+//        emailRepository.cleanupTrash(username);
+//        log.info("Trash cleanup completed for {}", username);
+//    }
 
 
     // Moves email back to the folder it was in before deletion

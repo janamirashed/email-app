@@ -179,7 +179,15 @@ public class EmailController {
 
             log.info("Draft {} saved successfully", messageId);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (IOException e) {
+        }
+        catch (IllegalArgumentException e) {
+            log.error("Invalid email: {}", e.getMessage());
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+        catch (IOException e) {
             log.error("Failed to save draft: {}", e.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
