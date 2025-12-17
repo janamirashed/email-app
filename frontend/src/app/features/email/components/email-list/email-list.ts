@@ -142,6 +142,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   contextMarkAsRead() {
     if (this.contextMenuEmail) {
+      if (this.selectedEmails.size > 0) {
+        this.markSelectedAsRead();
+        this.closeContextMenu();
+        return;
+      }
+
       this.emailService.markAsRead(this.contextMenuEmail.messageId).subscribe({
         next: () => {
           this.contextMenuEmail.read = true;
@@ -156,6 +162,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   contextMarkAsUnread() {
     if (this.contextMenuEmail) {
+      if (this.selectedEmails.size > 0) {
+        this.markSelectedAsUnread();
+        this.closeContextMenu();
+        return;
+      }
+
       this.emailService.markAsUnread(this.contextMenuEmail.messageId).subscribe({
         next: () => {
           this.contextMenuEmail.read = false;
@@ -170,6 +182,12 @@ export class EmailListComponent implements OnInit, OnDestroy {
 
   contextToggleStar() {
     if (this.contextMenuEmail) {
+      if (this.selectedEmails.size > 0) {
+        this.starSelected();
+        this.closeContextMenu();
+        return;
+      }
+
       const action = this.contextMenuEmail.starred
         ? this.emailService.unstarEmail(this.contextMenuEmail.messageId)
         : this.emailService.starEmail(this.contextMenuEmail.messageId);
@@ -247,40 +265,58 @@ export class EmailListComponent implements OnInit, OnDestroy {
     console.log('messageId:', messageId);
     console.log('Calling emailService.moveEmail...');
 
-    this.emailService.moveEmail(messageId, folderName).subscribe({
-      next: (response: any) => {
-        console.log('=== MOVE SUCCESS ===');
-        console.log('Response:', response);
+    if (this.selectedEmails.size > 0) {
+      const messageIds = Array.from(this.selectedEmails);
+      console.log('Moving multiple emails:', messageIds);
 
-        // Close dialog and clear data
-        this.showMoveDialog = false;
-        this.moveErrorMessage = '';
-        this.eventService.clearEmailSelection(this.contextMenuEmail.messageId);
-        this.contextMenuEmail = null;
-        this.showContextMenu = false;
-        this.selectedEmails.clear();
-        console.log('Triggering change detection...');
-        this.cdr.detectChanges();
+      this.emailService.bulkMove(messageIds, folderName).subscribe({
+        next: () => {
+          console.log('=== BULK MOVE SUCCESS ===');
+          this.showMoveDialog = false;
+          this.moveErrorMessage = '';
+          this.selectedEmails.clear();
+          this.eventService.clearEmailSelection(messageIds);
+          this.contextMenuEmail = null;
+          this.showContextMenu = false;
+          this.cdr.detectChanges();
+          this.loadEmails();
+          this.notificationService.showSuccess(`${messageIds.length} email(s) moved to ${folderName}`);
+        },
+        error: (error: any) => {
+          console.log('=== BULK MOVE ERROR ===');
+          console.error('Full error object:', error);
+          this.moveErrorMessage = `Error: ${error.error?.error || error.message || 'Failed to move emails'}`;
+          this.notificationService.showError('Failed to move emails');
+          this.cdr.detectChanges();
+        }
+      });
+    } else if (this.contextMenuEmail) {
+      // Single email move
+      const messageId = this.contextMenuEmail.messageId;
+      console.log('messageId:', messageId);
 
-        // Reload emails
-        console.log('Reloading emails...');
-        this.loadEmails();
-        console.log('Emails reloaded');
-        this.notificationService.showSuccess(`Email moved to ${folderName}`);
-
-      },
-      error: (error: any) => {
-        console.log('=== MOVE ERROR ===');
-        console.error('Full error object:', error);
-        console.error('Error status:', error.status);
-        console.error('Error message:', error.message);
-        console.error('Error response:', error.error);
-
-        this.moveErrorMessage = `Error: ${error.error?.error || error.message || 'Failed to move email'}`;
-        this.notificationService.showError('Failed to move email');
-        this.cdr.detectChanges();
-      }
-    });
+      this.emailService.moveEmail(messageId, folderName).subscribe({
+        next: () => {
+          console.log('=== MOVE SUCCESS ===');
+          this.showMoveDialog = false;
+          this.moveErrorMessage = '';
+          this.eventService.clearEmailSelection(messageId);
+          this.contextMenuEmail = null;
+          this.showContextMenu = false;
+          this.selectedEmails.clear();
+          this.cdr.detectChanges();
+          this.loadEmails();
+          this.notificationService.showSuccess(`Email moved to ${folderName}`);
+        },
+        error: (error: any) => {
+          console.log('=== MOVE ERROR ===');
+          console.error('Full error object:', error);
+          this.moveErrorMessage = `Error: ${error.error?.error || error.message || 'Failed to move email'}`;
+          this.notificationService.showError('Failed to move email');
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   closeMoveDialog() {
@@ -289,9 +325,14 @@ export class EmailListComponent implements OnInit, OnDestroy {
   }
 
   async contextDelete() {
-    let email = this.contextMenuEmail
+    let email = this.contextMenuEmail;
     if (email) {
-      this.cdr.detectChanges();
+      if (this.selectedEmails.size > 0) {
+        this.closeContextMenu();
+        await this.bulkDelete();
+        return;
+      }
+
       this.closeContextMenu();
       const confirmed = await this.confirmationService.confirm({
         title: 'Delete Email',
