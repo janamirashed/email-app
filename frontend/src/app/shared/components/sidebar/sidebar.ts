@@ -172,14 +172,15 @@ export class SidebarComponent implements OnInit {
         next: (response) => {
           console.log('Sidebar - Folder created:', response);
           this.closeCreateFolderModal();
-          this.loadCustomFolders(); // Reload folders
+          this.loadCustomFolders();
 
-          // Navigate to the new folder
+          this.notificationService.showSuccess(`Folder "${folderName}" created successfully`);
+
           this.router.navigate(['/folder', folderName]);
         },
         error: (error) => {
           console.error('Sidebar - Failed to create folder:', error);
-          alert('Failed to create folder: ' + (error.error?.error || 'Unknown error'));
+          this.notificationService.showError('Failed to create folder: ' + (error.error?.error || 'Unknown error'));
           this.closeCreateFolderModal();
         }
       });
