@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { FilterService } from '../../../../core/services/filter.service';
 import { FolderService } from '../../../../core/services/folder.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
-import {ActivatedRoute, Router} from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface FilterCondition {
   field: string;
@@ -29,6 +29,7 @@ export class FilterListComponent implements OnInit {
   newFilterName: string = '';
   newFilterAction: string = 'move';
   newFilterActionValue: string = '';
+  newFilterForwardTo: string = '';
 
   showCreateDialog = false;
   showEditDialog = false;
@@ -129,7 +130,10 @@ export class FilterListComponent implements OnInit {
   }
   isValid(): boolean {
     const hasValidConditions = this.conditions.some(c => c.value && c.value.trim() !== '');
-    const hasValidAction = this.newFilterAction !== 'move' || (this.newFilterActionValue !== null && this.newFilterActionValue !== undefined && this.newFilterActionValue.trim() !== '');
+    const hasValidAction =
+      (this.newFilterAction === 'move' && this.newFilterActionValue && this.newFilterActionValue.trim() !== '') ||
+      (this.newFilterAction === 'forward' && this.newFilterForwardTo && this.newFilterForwardTo.trim() !== '') ||
+      (this.newFilterAction !== 'move' && this.newFilterAction !== 'forward');
     const hasValidName = !!(this.newFilterName && this.newFilterName.trim() !== '');
 
     return hasValidConditions && hasValidAction && hasValidName;
@@ -138,6 +142,7 @@ export class FilterListComponent implements OnInit {
     this.newFilterName = '';
     this.newFilterAction = 'move';
     this.newFilterActionValue = '';
+    this.newFilterForwardTo = '';
     this.conditions = [];
 
     if (params['from']) {
@@ -223,6 +228,7 @@ export class FilterListComponent implements OnInit {
     this.addCondition(); // Start with 1
     this.newFilterAction = 'move';
     this.newFilterActionValue = '';
+    this.newFilterForwardTo = '';
     this.showCreateDialog = true;
   }
 
@@ -231,12 +237,13 @@ export class FilterListComponent implements OnInit {
     this.showCreateDialog = false;
     this.resetForm();
   }
-  closeEditDialog() { this.showEditDialog = false; this.resetForm();}
+  closeEditDialog() { this.showEditDialog = false; this.resetForm(); }
 
   private resetForm() {
     this.newFilterName = '';
     this.newFilterAction = 'move';
     this.newFilterActionValue = '';
+    this.newFilterForwardTo = '';
     this.conditions = [];
     this.editingFilter = null;
   }
@@ -256,7 +263,8 @@ export class FilterListComponent implements OnInit {
         matcher: c.operator,
         value: c.value,
         action: this.newFilterAction,
-        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
+        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined,
+        forwardedTo: this.newFilterAction === 'forward' ? this.newFilterForwardTo.split(',').map(e => e.trim()) : undefined
       };
     } else {
       //complex
@@ -271,7 +279,8 @@ export class FilterListComponent implements OnInit {
         matcher: 'complex', //backend to split by ';'
         value: packedValue,
         action: this.newFilterAction,
-        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
+        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined,
+        forwardedTo: this.newFilterAction === 'forward' ? this.newFilterForwardTo.split(',').map(e => e.trim()) : undefined
       };
     }
 
@@ -280,6 +289,7 @@ export class FilterListComponent implements OnInit {
         this.existingRules.push(savedFilter);
         this.closeCreateDialog();
         this.cdr.detectChanges();
+        console.log(savedFilter);
       },
       error: (error) => alert('Failed: ' + error.message)
     });
@@ -290,6 +300,7 @@ export class FilterListComponent implements OnInit {
     this.newFilterName = filter.name || '';
     this.newFilterAction = filter.action;
     this.newFilterActionValue = filter.newFolder || '';
+    this.newFilterForwardTo = filter.forwardedTo ? filter.forwardedTo.join(', ') : '';
 
     this.conditions = [];
 
@@ -328,7 +339,8 @@ export class FilterListComponent implements OnInit {
         matcher: c.operator,
         value: c.value,
         action: this.newFilterAction,
-        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
+        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined,
+        forwardedTo: this.newFilterAction === 'forward' ? this.newFilterForwardTo.split(',').map(e => e.trim()) : undefined
       };
     } else {
       const packedValue = validConditions.map(c => `${c.field}:${c.value}`).join(';');
@@ -338,7 +350,8 @@ export class FilterListComponent implements OnInit {
         matcher: 'complex',
         value: packedValue,
         action: this.newFilterAction,
-        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined
+        newFolder: this.newFilterAction === 'move' ? this.newFilterActionValue : undefined,
+        forwardedTo: this.newFilterAction === 'forward' ? this.newFilterForwardTo.split(',').map(e => e.trim()) : undefined
       };
     }
 
@@ -348,6 +361,7 @@ export class FilterListComponent implements OnInit {
         if (index !== -1) {
           this.existingRules[index] = { ...filterToSave, id: this.editingFilter!.id };
         }
+        console.log(filterToSave)
         this.closeEditDialog();
         this.cdr.detectChanges();
       },
@@ -395,6 +409,9 @@ export class FilterListComponent implements OnInit {
   getFilterAction(filter: Filter): string {
     if (filter.action === 'move' && filter.newFolder) {
       return `Move to: ${filter.newFolder}`;
+    }
+    if (filter.action === 'forward' && filter.forwardedTo) {
+      return `Forward to: ${filter.forwardedTo.join(', ')}`;
     }
     return filter.action;
   }

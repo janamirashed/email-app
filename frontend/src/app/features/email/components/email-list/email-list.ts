@@ -96,11 +96,9 @@ export class EmailListComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
-
-    // Subscribe to email list refresh events (triggered by drag-and-drop moves)
+    // Subscribe to email list refresh events
     this.emailListRefreshSubscription = this.eventService.getEmailListRefresh().subscribe(() => {
-      console.log('Email list refresh event received from drag-and-drop');
-      this.selectedEmails.clear(); // Clear selection after moving emails
+      this.selectedEmails.clear();
       this.loadEmails();
       this.emailService.refreshUnreadCount();
       this.cdr.detectChanges();

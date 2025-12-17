@@ -1,0 +1,10 @@
+{
+  "id" : "filter-689f19fa",
+  "name" : "do i still work",
+  "property" : "subject",
+  "matcher" : "contains",
+  "value" : "work",
+  "action" : "star",
+  "newFolder" : null,
+  "forwardedTo" : null
+}

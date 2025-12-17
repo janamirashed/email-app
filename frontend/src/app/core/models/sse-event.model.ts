@@ -1,4 +1,4 @@
 export interface sseEvent {
-  type: 'Draft' | 'Sent' | string;
+  type: 'Draft' | 'Received' | string;
   to: string[]; // Array of recipient emails
 }

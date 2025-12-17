@@ -1,11 +1,9 @@
 package com.mail.backend.controller;
 
-import com.mail.backend.model.SSE;
 import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.Email;
 import com.mail.backend.service.AttachmentService;
 import com.mail.backend.service.EmailService;
-import com.mail.backend.service.EventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,9 +27,6 @@ public class EmailController {
 
     @Autowired
     private AttachmentService attachmentService;
-
-    @Autowired
-    private EventService eventService;
 
     // GET current user's username from JWT token
     private String getCurrentUsername(Authentication authentication) {
@@ -77,7 +72,6 @@ public class EmailController {
             response.put("message", "Email sent successfully");
 
             log.info("Email {} sent successfully", messageId);
-            eventService.publishEvent(new SSE("Sent",email.getTo()));
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             log.error("Invalid email: {}", e.getMessage());
@@ -93,6 +87,58 @@ public class EmailController {
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    /**
+     * FORWARD EMAIL
+     * POST /api/email/forward
+     * Body: { "to": ["recipient@gmail.com"], "subject": "...", "body": "...", "priority": 2 }
+     * PARMS: New Recipients
+     */
+    @PostMapping("/forward")
+    public ResponseEntity<?> forwardEmail(@RequestBody Email email,@RequestParam List<String> newRecipients, Authentication authentication) {
+        try {
+            String username = getCurrentUsername(authentication);
+
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Failed to send email");
+
+            for (AttachmentMetadata attachmentMetadata : email.getAttachments()) {
+                if (attachmentMetadata.getFileName() == null)
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+
+                if (attachmentMetadata.getMimeType() == null)
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+
+                if (!attachmentService.isAcknowledged(attachmentMetadata.getId()))
+                    //to check if this attachment was acknowledged by the attachment service through the endpoint
+                    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+            }
+            // if not proceed normally
+
+            String messageId = emailService.forwardEmail(username, email,newRecipients);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("messageId", messageId);
+            response.put("message", "Email sent successfully");
+
+            log.info("Email {} sent successfully", messageId);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid email: {}", e.getMessage());
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        } catch (IOException e) {
+            log.error("Failed to send email: {}", e.getMessage());
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Failed to send email");
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     /**
      * SAVE DRAFT
@@ -124,9 +170,6 @@ public class EmailController {
                     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
             }
             // if not proceed normally
-            ArrayList<String> list = new ArrayList<>();
-            list.add(username+"@jaryn.com");
-            this.eventService.publishEvent(new SSE("Draft",list));
             String messageId = emailService.saveDraft(username, email);
 
             Map<String, Object> response = new HashMap<>();

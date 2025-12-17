@@ -52,6 +52,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         },
         complete: () => console.log('SSE stream completed')
       });
+
+
   }
   ngOnDestroy() {
     this.composeSubscription?.unsubscribe();

@@ -14,27 +14,27 @@
     <div class="card mb-6">
       <table class="w-full">
         <thead class="bg-gray-50 border-b border-gray-200">
-        <tr>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Condition</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
-          <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
-        </tr>
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Condition</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
+            <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
+          </tr>
         </thead>
         <tbody>
-        <ng-container *ngFor="let rule of existingRules">
-          <tr class="border-b border-gray-100 hover:bg-gray-50">
-            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ getFilterName(rule) }}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ getFilterCondition(rule) }}</td>
-            <td class="px-4 py-3 text-sm text-indigo-600 font-medium">{{ getFilterAction(rule) }}</td>
-            <td class="px-4 py-3 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <button (click)="editFilter(rule)" class="text-gray-600 hover:text-blue-600 text-sm">Edit</button>
-                <button (click)="deleteFilter(rule)" class="text-gray-600 hover:text-red-600 text-sm">Delete</button>
-              </div>
-            </td>
-          </tr>
-        </ng-container>
+          <ng-container *ngFor="let rule of existingRules">
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ getFilterName(rule) }}</td>
+              <td class="px-4 py-3 text-sm text-gray-600">{{ getFilterCondition(rule) }}</td>
+              <td class="px-4 py-3 text-sm text-indigo-600 font-medium">{{ getFilterAction(rule) }}</td>
+              <td class="px-4 py-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="editFilter(rule)" class="text-gray-600 hover:text-blue-600 text-sm">Edit</button>
+                  <button (click)="deleteFilter(rule)" class="text-gray-600 hover:text-red-600 text-sm">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
 
@@ -46,17 +46,16 @@
 
   <!-- Create Dialog -->
   <div *ngIf="showCreateDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] fade-in"
-       (click)="closeCreateDialog()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    (click)="closeCreateDialog()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto"
+      (click)="$event.stopPropagation()">
       <h2 class="text-xl font-bold text-gray-900 mb-6">Create New Filter</h2>
 
       <!-- Filter Name -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Name <span class="text-red-500">*</span></label>
-        <input
-          type="text"
-          [(ngModel)]="newFilterName"
-          [ngModelOptions]="{standalone: true}"
+        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Name <span
+            class="text-red-500">*</span></label>
+        <input type="text" [(ngModel)]="newFilterName" [ngModelOptions]="{standalone: true}"
           placeholder="e.g. Work emails"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
       </div>
@@ -64,19 +63,18 @@
       <!-- Conditions Section -->
       <div class="mb-6">
         <div class="flex justify-between items-center mb-4">
-          <label class="block text-sm font-medium text-gray-700">When message matches <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-medium text-gray-700">When message matches <span
+              class="text-red-500">*</span></label>
         </div>
 
         <!-- Text-based conditions -->
         <div class="space-y-3 mb-4">
           <div *ngFor="let condition of conditions; let i = index; trackBy: trackByIndex"
-               [class.hidden]="condition.field === 'priority' || condition.field === 'hasAttachment'"
-               class="flex gap-2 items-start">
+            [class.hidden]="condition.field === 'priority' || condition.field === 'hasAttachment'"
+            class="flex gap-2 items-start">
 
             <!-- Field Select -->
-            <select
-              [(ngModel)]="condition.field"
-              (ngModelChange)="onFieldChange(condition)"
+            <select [(ngModel)]="condition.field" (ngModelChange)="onFieldChange(condition)"
               [ngModelOptions]="{standalone: true}"
               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
               style="min-width: 120px;">
@@ -87,21 +85,15 @@
             </select>
 
             <!-- Operator Select -->
-            <select
-              [(ngModel)]="condition.operator"
-              [ngModelOptions]="{standalone: true}"
-              [disabled]="getTextConditionsCount() > 1"
-              class="px-3 py-2 border rounded-lg outline-none transition"
-              [class.border-gray-300]="getTextConditionsCount() === 1"
-              [class.bg-white]="getTextConditionsCount() === 1"
+            <select [(ngModel)]="condition.operator" [ngModelOptions]="{standalone: true}"
+              [disabled]="getTextConditionsCount() > 1" class="px-3 py-2 border rounded-lg outline-none transition"
+              [class.border-gray-300]="getTextConditionsCount() === 1" [class.bg-white]="getTextConditionsCount() === 1"
               [class.focus:ring-2]="getTextConditionsCount() === 1"
               [class.focus:ring-blue-500]="getTextConditionsCount() === 1"
               [class.focus:border-transparent]="getTextConditionsCount() === 1"
-              [class.bg-gray-100]="getTextConditionsCount() > 1"
-              [class.text-gray-500]="getTextConditionsCount() > 1"
+              [class.bg-gray-100]="getTextConditionsCount() > 1" [class.text-gray-500]="getTextConditionsCount() > 1"
               [class.border-gray-200]="getTextConditionsCount() > 1"
-              [class.cursor-not-allowed]="getTextConditionsCount() > 1"
-              style="min-width: 130px;">
+              [class.cursor-not-allowed]="getTextConditionsCount() > 1" style="min-width: 130px;">
               <option value="contains">contains</option>
               <option value="exactly">is exactly</option>
               <option value="startswith">starts with</option>
@@ -109,31 +101,26 @@
             </select>
 
             <!-- Value Input -->
-            <input
-              type="text"
-              [(ngModel)]="condition.value"
-              [ngModelOptions]="{standalone: true}"
+            <input type="text" [(ngModel)]="condition.value" [ngModelOptions]="{standalone: true}"
               placeholder="Type text to match..."
               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
 
             <!-- Remove Button -->
-            <button
-              (click)="removeCondition(i)"
+            <button (click)="removeCondition(i)"
               class="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition flex-shrink-0"
               title="Remove condition">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
 
         <!-- Add Text Condition Button -->
-        <button
-          (click)="addCondition()"
+        <button (click)="addCondition()"
           class="text-sm text-blue-600 font-medium hover:text-blue-800 flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-blue-50 transition mb-4">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           Add Text Condition
         </button>
@@ -147,53 +134,53 @@
             <div class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition">
               <div class="flex items-center justify-between mb-3">
                 <label class="text-sm font-medium text-gray-700">Priority Level</label>
-                <input
-                  type="checkbox"
-                  [checked]="hasPriorityCondition()"
-                  (change)="togglePriorityCondition($event)"
+                <input type="checkbox" [checked]="hasPriorityCondition()" (change)="togglePriorityCondition($event)"
                   class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
               </div>
               <div *ngIf="hasPriorityCondition()" class="space-y-2">
-                <button type="button"
-                        (click)="getPriorityCondition().value = '1'"
-                        [class.bg-blue-50]="getPriorityCondition().value === '1'"
-                        [class.border-blue-300]="getPriorityCondition().value === '1'"
-                        class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
+                <button type="button" (click)="getPriorityCondition().value = '1'"
+                  [class.bg-blue-50]="getPriorityCondition().value === '1'"
+                  [class.border-blue-300]="getPriorityCondition().value === '1'"
+                  class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
                   <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd" />
                   </svg>
                   <span class="text-sm font-medium text-gray-900">Highest</span>
                 </button>
 
-                <button type="button"
-                        (click)="getPriorityCondition().value = '2'"
-                        [class.bg-blue-50]="getPriorityCondition().value === '2'"
-                        [class.border-blue-300]="getPriorityCondition().value === '2'"
-                        class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
+                <button type="button" (click)="getPriorityCondition().value = '2'"
+                  [class.bg-blue-50]="getPriorityCondition().value === '2'"
+                  [class.border-blue-300]="getPriorityCondition().value === '2'"
+                  class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
                   <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd"
+                      d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd" />
                   </svg>
                   <span class="text-sm font-medium text-gray-900">High</span>
                 </button>
 
-                <button type="button"
-                        (click)="getPriorityCondition().value = '3'"
-                        [class.bg-blue-50]="getPriorityCondition().value === '3'"
-                        [class.border-blue-300]="getPriorityCondition().value === '3'"
-                        class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
+                <button type="button" (click)="getPriorityCondition().value = '3'"
+                  [class.bg-blue-50]="getPriorityCondition().value === '3'"
+                  [class.border-blue-300]="getPriorityCondition().value === '3'"
+                  class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
                   <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                      clip-rule="evenodd" />
                   </svg>
                   <span class="text-sm font-medium text-gray-900">Normal</span>
                 </button>
 
-                <button type="button"
-                        (click)="getPriorityCondition().value = '4'"
-                        [class.bg-blue-50]="getPriorityCondition().value === '4'"
-                        [class.border-blue-300]="getPriorityCondition().value === '4'"
-                        class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
+                <button type="button" (click)="getPriorityCondition().value = '4'"
+                  [class.bg-blue-50]="getPriorityCondition().value === '4'"
+                  [class.border-blue-300]="getPriorityCondition().value === '4'"
+                  class="w-full flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-left">
                   <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd"
+                      d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd" />
                   </svg>
                   <span class="text-sm font-medium text-gray-900">Low</span>
                 </button>
@@ -204,14 +191,10 @@
             <div class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition">
               <label class="text-sm font-medium text-gray-700 mb-3 block">Has Attachment</label>
               <div class="flex items-center gap-3">
-                <button
-                  type="button"
-                  (click)="toggleAttachmentCondition($event)"
-                  [class.bg-blue-600]="hasAttachmentCondition()"
-                  [class.bg-gray-200]="!hasAttachmentCondition()"
+                <button type="button" (click)="toggleAttachmentCondition($event)"
+                  [class.bg-blue-600]="hasAttachmentCondition()" [class.bg-gray-200]="!hasAttachmentCondition()"
                   class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                  <span
-                    [class.translate-x-6]="hasAttachmentCondition()"
+                  <span [class.translate-x-6]="hasAttachmentCondition()"
                     [class.translate-x-1]="!hasAttachmentCondition()"
                     class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform">
                   </span>
@@ -224,9 +207,12 @@
           </div>
         </div>
 
-        <p *ngIf="getTextConditionsCount() > 1" class="text-xs text-amber-600 mt-4 flex items-center gap-1 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+        <p *ngIf="getTextConditionsCount() > 1"
+          class="text-xs text-amber-600 mt-4 flex items-center gap-1 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
           <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd" />
           </svg>
           Multiple text conditions automatically use "contains" logic and all must match (AND).
         </p>
@@ -236,36 +222,39 @@
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Then do <span class="text-red-500">*</span></label>
         <div class="flex gap-3">
-          <select
-            [(ngModel)]="newFilterAction"
-            [ngModelOptions]="{standalone: true}"
+          <select [(ngModel)]="newFilterAction" [ngModelOptions]="{standalone: true}"
             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white">
             <option value="move">Move to folder</option>
+            <option value="forward">Forward to</option>
             <option value="markread">Mark as read</option>
             <option value="star">Star</option>
             <option value="delete">Delete</option>
           </select>
-          <select
-            *ngIf="newFilterAction === 'move'"
-            [(ngModel)]="newFilterActionValue"
+          <select *ngIf="newFilterAction === 'move'" [(ngModel)]="newFilterActionValue"
             [ngModelOptions]="{standalone: true}"
             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
             [class.border-red-300]="newFilterAction === 'move' && !newFilterActionValue">
             <option value="">Choose folder...</option>
             <option *ngFor="let folder of folders" [value]="folder.name">{{ folder.name }}</option>
           </select>
+          <input *ngIf="newFilterAction === 'forward'" type="text" [(ngModel)]="newFilterForwardTo"
+            [ngModelOptions]="{standalone: true}" placeholder="email1@example.com, email2@example.com"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            [class.border-red-300]="newFilterAction === 'forward' && !newFilterForwardTo">
         </div>
-        <p *ngIf="newFilterAction === 'move' && !newFilterActionValue" class="text-xs text-red-500 mt-1 ml-1">Please select a folder</p>
+        <p *ngIf="newFilterAction === 'move' && !newFilterActionValue" class="text-xs text-red-500 mt-1 ml-1">Please
+          select a folder</p>
+        <p *ngIf="newFilterAction === 'forward' && !newFilterForwardTo" class="text-xs text-red-500 mt-1 ml-1">Please
+          enter at least one recipient</p>
       </div>
 
       <!-- Dialog Actions -->
       <div class="flex justify-end gap-3 pt-4 border-t">
-        <button (click)="closeCreateDialog()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+        <button (click)="closeCreateDialog()"
+          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
           Cancel
         </button>
-        <button
-          (click)="saveFilter()"
-          [disabled]="!isValid()"
+        <button (click)="saveFilter()" [disabled]="!isValid()"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600">
           Save Filter
         </button>
@@ -274,17 +263,17 @@
   </div>
 
   <!-- Edit Dialog -->
-  <div *ngIf="showEditDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] fade-in" (click)="closeEditDialog()">
-    <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+  <div *ngIf="showEditDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] fade-in"
+    (click)="closeEditDialog()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto"
+      (click)="$event.stopPropagation()">
       <h2 class="text-xl font-bold text-gray-900 mb-6">Edit Filter</h2>
 
       <!-- Filter Name -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Name <span class="text-red-500">*</span></label>
-        <input
-          type="text"
-          [(ngModel)]="newFilterName"
-          [ngModelOptions]="{standalone: true}"
+        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Name <span
+            class="text-red-500">*</span></label>
+        <input type="text" [(ngModel)]="newFilterName" [ngModelOptions]="{standalone: true}"
           placeholder="e.g. Work emails"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
       </div>
@@ -292,19 +281,18 @@
       <!-- Conditions Section -->
       <div class="mb-6">
         <div class="flex justify-between items-center mb-4">
-          <label class="block text-sm font-medium text-gray-700">When message matches <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-medium text-gray-700">When message matches <span
+              class="text-red-500">*</span></label>
         </div>
 
         <!-- Text-based conditions -->
         <div class="space-y-3 mb-4">
           <div *ngFor="let condition of conditions; let i = index; trackBy: trackByIndex"
-               [class.hidden]="condition.field === 'priority' || condition.field === 'hasAttachment'"
-               class="flex gap-2 items-start">
+            [class.hidden]="condition.field === 'priority' || condition.field === 'hasAttachment'"
+            class="flex gap-2 items-start">
 
             <!-- Field Select -->
-            <select
-              [(ngModel)]="condition.field"
-              (ngModelChange)="onFieldChange(condition)"
+            <select [(ngModel)]="condition.field" (ngModelChange)="onFieldChange(condition)"
               [ngModelOptions]="{standalone: true}"
               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
               style="min-width: 120px;">
@@ -315,9 +303,7 @@
             </select>
 
             <!-- Operator Select -->
-            <select
-              [(ngModel)]="condition.operator"
-              [ngModelOptions]="{standalone: true}"
+            <select [(ngModel)]="condition.operator" [ngModelOptions]="{standalone: true}"
               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
               style="min-width: 130px;">
               <option value="contains">contains</option>
@@ -327,31 +313,26 @@
             </select>
 
             <!-- Value Input -->
-            <input
-              type="text"
-              [(ngModel)]="condition.value"
-              [ngModelOptions]="{standalone: true}"
+            <input type="text" [(ngModel)]="condition.value" [ngModelOptions]="{standalone: true}"
               placeholder="Type text to match..."
               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
 
             <!-- Remove Button -->
-            <button
-              (click)="removeCondition(i)"
+            <button (click)="removeCondition(i)"
               class="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition flex-shrink-0"
               title="Remove condition">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
 
         <!-- Add Text Condition Button -->
-        <button
-          (click)="addCondition()"
+        <button (click)="addCondition()"
           class="text-sm text-blue-600 font-medium hover:text-blue-800 flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-blue-50 transition mb-4">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           Add Text Condition
         </button>
@@ -365,15 +346,10 @@
             <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
               <div class="flex items-center justify-between mb-2">
                 <label class="text-sm font-medium text-gray-700">Priority Level</label>
-                <input
-                  type="checkbox"
-                  [checked]="hasPriorityCondition()"
-                  (change)="togglePriorityCondition($event)"
+                <input type="checkbox" [checked]="hasPriorityCondition()" (change)="togglePriorityCondition($event)"
                   class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
               </div>
-              <select
-                *ngIf="hasPriorityCondition()"
-                [(ngModel)]="getPriorityCondition().value"
+              <select *ngIf="hasPriorityCondition()" [(ngModel)]="getPriorityCondition().value"
                 [ngModelOptions]="{standalone: true}"
                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white">
                 <option value="1">1 - Highest</option>
@@ -387,15 +363,10 @@
             <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
               <div class="flex items-center justify-between mb-2">
                 <label class="text-sm font-medium text-gray-700">Has Attachment</label>
-                <input
-                  type="checkbox"
-                  [checked]="hasAttachmentCondition()"
-                  (change)="toggleAttachmentCondition($event)"
+                <input type="checkbox" [checked]="hasAttachmentCondition()" (change)="toggleAttachmentCondition($event)"
                   class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
               </div>
-              <select
-                *ngIf="hasAttachmentCondition()"
-                [(ngModel)]="getAttachmentCondition().value"
+              <select *ngIf="hasAttachmentCondition()" [(ngModel)]="getAttachmentCondition().value"
                 [ngModelOptions]="{standalone: true}"
                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white">
                 <option value="true">Yes</option>
@@ -407,7 +378,9 @@
 
         <p *ngIf="getTextConditionsCount() > 1" class="text-xs text-gray-500 mt-4 flex items-center gap-1">
           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clip-rule="evenodd" />
           </svg>
           All conditions must match (AND logic).
         </p>
@@ -417,36 +390,39 @@
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Then do <span class="text-red-500">*</span></label>
         <div class="flex gap-3">
-          <select
-            [(ngModel)]="newFilterAction"
-            [ngModelOptions]="{standalone: true}"
+          <select [(ngModel)]="newFilterAction" [ngModelOptions]="{standalone: true}"
             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white">
             <option value="move">Move to folder</option>
+            <option value="forward">Forward to</option>
             <option value="markread">Mark as read</option>
             <option value="star">Star</option>
             <option value="delete">Delete</option>
           </select>
-          <select
-            *ngIf="newFilterAction === 'move'"
-            [(ngModel)]="newFilterActionValue"
+          <select *ngIf="newFilterAction === 'move'" [(ngModel)]="newFilterActionValue"
             [ngModelOptions]="{standalone: true}"
             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
             [class.border-red-300]="newFilterAction === 'move' && !newFilterActionValue">
             <option value="">Choose folder...</option>
             <option *ngFor="let folder of folders" [value]="folder.name">{{ folder.name }}</option>
           </select>
+          <input *ngIf="newFilterAction === 'forward'" type="text" [(ngModel)]="newFilterForwardTo"
+            [ngModelOptions]="{standalone: true}" placeholder="email1@example.com, email2@example.com"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            [class.border-red-300]="newFilterAction === 'forward' && !newFilterForwardTo">
         </div>
-        <p *ngIf="newFilterAction === 'move' && !newFilterActionValue" class="text-xs text-red-500 mt-1 ml-1">Please select a folder</p>
+        <p *ngIf="newFilterAction === 'move' && !newFilterActionValue" class="text-xs text-red-500 mt-1 ml-1">Please
+          select a folder</p>
+        <p *ngIf="newFilterAction === 'forward' && !newFilterForwardTo" class="text-xs text-red-500 mt-1 ml-1">Please
+          enter at least one recipient</p>
       </div>
 
       <!-- Dialog Actions -->
       <div class="flex justify-end gap-3 pt-4 border-t">
-        <button (click)="closeEditDialog()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+        <button (click)="closeEditDialog()"
+          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
           Cancel
         </button>
-        <button
-          (click)="updateFilter()"
-          [disabled]="!isValid()"
+        <button (click)="updateFilter()" [disabled]="!isValid()"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600">
           Update Filter
         </button>

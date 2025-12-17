@@ -35,6 +35,7 @@ export class FilterService {
 
     // Update an existing filter
     updateFilter(filterId: string, filter: Filter): Observable<Filter> {
+      console.log("Sent this",filter);
         return this.http.put<any>(`${this.baseUrl}/${filterId}`, filter, { headers: this.getHeaders() })
             .pipe(map(response => response.filter || response['filter updated successfully']));
     }

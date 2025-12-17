@@ -32,7 +32,7 @@ export class EventService {
       ),
       tap((payload: sseEvent) => {
         // Emit inbox refresh if current user received an email
-        if ((payload.type === 'Sent' || payload.type === 'Draft' )&& payload.to && payload.to.length > 0) {
+        if ((payload.type === 'Received' || payload.type === 'Draft' )&& payload.to && payload.to.length > 0) {
           const currentUserEmail = localStorage.getItem('currentUser') + "@jaryn.com";
           console.log(currentUserEmail + ' ' + payload.to);
           if (payload.to.includes(currentUserEmail)) {
