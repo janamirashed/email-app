@@ -3,6 +3,7 @@ package com.mail.backend.repository;
 import com.mail.backend.model.Email;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import encryption.EncryptedFilesManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,8 +50,17 @@ public class EmailRepository {
                 .writeValueAsString(email);
 
         Path emailPath = Paths.get(folderPath, email.getMessageId() + ".json");
-        Files.writeString(emailPath, emailJson, StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING);
+//        Files.writeString(emailPath, emailJson, StandardOpenOption.CREATE,
+//                StandardOpenOption.TRUNCATE_EXISTING);
+
+        EncryptedFilesManager files = new EncryptedFilesManager(true);
+        try {
+            files.writeEncrypted(emailPath, emailJson, StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+        }
+
 
         log.info("Saved email {} to folder {}", email.getMessageId(), email.getFolder());
     }
@@ -63,7 +73,16 @@ public class EmailRepository {
             throw new IOException("Email not found: " + messageId);
         }
 
-        String emailJson = Files.readString(emailPath);
+        EncryptedFilesManager files = new EncryptedFilesManager(true);
+
+//        String emailJson = Files.readString(emailPath);
+        String emailJson = "";
+        try {
+            emailJson = files.readDecrypted(emailPath);
+        }catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
         return objectMapper.readValue(emailJson, Email.class);
     }
 
@@ -80,8 +99,15 @@ public class EmailRepository {
                     .filter(p -> p.toString().endsWith(".json"))
                     .map(p -> {
                         try {
-                            String json = Files.readString(p);
-                            return objectMapper.readValue(json, Email.class);
+//                            String json = Files.readString(p);
+                            EncryptedFilesManager files = new EncryptedFilesManager(true);
+                            String emailJson = "";
+                            try {
+                                emailJson = files.readDecrypted(p);
+                            }catch (Exception e) {
+                                System.err.println(e.getMessage());
+                            }
+                            return objectMapper.readValue(emailJson, Email.class);
                         } catch (IOException e) {
                             log.error("Error reading email: {}", p, e);
                             return null;
