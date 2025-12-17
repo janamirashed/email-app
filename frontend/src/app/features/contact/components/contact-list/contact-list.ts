@@ -17,7 +17,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 export class ContactList implements OnInit, OnDestroy {
   searchTerm: string = '';
   searchIn: string = 'all';
-  sortBy: 'name' | 'email' | 'date' = 'name';
+  sortBy: 'name' | 'date' = 'name';
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -25,7 +25,7 @@ export class ContactList implements OnInit, OnDestroy {
   showEditDialog = false;
   editingContact: Contact | null = null;
   newContactName = '';
-  newContactEmail = '';
+  newContactEmails: string[] = [''];
 
   // State management
   contacts: Contact[] = [];
@@ -114,33 +114,50 @@ export class ContactList implements OnInit, OnDestroy {
     this.searchSubject.next(this.searchTerm);
   }
 
-  onSort(criteria: 'name' | 'email' | 'date') {
+  onSort(criteria: 'name' | 'date') {
     this.sortBy = criteria;
     this.refreshData();
   }
 
   addContact() {
     this.newContactName = '';
-    this.newContactEmail = '';
+    this.newContactEmails = [''];
     this.showAddDialog = true;
   }
 
+  addEmailField() {
+    this.newContactEmails.push('');
+  }
+
+  removeEmailField(index: number) {
+    if (this.newContactEmails.length > 1) {
+      this.newContactEmails.splice(index, 1);
+    }
+  }
+
+  // Track by function for ngFor with primitive arrays
+  trackByIndex(index: number, obj: any): any {
+    return index;
+  }
+
   saveNewContact() {
-    if (this.newContactName.trim() && this.newContactEmail.trim()) {
+    const validEmails = this.newContactEmails.map(e => e.trim()).filter(e => e.length > 0);
+
+    if (this.newContactName.trim() && validEmails.length > 0) {
       this.isLoading = true;
       this.errorMessage = '';
 
       const newContact: Contact = {
         id: null,
         name: this.newContactName.trim(),
-        email: this.newContactEmail.trim()
+        email: validEmails
       };
 
       this.contactService.addContact(newContact).subscribe({
         next: (contact) => {
           this.showAddDialog = false;
           this.newContactName = '';
-          this.newContactEmail = '';
+          this.newContactEmails = [''];
           this.isLoading = false;
           this.showSuccess('Contact added successfully');
           this.refreshData();
@@ -160,9 +177,12 @@ export class ContactList implements OnInit, OnDestroy {
   editContact(contact: Contact) {
     this.editingContact = { ...contact };
     this.newContactName = contact.name;
-    this.newContactEmail = contact.email;
+    this.newContactEmails = contact.email && contact.email.length > 0 ? [...contact.email] : [''];
     this.showEditDialog = true;
   }
+
+  showEmailSelectionDialog = false;
+  selectedContactForEmail: Contact | null = null;
 
   // Open compose email with contact's email pre-filled
   composeEmailTo(contact: Contact, event?: Event) {
@@ -171,13 +191,33 @@ export class ContactList implements OnInit, OnDestroy {
       event.stopPropagation();
     }
 
+    if (contact.email && contact.email.length > 1) {
+      this.selectedContactForEmail = contact;
+      this.showEmailSelectionDialog = true;
+    } else if (contact.email && contact.email.length === 1) {
+      this.composeService.openCompose({
+        recipients: contact.email[0]
+      });
+    }
+  }
+
+  selectEmail(email: string) {
+    this.showEmailSelectionDialog = false;
+    this.selectedContactForEmail = null;
     this.composeService.openCompose({
-      recipients: contact.email
+      recipients: email
     });
   }
 
+  cancelEmailSelection() {
+    this.showEmailSelectionDialog = false;
+    this.selectedContactForEmail = null;
+  }
+
   saveEditContact() {
-    if (this.editingContact && this.newContactName.trim() && this.newContactEmail.trim()) {
+    const validEmails = this.newContactEmails.map(e => e.trim()).filter(e => e.length > 0);
+
+    if (this.editingContact && this.newContactName.trim() && validEmails.length > 0) {
       // Validate that contact has an ID
       if (!this.editingContact.id) {
         this.errorMessage = 'Cannot update contact: Invalid contact ID';
@@ -190,7 +230,7 @@ export class ContactList implements OnInit, OnDestroy {
       const updatedContact: Contact = {
         ...this.editingContact,
         name: this.newContactName.trim(),
-        email: this.newContactEmail.trim()
+        email: validEmails
       };
 
       this.contactService.updateContact(this.editingContact.id, updatedContact).subscribe({
@@ -198,7 +238,7 @@ export class ContactList implements OnInit, OnDestroy {
           this.showEditDialog = false;
           this.editingContact = null;
           this.newContactName = '';
-          this.newContactEmail = '';
+          this.newContactEmails = [''];
           this.isLoading = false;
           this.showSuccess('Contact updated successfully');
           this.refreshData();
@@ -257,7 +297,7 @@ export class ContactList implements OnInit, OnDestroy {
     this.showEditDialog = false;
     this.editingContact = null;
     this.newContactName = '';
-    this.newContactEmail = '';
+    this.newContactEmails = [''];
     this.errorMessage = '';
   }
 

@@ -8,13 +8,21 @@ public class SearchContactsAll implements ContactSearchStrategy {
     @Override
     public List<Contact> search(List<Contact> contacts, String keyword) {
         String lowerKeyword = keyword.toLowerCase();
+
         return contacts.stream()
                 .filter(contact ->
                         (contact.getName() != null &&
                                 contact.getName().toLowerCase().contains(lowerKeyword))
                                 ||
-                                contact.getEmail() != null &&
-                                        contact.getEmail().replace("@jaryn.com","").toLowerCase().contains(lowerKeyword))
+                                (contact.getEmail() != null &&
+                                        contact.getEmail().stream()
+                                                .anyMatch(email ->
+                                                        email != null &&
+                                                                email.replace("@jaryn.com", "")
+                                                                        .toLowerCase()
+                                                                        .contains(lowerKeyword)
+                                                ))
+                )
                 .toList();
     }
 }

@@ -50,8 +50,8 @@ public class ContactService {
         if (contact.getName() == null || contact.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Contact name cannot be empty");
         }
-        if (contact.getEmail() == null || contact.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Contact email cannot be empty");
+        if (contact.getEmail() == null || contact.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Contact emails cannot be empty");
         }
 
         //Generate ID for the contact if not provided
@@ -126,8 +126,10 @@ public class ContactService {
         String lowerPrefix = emailPrefix.toLowerCase();
 
         return allContacts.stream()
-                .filter(contact -> contact.getEmail().
-                        toLowerCase().startsWith(lowerPrefix))
+                .filter(contact ->
+                        contact.getEmail().stream()
+                                .anyMatch(email -> email.toLowerCase().startsWith(lowerPrefix))
+                )
                 .toList();
     }
 
