@@ -27,13 +27,14 @@ public class AttachmentRepository {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public Long saveAttachment(AttachmentMetadata data, InputStream in){
+    public Long saveAttachment(String id, InputStream in){
         long size = 0L;
         try{
             Files.createDirectories(Paths.get(attachmentRoot));
-            Path dir =  Path.of(attachmentRoot, data.getId() + "." + MimeType.toFileExtension(data.getMimeType()));
-            OutputStream out = new FileOutputStream(dir.toFile());
-            size = in.transferTo(out);
+            Path dir =  Path.of(attachmentRoot, id + "." + "bin");
+            try (OutputStream out = new FileOutputStream(dir.toFile())) {
+                size = in.transferTo(out);
+            }
         }catch(Exception e){
             System.err.println("Error saving attachment to file" + e.getMessage());
         }
@@ -43,9 +44,15 @@ public class AttachmentRepository {
     public InputStream getAttachmentStream(String attachmentId){
 
         try {
-            String ext = MimeType.toFileExtension(getAttachmentMetadata(attachmentId).getMimeType());
-            Path path = Paths.get(attachmentRoot, attachmentId + "." + ext);
-            return new FileInputStream(path.toFile());
+            Path path = Path.of(attachmentRoot, attachmentId + "." + "bin");
+            File src = path.toFile();
+            if (src.exists()){
+                return new FileInputStream(src);
+            }else {
+                String ext = MimeType.toFileExtension(getAttachmentMetadata(attachmentId).getMimeType());
+                path = Path.of(attachmentRoot, attachmentId + "." + ext);
+                return new FileInputStream(path.toFile());
+            }
         }
         catch (Exception e) {
             System.err.println("Error getting attachment stream" + e.getMessage());

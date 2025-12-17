@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule} from '@angular/common';
-import {ActivatedRoute, Router} from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { EmailService } from '../../../../core/services/email.service';
 import { EmailComposeService } from '../../../../core/services/email-compose.service';
 import { FolderService } from '../../../../core/services/folder.service';
@@ -8,7 +8,10 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import {EventService} from '../../../../core/services/event-service';
+import { EventService } from '../../../../core/services/event-service';
+import { Email } from '../../../../core/models/email.model';
+import { Attachment } from '../../../../core/models/attachment.model';
+import { AttachmentService } from '../../../../core/services/attachment.service';
 
 @Component({
   selector: 'app-email-detail',
@@ -18,7 +21,7 @@ import {EventService} from '../../../../core/services/event-service';
   styleUrl: './email-detail.css'
 })
 export class EmailDetailComponent implements OnInit {
-  email: any = null;
+  email: Email | null = null;
   messageId: string | null = '';
   isLoading: boolean = false;
   errorMessage: string = '';
@@ -41,6 +44,7 @@ export class EmailDetailComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private sanitizer: DomSanitizer,
     private eventService: EventService,
+    private attachmentService: AttachmentService
   ) { }
 
   ngOnInit() {
@@ -146,7 +150,7 @@ export class EmailDetailComponent implements OnInit {
           console.log('Email deleted');
           // Navigate back or close detail view
           let stringID = this.messageId as string
-          if (stringID){
+          if (stringID) {
             let messageIds: string[] = new Array(stringID);
             this.eventService.clearEmailSelection(messageIds);
             this.eventService.triggerEmailListRefresh();
@@ -221,7 +225,7 @@ export class EmailDetailComponent implements OnInit {
 
         this.showMoveDialog = false;
         let stringID = this.messageId as string
-        if (stringID){
+        if (stringID) {
           let messageIds: string[] = new Array(stringID);
           this.eventService.clearEmailSelection(messageIds);
         }
@@ -244,12 +248,80 @@ export class EmailDetailComponent implements OnInit {
   }
 
   // Download attachment
-  downloadAttachment(attachment: any) {
+  // downloadAttachment(attachment: Attachment) {
+  //   console.log('=== DOWNLOAD ATTACHMENT DEBUG ===');
+  //   console.log('Full attachment object:', attachment);
+
+  //   // Try multiple possible ID field names
+  //   // const attachmentId = attachment.id || attachment.attachmentId || attachment.attachmentID || attachment.fileId;
+  //   const attachmentId = attachment.id;
+
+  //   console.log('Extracted attachmentId:', attachmentId);
+  //   console.log('Available attachment fields:', Object.keys(attachment));
+
+  //   if (!attachmentId) {
+  //     console.error('ERROR: Attachment ID not found in any expected field');
+  //     alert('Cannot download: Attachment ID is missing. Check console for details.');
+  //     return;
+  //   }
+
+  //   const token = localStorage.getItem('authToken');
+  //   const url = `http://localhost:8080/api/attachments/${attachmentId}`;
+
+  //   console.log('Request URL:', url);
+  //   console.log('Has token:', !!token);
+
+  //   // Fetch the file as a blob
+  //   this.http.get(url, {
+  //     headers: {
+  //       'Authorization': `Bearer ${token}`
+  //     },
+  //     responseType: 'blob'
+  //   }).subscribe({
+  //     next: (blob) => {
+  //       console.log('SUCCESS: Download completed');
+  //       console.log('Blob size:', blob.size, 'bytes');
+  //       console.log('Blob type:', blob.type);
+
+  //       // Create a temporary URL for the blob
+  //       const blobUrl = window.URL.createObjectURL(blob);
+
+  //       // Create a temporary anchor element and trigger download
+  //       const link = document.createElement('a');
+  //       link.href = blobUrl;
+  //       link.download = attachment.fileName || 'download';
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+
+  //       // Clean up the temporary URL
+  //       setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+  //     },
+  //     error: (error) => {
+  //       console.error('=== DOWNLOAD ERROR ===');
+  //       console.error('Status:', error.status);
+  //       console.error('Status text:', error.statusText);
+  //       console.error('Error object:', error);
+  //       console.error('Error body:', error.error);
+
+  //       let errorMsg = `Failed to download attachment.\nStatus: ${error.status}`;
+  //       if (error.status === 404) {
+  //         errorMsg += '\nAttachment not found on server.';
+  //       } else if (error.status === 401 || error.status === 403) {
+  //         errorMsg += '\nAuthentication error.';
+  //       }
+  //       alert(errorMsg + '\n\nCheck browser console for details.');
+  //     }
+  //   });
+  // }
+
+  downloadAttachment(attachment: Attachment) {
     console.log('=== DOWNLOAD ATTACHMENT DEBUG ===');
     console.log('Full attachment object:', attachment);
 
     // Try multiple possible ID field names
-    const attachmentId = attachment.id || attachment.attachmentId || attachment.attachmentID || attachment.fileId;
+    // const attachmentId = attachment.id || attachment.attachmentId || attachment.attachmentID || attachment.fileId;
+    const attachmentId = attachment.id;
 
     console.log('Extracted attachmentId:', attachmentId);
     console.log('Available attachment fields:', Object.keys(attachment));
@@ -260,54 +332,7 @@ export class EmailDetailComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('authToken');
-    const url = `http://localhost:8080/api/attachments/${attachmentId}`;
-
-    console.log('Request URL:', url);
-    console.log('Has token:', !!token);
-
-    // Fetch the file as a blob
-    this.http.get(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      responseType: 'blob'
-    }).subscribe({
-      next: (blob) => {
-        console.log('SUCCESS: Download completed');
-        console.log('Blob size:', blob.size, 'bytes');
-        console.log('Blob type:', blob.type);
-
-        // Create a temporary URL for the blob
-        const blobUrl = window.URL.createObjectURL(blob);
-
-        // Create a temporary anchor element and trigger download
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = attachment.fileName || attachment.filename || 'download';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Clean up the temporary URL
-        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-      },
-      error: (error) => {
-        console.error('=== DOWNLOAD ERROR ===');
-        console.error('Status:', error.status);
-        console.error('Status text:', error.statusText);
-        console.error('Error object:', error);
-        console.error('Error body:', error.error);
-
-        let errorMsg = `Failed to download attachment.\nStatus: ${error.status}`;
-        if (error.status === 404) {
-          errorMsg += '\nAttachment not found on server.';
-        } else if (error.status === 401 || error.status === 403) {
-          errorMsg += '\nAuthentication error.';
-        }
-        alert(errorMsg + '\n\nCheck browser console for details.');
-      }
-    });
+    this.attachmentService.downloadAttachment(attachmentId, attachment);
   }
 
   getSafeHtml(html: string): SafeHtml {
