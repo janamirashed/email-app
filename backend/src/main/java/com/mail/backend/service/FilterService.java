@@ -106,7 +106,7 @@ public class FilterService {
                 Action action = ACTIONS.get(filter.getAction().toLowerCase());
 
                 if (action != null) {
-                    return action.execute(username, email, filter);
+                    return action.execute(email, filter);
                 }
             }
 

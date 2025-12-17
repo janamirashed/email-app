@@ -229,4 +229,31 @@ export class EmailService {
       params: httpParams
     });
   }
+
+  isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  ensureValidEmails(emails: string[]): boolean {
+    let validEmails = true;
+    emails.forEach(email => {
+      if (!this.isValidEmail(email)) {
+        validEmails = false;
+        return;
+      }
+    });
+    return validEmails;
+  }
+
+  ensureValidRecipients(recipients: string[]): boolean {
+    let validEmails = true;
+    recipients.forEach(recipient => {
+      if (!this.isValidEmail(recipient) || recipient == localStorage.getItem("currentUser") + "@jaryn.com") {
+        validEmails = false;
+        return;
+      }
+    });
+    return validEmails;
+  }
 }

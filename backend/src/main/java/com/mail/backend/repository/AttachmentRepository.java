@@ -3,11 +3,12 @@ package com.mail.backend.repository;
 
 import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.MimeType;
+import com.mail.backend.encryption.EncryptedInputStream;
+import com.mail.backend.encryption.EncryptedOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.MimeTypeUtils;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.*;
@@ -15,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 
 @Slf4j
@@ -32,10 +32,11 @@ public class AttachmentRepository {
         try{
             Files.createDirectories(Paths.get(attachmentRoot));
             Path dir =  Path.of(attachmentRoot, id + "." + "bin");
-            try (OutputStream out = new FileOutputStream(dir.toFile())) {
+            try (OutputStream out = new EncryptedOutputStream(new FileOutputStream(dir.toFile()))){
                 size = in.transferTo(out);
             }
-        }catch(Exception e){
+        }
+        catch(Exception e){
             System.err.println("Error saving attachment to file" + e.getMessage());
         }
         return size;
@@ -47,7 +48,7 @@ public class AttachmentRepository {
             Path path = Path.of(attachmentRoot, attachmentId + "." + "bin");
             File src = path.toFile();
             if (src.exists()){
-                return new FileInputStream(src);
+                return new EncryptedInputStream(new FileInputStream(src));
             }else {
                 String ext = MimeType.toFileExtension(getAttachmentMetadata(attachmentId).getMimeType());
                 path = Path.of(attachmentRoot, attachmentId + "." + ext);

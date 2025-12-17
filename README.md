@@ -31,7 +31,7 @@ The system follows a **Client-Server Architecture**:
 ### Frontend
 *   **Framework:** Angular (v21)
 *   **Styling:** Tailwind CSS v4
-*   **Editor:** CodeMirror / Ngx-Editor
+*   **Editor:** Ace Editor / Ngx-Editor
 
 ---
 

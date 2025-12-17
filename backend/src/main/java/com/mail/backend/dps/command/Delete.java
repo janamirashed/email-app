@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class Delete implements Action{
 
     @Override
-    public Email execute(String username, Email email, Filter filter) throws Exception {
+    public Email execute(Email email, Filter filter) throws Exception {
         email.setFolder("trash");
         email.setDeletedAt(LocalDateTime.now());
         return email;
