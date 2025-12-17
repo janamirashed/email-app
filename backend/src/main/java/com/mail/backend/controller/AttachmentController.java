@@ -77,16 +77,24 @@ public class AttachmentController {
 
     @PutMapping("")
     public ResponseEntity<?> saveAttachment(@RequestParam(required = false) String id,
-                                            @RequestParam String mimeType, @RequestParam String fileName,
-                                            @RequestParam String accessors, HttpServletRequest file){
+                                            @RequestParam String fileName,
+                                            @RequestParam String accessors, HttpServletRequest request){
         try {
+             String mimeStr= request.getHeader("Content-Type");
+             String extStr = fileName.split("\\.")[1];
+
+             MimeType mimeType = MimeType.fromValue(mimeStr);
+
+             if (mimeType != MimeType.fromFileExtension(extStr)){
+                 return new ResponseEntity<>(HttpStatus.CONFLICT);
+             }
+
              AttachmentMetadata data;
              System.out.println(accessors);
              String [] accessorsArr = accessors.split("\\s*,\\s*");
-//            System.out.println(accessorsArr[0]);
              data = (id == null || id.trim().isEmpty())?
-                     attachmentService.saveAttachment(MimeType.fromValue(mimeType), fileName, accessorsArr, file.getInputStream()):
-                     attachmentService.saveAttachment(id, MimeType.fromValue(mimeType), fileName,accessorsArr, file.getInputStream());
+                     attachmentService.saveAttachment(mimeType, fileName, accessorsArr, request.getInputStream()):
+                     attachmentService.saveAttachment(id, mimeType, fileName,accessorsArr, request.getInputStream());
 
             if (data == null){
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);

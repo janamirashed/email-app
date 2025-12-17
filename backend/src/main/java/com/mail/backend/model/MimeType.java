@@ -100,7 +100,7 @@ public enum MimeType {
                 return mimeType;
             }
         }
-        throw new IllegalArgumentException("Unknown MimeType value: " + type);
+        return APPLICATION_OCTET_STREAM;
     }
 
     MimeType(String type) {

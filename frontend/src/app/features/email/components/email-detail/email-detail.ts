@@ -10,6 +10,9 @@ import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { EventService } from '../../../../core/services/event-service';
 import {FormsModule} from '@angular/forms';
+import { Email } from '../../../../core/models/email.model';
+import { Attachment } from '../../../../core/models/attachment.model';
+import { AttachmentService } from '../../../../core/services/attachment.service';
 
 @Component({
   selector: 'app-email-detail',
@@ -19,7 +22,7 @@ import {FormsModule} from '@angular/forms';
   styleUrl: './email-detail.css'
 })
 export class EmailDetailComponent implements OnInit {
-  email: any = null;
+  email: Email | null = null;
   messageId: string | null = '';
   isLoading: boolean = false;
   errorMessage: string = '';
@@ -49,6 +52,7 @@ export class EmailDetailComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private sanitizer: DomSanitizer,
     private eventService: EventService,
+    private attachmentService: AttachmentService
   ) { }
 
   ngOnInit() {
@@ -306,12 +310,80 @@ export class EmailDetailComponent implements OnInit {
   }
 
   // Download attachment
-  downloadAttachment(attachment: any) {
+  // downloadAttachment(attachment: Attachment) {
+  //   console.log('=== DOWNLOAD ATTACHMENT DEBUG ===');
+  //   console.log('Full attachment object:', attachment);
+
+  //   // Try multiple possible ID field names
+  //   // const attachmentId = attachment.id || attachment.attachmentId || attachment.attachmentID || attachment.fileId;
+  //   const attachmentId = attachment.id;
+
+  //   console.log('Extracted attachmentId:', attachmentId);
+  //   console.log('Available attachment fields:', Object.keys(attachment));
+
+  //   if (!attachmentId) {
+  //     console.error('ERROR: Attachment ID not found in any expected field');
+  //     alert('Cannot download: Attachment ID is missing. Check console for details.');
+  //     return;
+  //   }
+
+  //   const token = localStorage.getItem('authToken');
+  //   const url = `http://localhost:8080/api/attachments/${attachmentId}`;
+
+  //   console.log('Request URL:', url);
+  //   console.log('Has token:', !!token);
+
+  //   // Fetch the file as a blob
+  //   this.http.get(url, {
+  //     headers: {
+  //       'Authorization': `Bearer ${token}`
+  //     },
+  //     responseType: 'blob'
+  //   }).subscribe({
+  //     next: (blob) => {
+  //       console.log('SUCCESS: Download completed');
+  //       console.log('Blob size:', blob.size, 'bytes');
+  //       console.log('Blob type:', blob.type);
+
+  //       // Create a temporary URL for the blob
+  //       const blobUrl = window.URL.createObjectURL(blob);
+
+  //       // Create a temporary anchor element and trigger download
+  //       const link = document.createElement('a');
+  //       link.href = blobUrl;
+  //       link.download = attachment.fileName || 'download';
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+
+  //       // Clean up the temporary URL
+  //       setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+  //     },
+  //     error: (error) => {
+  //       console.error('=== DOWNLOAD ERROR ===');
+  //       console.error('Status:', error.status);
+  //       console.error('Status text:', error.statusText);
+  //       console.error('Error object:', error);
+  //       console.error('Error body:', error.error);
+
+  //       let errorMsg = `Failed to download attachment.\nStatus: ${error.status}`;
+  //       if (error.status === 404) {
+  //         errorMsg += '\nAttachment not found on server.';
+  //       } else if (error.status === 401 || error.status === 403) {
+  //         errorMsg += '\nAuthentication error.';
+  //       }
+  //       alert(errorMsg + '\n\nCheck browser console for details.');
+  //     }
+  //   });
+  // }
+
+  downloadAttachment(attachment: Attachment) {
     console.log('=== DOWNLOAD ATTACHMENT DEBUG ===');
     console.log('Full attachment object:', attachment);
 
     // Try multiple possible ID field names
-    const attachmentId = attachment.id || attachment.attachmentId || attachment.attachmentID || attachment.fileId;
+    // const attachmentId = attachment.id || attachment.attachmentId || attachment.attachmentID || attachment.fileId;
+    const attachmentId = attachment.id;
 
     console.log('Extracted attachmentId:', attachmentId);
     console.log('Available attachment fields:', Object.keys(attachment));
@@ -322,54 +394,7 @@ export class EmailDetailComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('authToken');
-    const url = `http://localhost:8080/api/attachments/${attachmentId}`;
-
-    console.log('Request URL:', url);
-    console.log('Has token:', !!token);
-
-    // Fetch the file as a blob
-    this.http.get(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      responseType: 'blob'
-    }).subscribe({
-      next: (blob) => {
-        console.log('SUCCESS: Download completed');
-        console.log('Blob size:', blob.size, 'bytes');
-        console.log('Blob type:', blob.type);
-
-        // Create a temporary URL for the blob
-        const blobUrl = window.URL.createObjectURL(blob);
-
-        // Create a temporary anchor element and trigger download
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = attachment.fileName || attachment.filename || 'download';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Clean up the temporary URL
-        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-      },
-      error: (error) => {
-        console.error('=== DOWNLOAD ERROR ===');
-        console.error('Status:', error.status);
-        console.error('Status text:', error.statusText);
-        console.error('Error object:', error);
-        console.error('Error body:', error.error);
-
-        let errorMsg = `Failed to download attachment.\nStatus: ${error.status}`;
-        if (error.status === 404) {
-          errorMsg += '\nAttachment not found on server.';
-        } else if (error.status === 401 || error.status === 403) {
-          errorMsg += '\nAuthentication error.';
-        }
-        alert(errorMsg + '\n\nCheck browser console for details.');
-      }
-    });
+    this.attachmentService.downloadAttachment(attachmentId, attachment);
   }
 
   getSafeHtml(html: string): SafeHtml {

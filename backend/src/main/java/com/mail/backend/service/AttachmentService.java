@@ -71,7 +71,7 @@ public class AttachmentService {
         attachmentMetadata.setFileName(fileName);
         attachmentMetadata.setMimeType(mimeType);
         attachmentMetadata.setAccessors(accessors);
-        Long size = attachmentRepository.saveAttachment(attachmentMetadata, inputStream);
+        Long size = attachmentRepository.saveAttachment(id, inputStream);
 
 
 
@@ -94,7 +94,7 @@ public class AttachmentService {
         attachmentMetadata.setFileName(fileName);
         attachmentMetadata.setMimeType(mimeType);
         attachmentMetadata.setAccessors(accessors);
-        Long size = attachmentRepository.saveAttachment(attachmentMetadata, inputStream);
+        Long size = attachmentRepository.saveAttachment(id, inputStream);
 
         if (size > 0){
             long expirationTime = (long) (new Date().getTime() + 60*1e3*5);
