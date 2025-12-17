@@ -3,13 +3,12 @@ package com.mail.backend.repository;
 
 import com.mail.backend.model.AttachmentMetadata;
 import com.mail.backend.model.MimeType;
-import encryption.EncryptedInputStream;
-import encryption.EncryptedOutputStream;
+import com.mail.backend.encryption.EncryptedInputStream;
+import com.mail.backend.encryption.EncryptedOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.MimeTypeUtils;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.*;
@@ -17,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 
 @Slf4j

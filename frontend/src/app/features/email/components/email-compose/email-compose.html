@@ -109,7 +109,7 @@
     <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 shrink-0">
       <div class="flex items-center gap-2">
         <button (click)="sendMail(true)" [disabled]="editingIsDisabled()" class="btn-primary text-sm">
-          @if (!isLoading) {
+          @if (!isLoading && !isSending) {
           <span>Send</span>
           } @else {
           <span>Sending...</span>

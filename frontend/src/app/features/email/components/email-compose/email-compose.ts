@@ -184,18 +184,14 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
       return;
     }
-    let validEmails = true;
-    this.parseRecipients(this.recipients).forEach(email => {
-      if (!this.isValidEmail(email)) {
-        validEmails = false;
-        this.errorMessage = 'Invalid email format';
-        this.cdr.detectChanges();
-        return;
-      }
-    });
+    const recipientArr = this.parseRecipients(this.recipients);
+    const validEmails = this.emailService.ensureValidRecipients(recipientArr);
     if (!validEmails) {
+      this.errorMessage = 'One or more of the given emails are invalid';
+      this.cdr.detectChanges();
       return;
     }
+
 
     this.isSending = true;
     console.log("isSending : " + this.isSending);
@@ -266,6 +262,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         console.error('Failed to send email:', error);
         this.errorMessage = error.error?.error || 'Failed to send email. Please try again.';
         this.isLoading = false;
+        this.isSending = false;
         this.cdr.detectChanges();
       }
     });
@@ -351,18 +348,34 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
   async saveDraft(transactional: boolean) {
     this.errorMessage = '';
     this.successMessage = '';
-    this.parseRecipients(this.recipients).forEach(email => {
-      if (!this.isValidEmail(email)) {
-        this.errorMessage = 'Invalid email format';
-        this.cdr.detectChanges();
-        return;
-      }
-    });
-    if (!this.subject.trim() && !this.body.trim() && !this.recipients.trim()) {
-      this.errorMessage = 'Draft must have at least some content';
+
+
+    if (!this.subject.trim()) {
+      this.errorMessage = 'Subject cannot be empty';
       this.cdr.detectChanges();
       return;
     }
+
+    if (!this.recipients.trim()) {
+      this.errorMessage = 'Please add at least one recipient';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const recipientArr = this.parseRecipients(this.recipients);
+    const validEmails = this.emailService.ensureValidRecipients(recipientArr);
+    if (!validEmails) {
+      this.errorMessage = 'One or more of the given emails are invalid';
+      this.cdr.detectChanges();
+      return;
+    }
+
+
+    // if (!this.subject.trim() || !this.body.trim() || !this.recipients.trim()) {
+    //   this.errorMessage = 'Draft must have at least some content';
+    //   this.cdr.detectChanges();
+    //   return;
+    // }
 
     this.isLoading = true;
 
@@ -370,7 +383,7 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       this.attachments = await this.uploadFiles(transactional);
 
     const draftEmail: any = {
-      to: this.parseRecipients(this.recipients),
+      to: recipientArr,
       subject: this.subject,
       body: this.body,
       priority: this.priority,
@@ -409,11 +422,6 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
       .filter(email => email.length > 0);
   }
 
-  // Validate email format
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
 
   // Close compose panel
   closeCompose(force: boolean = false) {

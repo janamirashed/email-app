@@ -9,8 +9,13 @@ import { CommonModule } from '@angular/common';
   styleUrl: './nyan-cat.css',
 })
 export class NyanCat implements AfterViewInit {
+  isFriendly: boolean = true;
+
   @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
 
+  ngOnInit() {
+    this.isFriendly = Math.random() > 0.5;
+  }
   ngAfterViewInit() {
     if (this.videoPlayer) {
       this.videoPlayer.nativeElement.muted = false;
