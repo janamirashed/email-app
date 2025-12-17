@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, HostListener, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmailService } from '../../../../core/services/email.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
@@ -21,6 +21,11 @@ export class EmailTrashComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+
+  showContextMenu = false;
+  contextMenuX = 0;
+  contextMenuY = 0;
+  contextMenuEmail: any = null;
 
   constructor(
     private emailService: EmailService,
@@ -238,5 +243,88 @@ export class EmailTrashComponent implements OnInit {
     });
   }
 
+  @HostListener('document:contextmenu', ['$event'])
+  onRightClick(event: MouseEvent): boolean {
+    const target = event.target as HTMLElement;
+    const emailRow = target.closest('[data-email-id]');
 
+    if (emailRow) {
+      event.preventDefault();
+      const emailId = emailRow.getAttribute('data-email-id');
+      this.contextMenuEmail = this.emails.find(e => e.messageId === emailId);
+
+      if (this.contextMenuEmail) {
+        this.contextMenuX = event.clientX;
+        this.contextMenuY = event.clientY;
+        this.showContextMenu = true;
+        this.cdr.detectChanges();
+      }
+    }
+    return false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.context-menu') && this.showContextMenu) {
+      this.showContextMenu = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  closeContextMenu() {
+    this.showContextMenu = false;
+    this.contextMenuEmail = null;
+    this.cdr.detectChanges();
+  }
+
+// Context menu actions
+  contextRestore() {
+    if (this.contextMenuEmail) {
+      this.emailService.bulkRestoreFromTrash([this.contextMenuEmail.messageId]).subscribe({
+        next: () => {
+          this.successMessage = 'Email restored to original folder';
+          this.selectedEmails.delete(this.contextMenuEmail.messageId);
+          this.loadTrashEmails();
+          this.cdr.detectChanges();
+          this.closeContextMenu();
+        },
+        error: (error) => {
+          console.error('Failed to restore email:', error);
+          this.errorMessage = 'Failed to restore email';
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  async contextDelete() {
+    if (this.contextMenuEmail) {
+      const confirmed = await this.confirmationService.confirm({
+        title: 'Permanently Delete Email',
+        message: 'This email will be permanently deleted and cannot be recovered.',
+        confirmText: 'Delete Forever',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+
+      if (confirmed) {
+        this.emailService.permanentlyDeleteEmails([this.contextMenuEmail.messageId]).subscribe({
+          next: () => {
+            this.successMessage = 'Email permanently deleted';
+            this.selectedEmails.delete(this.contextMenuEmail.messageId);
+            this.eventService.clearEmailSelection([this.contextMenuEmail.messageId]);
+            this.loadTrashEmails();
+            this.cdr.detectChanges();
+            this.closeContextMenu();
+          },
+          error: (error) => {
+            console.error('Failed to delete email:', error);
+            this.errorMessage = 'Failed to delete email';
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    }
+  }
 }

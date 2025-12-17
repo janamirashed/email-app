@@ -141,31 +141,62 @@
 
       <!-- Email Items -->
       @for (email of emails;track $index){
-      <ng-container>
-        <div (click)="selectEmail(email)" [ngClass]="{
-          'bg-blue-50 border-l-4 border-blue-600': email.messageId === selectedEmailId,
-          'bg-white hover:bg-gray-50 border-l-4 border-transparent': email.messageId !== selectedEmailId
-        }" class="flex items-center p-3 cursor-pointer transition-colors border-b border-gray-100">
-          <!-- Checkbox -->
-          <input type="checkbox" [checked]="selectedEmails.has(email.messageId)"
-            (change)="toggleEmailSelection(email.messageId, $event)" (click)="$event.stopPropagation()"
-            class="rounded text-blue-600 focus:ring-blue-500 cursor-pointer mr-3">
+        <ng-container>
+          <div [attr.data-email-id]="email.messageId" (click)="selectEmail(email)" [ngClass]="{
+    'bg-blue-50 border-l-4 border-blue-600': email.messageId === selectedEmailId,
+    'bg-white hover:bg-gray-50 border-l-4 border-transparent': email.messageId !== selectedEmailId
+  }" class="flex items-center p-3 cursor-pointer transition-colors border-b border-gray-100">
+            <!-- Checkbox -->
+            <input type="checkbox" [checked]="selectedEmails.has(email.messageId)"
+                   (change)="toggleEmailSelection(email.messageId, $event)" (click)="$event.stopPropagation()"
+                   class="rounded text-blue-600 focus:ring-blue-500 cursor-pointer mr-3">
 
-          <!-- Email Content -->
-          <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-center">
-              <span class="text-sm font-medium text-gray-900 truncate mr-2">{{ getParticipant(email) }}</span>
-              <span class="text-xs text-gray-500 flex-shrink-0">{{ formatDate(email.timestamp) }}</span>
-            </div>
-            <div class="text-sm truncate text-gray-600 mt-0.5">
-              {{ email.subject }}
+            <!-- Email Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-gray-900 truncate mr-2">{{ getParticipant(email) }}</span>
+                <span class="text-xs text-gray-500 flex-shrink-0">{{ formatDate(email.timestamp) }}</span>
+              </div>
+              <div class="text-sm truncate text-gray-600 mt-0.5">
+                {{ email.subject }}
+              </div>
             </div>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
       }
     </div>
   </div>
+
+  <!-- Context Menu -->
+  @if (showContextMenu && contextMenuEmail) {
+    <div class="context-menu fixed bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[100]"
+         [style.left.px]="contextMenuX"
+         [style.top.px]="contextMenuY">
+
+      <!-- Restore Button -->
+      <button (click)="contextRestore()"
+              class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+        </svg>
+        Restore
+      </button>
+
+      <!-- Divider -->
+      <div class="border-t border-gray-100 my-1"></div>
+
+      <!-- Permanent Delete Button -->
+      <button (click)="contextDelete()"
+              class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+        Delete Permanently
+      </button>
+    </div>
+  }
 
   <!-- Email Detail -->
   <div class="flex-1 min-w-0 bg-white">
