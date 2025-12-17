@@ -199,6 +199,18 @@ public class EmailRepository {
             moveEmail(username, email.getMessageId(), folderName, "inbox");
         }
 
+        List<Email> trashEmails = listEmailsInFolder(username, "trash");
+        for (Email trashEmail : trashEmails) {
+            // If this email's originalFolder is the folder being deleted, reset it to inbox
+            if (trashEmail.getOriginalFolder() != null &&
+                    trashEmail.getOriginalFolder().equalsIgnoreCase(folderName)) {
+                trashEmail.setOriginalFolder("inbox");
+                saveEmail(username, trashEmail);
+                log.info("Updated originalFolder for trashed email {} from {} to inbox",
+                        trashEmail.getMessageId(), folderName);
+            }
+        }
+
         Files.deleteIfExists(folderPath);
         log.info("Deleted custom folder: {}", folderName);
     }
