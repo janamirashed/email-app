@@ -1,0 +1,16 @@
+{
+  "messageId" : "d3e47039",
+  "from" : "test2@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "second date test",
+  "body" : "<p>cone on a second date baby</p>",
+  "timestamp" : "2025-12-18T00:55:13",
+  "priority" : 3,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "draft" : false,
+  "starred" : false,
+  "read" : true
+}

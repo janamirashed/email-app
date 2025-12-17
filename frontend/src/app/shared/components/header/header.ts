@@ -30,6 +30,8 @@ export class HeaderComponent implements OnInit {
     folder: 'all',
     priority: '',
     hasAttachment: false,
+    dateWithin: '',
+    dateReference: ''
   };
 
   constructor(
@@ -131,6 +133,14 @@ export class HeaderComponent implements OnInit {
     if(this.advancedParams.hasAttachment) {
       queryParams.hasAttachment = 'true';
     }
+    if (this.advancedParams.dateWithin && this.advancedParams.dateReference) {
+      const range = this.calculateDateRange(this.advancedParams.dateWithin, this.advancedParams.dateReference);
+      if (range) {
+        queryParams.startDate = range.start;
+        queryParams.endDate = range.end;
+      }
+    }
+
     this.router.navigate(['/search'], { queryParams });
   }
 
@@ -170,5 +180,27 @@ export class HeaderComponent implements OnInit {
 
   logout() {
     this.authService.logout();
+  }
+
+
+  private calculateDateRange(interval: string, refDate: string): { start: string, end: string } | null {
+    if (!interval || !refDate) return null;
+
+    const date = new Date(refDate);
+    const rangeMap: any = {
+      '1d': 1, '3d': 3, '1w': 7, '2w': 14, '1m': 30, '6m': 180, '1y': 365
+    };
+
+    const days = rangeMap[interval] || 0;
+    if (days === 0) return null;
+    const startDate = new Date(date);
+    startDate.setDate(date.getDate() - days);
+    const endDate = new Date(date);
+    endDate.setDate(date.getDate() + days);
+
+    return {
+      start: startDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+      end: endDate.toISOString().split('T')[0]
+    };
   }
 }

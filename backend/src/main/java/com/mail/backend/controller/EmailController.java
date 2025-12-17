@@ -275,16 +275,17 @@ public class EmailController {
             @RequestParam(required = false) String keyword, //"All Search"
             @RequestParam(required = false) Integer priority,
             @RequestParam(required = false) Boolean hasAttachment,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "date") String sortBy,
             Authentication authentication) {
         try {
             String username = getCurrentUsername(authentication);
-            log.info("Search Request -> User: {}, Keyword: {}, Priority: {}, HasAtt: {}",
-                    username, keyword, priority, hasAttachment);
+            log.info("Search Params -> Start: {}, End: {}", startDate, endDate);
 
             List<Email> results = emailService.searchEmails(
                     username, sender, receiver, subject, body, folder,
-                    keyword, priority, hasAttachment, sortBy
+                    keyword, priority, hasAttachment,startDate, endDate, sortBy
             );
 
             Map<String, Object> response = new HashMap<>();

@@ -47,7 +47,7 @@ public class EmailService {
                 .to(emailRequest.getTo())
                 .subject(emailRequest.getSubject())
                 .body(emailRequest.getBody())
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.of(2024, 10, 11, 12, 12))
                 .priority(emailRequest.getPriority() != null ? emailRequest.getPriority() : 3)
                 .attachments(emailRequest.getAttachments())
                 .inSent()
@@ -81,7 +81,7 @@ public class EmailService {
                         .to(email.getTo())
                         .subject(email.getSubject())
                         .body(email.getBody())
-                        .timestamp(email.getTimestamp())
+                        .timestamp(LocalDateTime.of(2024, 10, 11, 12, 12))
                         .priority(email.getPriority())
                         .attachments(email.getAttachments())
                         .inInbox()
@@ -225,6 +225,7 @@ public class EmailService {
     public List<Email> searchEmails(String username, String sender, String receiver,
                                     String subject, String body,String folder,
                                     String keyword, Integer priority, Boolean hasAttachment,
+                                    String startDate, String endDate,
                                     String sortBy) throws IOException {
 
         List<Email> allEmails = emailRepository.getAllEmails(username);
@@ -287,7 +288,9 @@ public class EmailService {
         if (hasAttachment != null && hasAttachment) {
             finalFilter = new AndFilter(finalFilter, new AttachmentFilter(hasAttachment));
         }
-
+        if ((startDate != null && !startDate.isEmpty()) || (endDate != null && !endDate.isEmpty())) {
+            finalFilter = new AndFilter(finalFilter, new DateRangeFilter(startDate, endDate));
+        }
         //chaining for folders/status
         if (folder != null && !folder.isEmpty() && !folder.equalsIgnoreCase("all")) {
             switch (folder.toLowerCase()) {

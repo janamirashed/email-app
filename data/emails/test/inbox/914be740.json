@@ -1,0 +1,16 @@
+{
+  "messageId" : "914be740",
+  "from" : "test2@jaryn.com",
+  "to" : [ "test@jaryn.com" ],
+  "subject" : "BBBBBBBBBBBBBBBBBBBBBBBBB",
+  "body" : "<p>PLEASEEEEEEEEE</p>",
+  "timestamp" : "2024-10-11T12:12:00",
+  "priority" : 3,
+  "folder" : "inbox",
+  "originalFolder" : null,
+  "attachments" : [ ],
+  "deletedAt" : null,
+  "draft" : false,
+  "starred" : false,
+  "read" : true
+}

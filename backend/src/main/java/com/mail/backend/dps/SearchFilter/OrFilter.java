@@ -22,8 +22,10 @@ public class OrFilter implements SearchFilter {
         for (Email email : secondCriteriaItems) {
             if (!firstCriteriaItems.contains(email)) {
                 firstCriteriaItems.add(email);
+
             }
         }
+
         return firstCriteriaItems;
     }
 }

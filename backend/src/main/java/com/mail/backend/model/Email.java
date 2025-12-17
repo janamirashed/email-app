@@ -4,6 +4,7 @@ import com.mail.backend.dps.builder.EmailBuilder;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.List;
 
 @Data
@@ -13,6 +14,7 @@ public class Email {
     private List<String> to;
     private String subject;
     private String body;
+    @JsonFormat(shape = JsonFormat.Shape.ANY, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
     private Integer priority; // 1 (Highest) to 4 (Lowest)
     private boolean isRead;
