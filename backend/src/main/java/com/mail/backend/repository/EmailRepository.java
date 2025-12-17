@@ -3,7 +3,7 @@ package com.mail.backend.repository;
 import com.mail.backend.model.Email;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import encryption.EncryptedFilesManager;
+import com.mail.backend.encryption.EncryptedFilesManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
