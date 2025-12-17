@@ -20,12 +20,9 @@ public class EncryptedOutputStream extends OutputStream {
         this.out = out;
         try {
             Dotenv dotenv = Dotenv.load();
-            byte[] secretKey = Base64.getDecoder().decode(dotenv.get("ENCRYPTION_SECRET"));
+            byte[] secretKey = Base64.getDecoder().decode(dotenv.get("ATTACHMENT_ENCRYPTION_SECRET"));
 
             this.cipher = Cipher.getInstance("AES/GCM/NoPadding");
-
-            // We don't init here because we need to write the IV 
-            // to the stream ONLY when writing actually starts.
             this.secretKeySpec = new SecretKeySpec(secretKey, "AES");
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize Cipher", e);

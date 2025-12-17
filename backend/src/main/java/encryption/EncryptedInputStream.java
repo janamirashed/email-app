@@ -16,12 +16,19 @@ import java.util.Base64;
 public class EncryptedInputStream extends InputStream{
 
     private final InputStream stream;
-    private final byte[] secretKey;
+    private final Cipher cipher;
+    private final SecretKeySpec secretKeySpec;
 
-    public EncryptedInputStream(InputStream stream){
+    public EncryptedInputStream(InputStream stream) throws NoSuchPaddingException, NoSuchAlgorithmException {
         this.stream = stream;
-        Dotenv dotenv = Dotenv.load();
-        secretKey = Base64.getDecoder().decode(dotenv.get("ENCRYPTION_SECRET"));
+        try {
+            Dotenv dotenv = Dotenv.load();
+            byte[] secretKey = Base64.getDecoder().decode(dotenv.get("ATTACHMENT_ENCRYPTION_SECRET"));
+            this.cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            this.secretKeySpec = new SecretKeySpec(secretKey, "AES");
+        }catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        }
     }
     @Override
     public int read() throws IOException {
@@ -33,7 +40,6 @@ public class EncryptedInputStream extends InputStream{
         long size = 0L;
         byte[] buffer = new byte[1024];
         try {
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 
             byte[] iv = new byte[12];
             int ivBytesRead = stream.readNBytes(iv, 0, 12);
@@ -41,9 +47,8 @@ public class EncryptedInputStream extends InputStream{
                 throw new IOException("File too short to contain a valid initialization vector");
             }
 
-            SecretKeySpec keySpec = new SecretKeySpec(secretKey, "AES");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
-            cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmSpec);
 
             int bytesRead;
             while ((bytesRead = stream.read(buffer)) != -1) {
@@ -59,9 +64,6 @@ public class EncryptedInputStream extends InputStream{
                 out.write(finalBytes);
             }
             return size;
-        }
-        catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw new RuntimeException(e);
         }
         catch (javax.crypto.AEADBadTagException e) {
             throw new IOException("Decryption failed: Data has been tampered with or wrong key used.", e);
