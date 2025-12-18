@@ -1,0 +1,10 @@
+{
+  "id" : "filter-328ed3ad",
+  "name" : "a",
+  "property" : "subject",
+  "matcher" : "contains",
+  "value" : "a",
+  "action" : "forward",
+  "newFolder" : null,
+  "forwardedTo" : [ "ysfw@jaryn.com" ]
+}
