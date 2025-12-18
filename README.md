@@ -2,6 +2,13 @@
 
 A full-stack web-based email application designed to simulate core email functionalities with a focus on design patterns.
 
+## 🎥 Demo
+
+<video width="100%" controls>
+  <source src="Demo/JarynDemo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## 📋 Project Overview
 
 **Purpose** This project is an application of some of the learned design patterns.
@@ -155,18 +162,6 @@ The application uses a hybrid persistence approach:
     ng serve
     ```
 4.  Open `http://localhost:4200` in your browser.
-
----
-
-## 🚀 Extensibility
-
-**Adding a New Filter Action:**
-1.  Implement `com.mail.backend.dps.command.Action`.
-2.  Register the action in `FilterService.ACTIONS`.
-
-**Adding a New Search Strategy:**
-1.  Implement `ContactSearchStrategy`.
-2.  Add logic in `com.mail.backend.dps.contactStrategy`.
 
 ---
 

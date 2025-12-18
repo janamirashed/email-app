@@ -1,0 +1,10 @@
+{
+  "id" : "filter-f62e4465",
+  "name" : "Labs",
+  "property" : "composite",
+  "matcher" : "complex",
+  "value" : "subject:Lab;hasAttachment:true;priority:1",
+  "action" : "move",
+  "newFolder" : "a",
+  "forwardedTo" : null
+}

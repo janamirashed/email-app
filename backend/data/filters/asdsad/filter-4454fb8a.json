@@ -1,0 +1,10 @@
+{
+  "id" : "filter-4454fb8a",
+  "name" : "Sheets",
+  "property" : "composite",
+  "matcher" : "complex",
+  "value" : "subject:Sheet;hasAttachment:true;priority:1",
+  "action" : "move",
+  "newFolder" : "Sheets",
+  "forwardedTo" : null
+}
