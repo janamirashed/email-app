@@ -140,7 +140,20 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
         return this.contactService.searchContacts(term);
       })
     ).subscribe(contacts => {
-      this.filteredContacts = contacts.slice(0, 5); // Limit to 5 results
+      const flattenedContacts: any[] = [];
+
+      contacts.forEach(contact => {
+        if (Array.isArray(contact.email)) {
+          contact.email.forEach((email: string) => {
+            flattenedContacts.push({ ...contact, email: email });
+          });
+        } else {
+          // Fallback in case email is not an array (though model says it is)
+          flattenedContacts.push(contact);
+        }
+      });
+
+      this.filteredContacts = flattenedContacts.slice(0, 5); // Limit to 5 results
       this.showContactDropdown = this.filteredContacts.length > 0;
       this.selectedContactIndex = -1;
       this.cdr.detectChanges();
