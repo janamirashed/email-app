@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b1716e87-63e2-4c3f-b648-bbcdc0b1a9bc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/env" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/emails/ysfw/inbox/103763be.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/emails/ysfw/inbox/103763be.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/emails/ysfw/inbox/62681302.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/emails/ysfw/inbox/62681302.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;ysfw&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/janamirashed/email-app.git&quot;,
+    &quot;accountId&quot;: &quot;68bcc37c-b7e5-437f-a29e-f509195f27a5&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="36KCgnBW3x5fwlamCaX0Ed6m1lk" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.BackendApplication.executor": "Run",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/Ysfw/Eng/Mine/Programing/Web/email-app/backend",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Ysfw\Eng\Mine\Programing\Web\email-app\backend" />
+      <recent name="D:\Ysfw\Eng\Mine\Programing\Web\email-app\backend\src\main\java\com\example\backend\service" />
+      <recent name="D:\Ysfw\Eng\Mine\Programing\Web\email-app\backend\src\main\java\com\example\backend" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.example.backend.model" />
+      <recent name="com.example.backend.repository" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="backend" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.mail.backend.BackendApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b1716e87-63e2-4c3f-b648-bbcdc0b1a9bc" name="Changes" comment="" />
+      <created>1764745990797</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1764745990797</updated>
+      <workItem from="1764745992281" duration="9355000" />
+      <workItem from="1764835708240" duration="5385000" />
+      <workItem from="1765100314057" duration="3625000" />
+      <workItem from="1765180863234" duration="3234000" />
+      <workItem from="1765271545072" duration="5820000" />
+      <workItem from="1765287292021" duration="594000" />
+      <workItem from="1765293187412" duration="15582000" />
+      <workItem from="1765355175752" duration="18481000" />
+      <workItem from="1765441258023" duration="29175000" />
+      <workItem from="1765546915059" duration="9000" />
+      <workItem from="1765646680514" duration="8945000" />
+      <workItem from="1765702207487" duration="8518000" />
+      <workItem from="1765734713786" duration="921000" />
+      <workItem from="1765788759216" duration="50000" />
+      <workItem from="1765789563009" duration="6876000" />
+      <workItem from="1765812389428" duration="9989000" />
+      <workItem from="1765876371367" duration="18595000" />
+      <workItem from="1765964266006" duration="28600000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
