@@ -1,9 +1,9 @@
 import { inject, Injectable, NgZone } from '@angular/core';
-import {Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs';
+import { Observable, Observer, retry, Subject, takeUntil, tap, timer } from 'rxjs';
 import { AuthService } from './auth-service';
 import { map } from 'rxjs/operators';
 import { sseEvent } from '../models/sse-event.model';
-import {ActivatedRoute, Router} from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -15,8 +15,8 @@ export class EventService {
   private inboxRefresh$ = new Subject<void>();
   private folderRefresh$ = new Subject<void>();
   router = inject(Router);
-  constructor(private ngZone: NgZone, private authService: AuthService ,
-  private route: ActivatedRoute) {
+  constructor(private ngZone: NgZone, private authService: AuthService,
+    private route: ActivatedRoute) {
 
   }
   /**
@@ -32,7 +32,7 @@ export class EventService {
       ),
       tap((payload: sseEvent) => {
         // Emit inbox refresh if current user received an email
-        if ((payload.type === 'Received' || payload.type === 'Draft' )&& payload.to && payload.to.length > 0) {
+        if ((payload.type === 'Received' || payload.type === 'Draft') && payload.to && payload.to.length > 0) {
           const currentUserEmail = localStorage.getItem('currentUser') + "@jaryn.com";
           console.log(currentUserEmail + ' ' + payload.to);
           if (payload.to.includes(currentUserEmail)) {
@@ -60,76 +60,62 @@ export class EventService {
   /**
    * Sets up the EventSource connection using fetch to support Bearer auth.
    */
+  private worker: Worker | null = null;
+
+  /**
+   * Sets up the EventSource connection using a Web Worker.
+   */
   private createEventObservable(): Observable<string> {
     return new Observable<string>((observer: Observer<string>) => {
-      const controller = new AbortController();
-      const signal = controller.signal;
+      if (typeof Worker !== 'undefined') {
+        this.worker = new Worker(new URL('../workers/sse.worker', import.meta.url));
 
-      this.ngZone.runOutsideAngular(async () => {
-        try {
-          const token = this.authService.getToken();
-          const headers: HeadersInit = {};
-          if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-          }
-
-          const response = await fetch(this.streamUrl, {
-            headers,
-            signal
-          });
-
-          if (!response.ok) {
-            if (response.status === 401) {
+        this.worker.onmessage = ({ data }) => {
+          if (data.type === 'EVENT') {
+            this.ngZone.run(() => observer.next(data.payload));
+          } else if (data.type === 'ERROR') {
+            if (data.error.status === 401) {
               console.warn('SSE Unauthorized (401). Logging out.');
               this.ngZone.run(() => this.authService.logout());
-              return; // Stop further processing
-            }
-            throw new Error(`SSE connection failed: ${response.statusText}`);
-          }
-
-          const reader = response.body?.getReader();
-          if (!reader) {
-            throw new Error('No response body');
-          }
-
-          const decoder = new TextDecoder();
-          let buffer = '';
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            buffer += chunk;
-
-            const parts = buffer.split('\n\n');
-            buffer = parts.pop() || ''; // Keep the incomplete part
-
-            for (const part of parts) {
-              const lines = part.split('\n');
-              for (const line of lines) {
-                if (line.startsWith('data:')) {
-                  const data = line.substring(5).trim();
-                  if (data) {
-                    this.ngZone.run(() => observer.next(data));
-                  }
-                }
-              }
+            } else {
+              console.error('SSE Worker Error:', data.error);
+              this.ngZone.run(() => observer.error(data.error));
             }
           }
-        } catch (error: any) {
-          if (error.name !== 'AbortError') {
-            console.error('SSE error:', error);
-            this.ngZone.run(() => observer.error(error));
+        };
+
+        const token = this.authService.getToken();
+        this.worker.postMessage({
+          type: 'CONNECT',
+          payload: {
+            url: this.streamUrl,
+            token: token
           }
-        }
-      });
+        });
+      } else {
+        // Fallback for environments without Web Worker support (though unlikely in modern browsers)
+        console.warn('Web Workers are not supported in this environment. SSE might be throttled in background.');
+        // ... (Original fetch logic could go here as fallback, but for now we assume worker support)
+        observer.error(new Error('Web Workers not supported'));
+      }
 
       return () => {
         console.log('Closing SSE connection');
-        controller.abort();
+        this.stopEvents();
       };
     });
+  }
+
+  /**
+   * Stop listening to the event stream
+   */
+  public stopEvents(): void {
+    this.stopStream$.next();
+    if (this.worker) {
+      this.worker.postMessage({ type: 'STOP' });
+      this.worker.terminate();
+      this.worker = null;
+    }
   }
 
   /**
@@ -146,28 +132,23 @@ export class EventService {
     this.folderRefresh$.next();
   }
 
-  /**
-   * Stop listening to the event stream
-   */
-  public stopEvents(): void {
-    this.stopStream$.next();
-  }
 
-clearEmailSelection(messageIds: string[]) {
-  if(this.route.snapshot.queryParamMap.get("messageId")){
-    if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())){
-      this.router.navigate(
-        [],
-        {
-          relativeTo: this.route,
-          queryParams: {},
-          queryParamsHandling: ''
-        }
-      );
+
+  clearEmailSelection(messageIds: string[]) {
+    if (this.route.snapshot.queryParamMap.get("messageId")) {
+      if (messageIds.includes(this.route.snapshot.queryParamMap.get("messageId")!.toString())) {
+        this.router.navigate(
+          [],
+          {
+            relativeTo: this.route,
+            queryParams: {},
+            queryParamsHandling: ''
+          }
+        );
+      }
+
     }
-
   }
-}
 
 
 }
