@@ -211,7 +211,7 @@ export class EmailService {
   }
 
   // GET /api/email/search?keyword=test&searchIn=all
-  searchEmails(parameters: { sender?: string, receiver?: string, subject?: string, body?: string, folder?: string, keyword?: string, priority?: string, hasAttachment?: boolean, startDate?:string, endDate?:string, sortBy?: string }): Observable<any> {
+  searchEmails(parameters: { sender?: string, receiver?: string, subject?: string, body?: string, folder?: string, keyword?: string, priority?: string, hasAttachment?: boolean, startDate?: string, endDate?: string, sortBy?: string }): Observable<any> {
     let httpParams = new HttpParams();
     if (parameters.sender) httpParams = httpParams.set('sender', parameters.sender);
     if (parameters.receiver) httpParams = httpParams.set('receiver', parameters.receiver);
@@ -233,7 +233,7 @@ export class EmailService {
   }
 
   isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@jaryn\.com$/;
     return emailRegex.test(email);
   }
 

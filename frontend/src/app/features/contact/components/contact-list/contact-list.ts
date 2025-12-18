@@ -145,6 +145,12 @@ export class ContactList implements OnInit, OnDestroy {
   saveNewContact() {
     // const validEmails = this.newContactEmails.map(e => e.trim()).filter(e => this.emailService.isValidEmail(e));
 
+    if (!this.newContactEmails.length) {
+      this.errorMessage = 'At least one email is required';
+      this.cdr.detectChanges();
+      return;
+    }
+
     const validEmails = this.emailService.ensureValidEmails(this.newContactEmails);
     if (!validEmails) {
       this.errorMessage = 'Invalid email format';
@@ -152,49 +158,69 @@ export class ContactList implements OnInit, OnDestroy {
       return;
     }
 
-
-    if (this.newContactName.trim()) {
-      this.isLoading = true;
-      this.errorMessage = '';
-
-      const newContact: Contact = {
-        id: null,
-        name: this.newContactName.trim(),
-        email: this.newContactEmails
-      };
-
-      this.contactService.addContact(newContact).subscribe({
-        next: (contact) => {
-          this.showAddDialog = false;
-          this.newContactName = '';
-          this.newContactEmails = [''];
-          this.isLoading = false;
-          this.showSuccess('Contact added successfully');
-          this.refreshData();
-          this.cdr.detectChanges();
-        },
-        error: (error) => {
-          console.error('Error adding contact:', error);
-          this.errorMessage = error.error?.error || 'Failed to add contact. Please try again.';
-          this.isLoading = false;
-          this.cdr.detectChanges();
-
-        }
-      });
+    if (!this.newContactName.trim()) {
+      this.errorMessage = 'Name is required';
+      this.cdr.detectChanges();
+      return;
     }
+
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const newContact: Contact = {
+      id: null,
+      name: this.newContactName.trim(),
+      email: this.newContactEmails
+    };
+
+    this.contactService.addContact(newContact).subscribe({
+      next: (contact) => {
+        this.showAddDialog = false;
+        this.newContactName = '';
+        this.newContactEmails = [''];
+        this.isLoading = false;
+        this.showSuccess('Contact added successfully');
+        this.refreshData();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error adding contact:', error);
+        this.errorMessage = error.error?.error || 'Failed to add contact. Please try again.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+
+      }
+    });
+
   }
 
   editContact(contact: Contact) {
+
+    if (!contact.email.length) {
+      this.errorMessage = 'At least one email is required';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const validEmails = this.emailService.ensureValidEmails(contact.email);
+    if (!validEmails) {
+      this.errorMessage = 'Invalid email format';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (!contact.name.trim()) {
+      this.errorMessage = 'Name is required';
+      this.cdr.detectChanges();
+      return;
+    }
+
+
     this.editingContact = { ...contact };
     this.newContactName = contact.name;
     this.newContactEmails = contact.email && contact.email.length > 0 ? [...contact.email] : [''];
 
-    const validEmails = this.emailService.ensureValidEmails(this.newContactEmails);
-    if (!validEmails) {
-      this.errorMessage = 'Invalid email format';
-      this.cdr.detectChanges();
-      return;
-    }
 
     this.showEditDialog = true;
   }
