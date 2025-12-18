@@ -4,10 +4,9 @@ A full-stack web-based email application designed to simulate core email functio
 
 ## 🎥 Demo
 
-<video width="100%" controls>
-  <source src="Demo/JarynDemo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[Watch the application demo](Demo/JarynDemo.mp4)
+
+> **Note:** If the video does not play directly, please download it to view.
 
 ## 📋 Project Overview
 
