@@ -75,7 +75,13 @@ public class EmailService {
         // Process recipients from the queue
         while (!recipientQueue.isEmpty()) {
             String recipient = recipientQueue.poll();
-            if (recipient.equals(username) || recipient.equals(username + "@jaryn.com"))
+            if (recipient != null && recipient.endsWith("@jaryn.com")) {
+                int atIndex = recipient.indexOf('@');
+                if (atIndex != -1) {
+                    recipient = recipient.substring(0, atIndex);
+                }
+            }
+            if (recipient != null && (recipient.equals(username) || recipient.equals(username + "@jaryn.com")))
                 throw new IllegalArgumentException("A user can't send an email to himself");
             if (!userService.existsByUsername(recipient))
                 throw new IllegalArgumentException("you can't send an email to a non-existing user");
@@ -159,7 +165,13 @@ public class EmailService {
     public String saveDraft(String username, Email emailRequest) throws IOException {
         String messageId = generateMessageId();
         for(String recipient : emailRequest.getTo()){
-            if (recipient.equals(username) || recipient.equals(username + "@jaryn.com"))
+            if (recipient != null && recipient.endsWith("@jaryn.com")) {
+                int atIndex = recipient.indexOf('@');
+                if (atIndex != -1) {
+                    recipient = recipient.substring(0, atIndex);
+                }
+            }
+            if (recipient != null && (recipient.equals(username) || recipient.equals(username + "@jaryn.com")))
                 throw new IllegalArgumentException("A user can't send an email to himself");
             if (!userService.existsByUsername(recipient))
                 throw new IllegalArgumentException("you can't send an email to a non-existing user");
