@@ -54,14 +54,10 @@ public class EmailService {
                 .priority(emailRequest.getPriority() != null ? emailRequest.getPriority() : 3)
                 .attachments(emailRequest.getAttachments())
                 .inSent()
+                .isRead(true)
                 .build();
         eventService.publishEvent(new SSE("Received",email.getTo()));
-        // Save to sender's sent folder
-        try{
-            emailRepository.saveEmail(username, filterService.applyFilters(username, email));
-        } catch (Exception e){
-            System.err.println(e.getMessage());
-        }
+
         log.info("Email {} sent by {} to {}", messageId, username, email.getTo());
 
         // Loop through all recipients
@@ -118,6 +114,13 @@ public class EmailService {
                 failedDeliveries++;
                 // Continue with next recipient instead of throwing
                 log.error("Failed to deliver email {} to {}: {}", messageId, recipient, e.getMessage());
+            }
+
+            // Save to sender's sent folder
+            try{
+                emailRepository.saveEmail(username, filterService.applyFilters(username, email));
+            } catch (Exception e){
+                System.err.println(e.getMessage());
             }
         }
 
@@ -188,6 +191,7 @@ public class EmailService {
                 .priority(emailRequest.getPriority())
                 .attachments(emailRequest.getAttachments())
                 .inDrafts()
+                .isRead(true)
                 .build();
         ArrayList<String> list = new ArrayList<>();
         list.add(username+"@jaryn.com");
