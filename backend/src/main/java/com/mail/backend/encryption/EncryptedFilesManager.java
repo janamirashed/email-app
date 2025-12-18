@@ -80,7 +80,7 @@ public class EncryptedFilesManager {
         }else {
             finalStr = fileStr;
         }
-//        System.out.println(finalStr);
+        System.out.println(finalStr);
         return finalStr;
     }
 }

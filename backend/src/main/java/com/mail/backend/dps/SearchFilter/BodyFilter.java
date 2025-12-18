@@ -1,7 +1,7 @@
 package com.mail.backend.dps.SearchFilter;
 
 import com.mail.backend.model.Email;
-import com.mail.backend.service.PlainTextExtractor;
+import com.mail.backend.service.HtmlHelper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ public class BodyFilter implements SearchFilter {
         String lowerKeyword = keyword.toLowerCase();
         Stream<Email> emailStream = emails.stream();
         Stream<Email> filteredEmailStream = emailStream.filter(email->{
-            String plainBody = PlainTextExtractor.extractPlainText(email.getBody());
+            String plainBody = HtmlHelper.extractPlainText(email.getBody());
             return plainBody.toLowerCase().contains(lowerKeyword);
         });
 

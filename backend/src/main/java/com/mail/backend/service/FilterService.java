@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
-import static com.mail.backend.service.PlainTextExtractor.extractPlainText;
+import static com.mail.backend.service.HtmlHelper.extractPlainText;
 
 @Service
 @Slf4j

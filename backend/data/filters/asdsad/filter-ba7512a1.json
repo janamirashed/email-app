@@ -6,5 +6,5 @@
   "value" : "a",
   "action" : "forward",
   "newFolder" : null,
-  "forwardedTo" : [ "ysfw@jaryn.com", "justAnother@jaryn.com" ]
+  "forwardedTo" : [ "postman@jaryn.com", "ysfw@jaryn.com" ]
 }
