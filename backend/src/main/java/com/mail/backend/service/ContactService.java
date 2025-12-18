@@ -20,6 +20,8 @@ import java.io.IOException;
 public class ContactService {
     @Autowired
     private ContactRepository contactRepository;
+    @Autowired
+    private UserService userService;
 
     private ContactSortStrategy getContactSortStrategy(String sortBy) {
         if (sortBy == null) {
@@ -53,6 +55,14 @@ public class ContactService {
         if (contact.getEmail() == null || contact.getEmail().isEmpty()) {
             throw new IllegalArgumentException("Contact emails cannot be empty");
         }
+        if (!userService.existsByUsername(username)) {
+            throw new IllegalArgumentException("can't save contact for a non-existing user");
+        }
+        contact.getEmail().forEach(email -> {
+            String user = email.trim().split("@")[0];
+            if (!userService.existsByUsername(user))
+                throw new IllegalArgumentException("No user exists with that email");
+        });
 
         //Generate ID for the contact if not provided
         if (contact.getId() == null) {
@@ -71,6 +81,15 @@ public class ContactService {
         if (!contactRepository.contactExists(username, contactId)) {
             throw new IOException("Contact not found: " + contactId);
         }
+        if (!userService.existsByUsername(username)) {
+            throw new IllegalArgumentException("can't save contact for a non-existing user");
+        }
+        updatedContact.getEmail().forEach(email -> {
+            String user = email.trim().split("@")[0];
+            if (!userService.existsByUsername(user))
+                throw new IllegalArgumentException("No user exists with that email");
+        });
+
         Contact existingContact = contactRepository.getContact(username, contactId);
         existingContact.setName(updatedContact.getName());
         existingContact.setEmail(updatedContact.getEmail());
