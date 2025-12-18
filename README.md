@@ -2,6 +2,8 @@
 
 A full-stack web-based email application designed to simulate core email functionalities with a focus on design patterns.
 
+<img width="1919" height="906" alt="ui" src="https://github.com/user-attachments/assets/7ce628ba-e853-4bd6-a248-53cdb73c6da7" />
+
 ## 📋 Project Overview
 
 **Purpose** This project is an application of some of the learned design patterns.
