@@ -292,12 +292,12 @@ export class EmailComposeComponent implements OnInit, OnDestroy {
 
     if (this.selectedFiles.length > 0) {
       if (transactional) {
-        attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles, this.recipients + "," + localStorage.getItem("currentUser")));
+        attachment_ids = await lastValueFrom(this.attachmentService.uploadAttachments(null, this.selectedFiles, this.recipients + "," + localStorage.getItem("currentUser") + "@jaryn.com"));
         console.log(attachment_ids.length);
         console.log(attachment_ids.at(0));
       }
       else {
-        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles, this.recipients + "," + localStorage.getItem("currentUser")).subscribe({
+        this.attachmentService.uploadAttachments(attachment_ids, this.selectedFiles, this.recipients + "," + localStorage.getItem("currentUser") + "@jaryn.com").subscribe({
           next: () => {
             console.log("non-transactional uploads complete");
           }

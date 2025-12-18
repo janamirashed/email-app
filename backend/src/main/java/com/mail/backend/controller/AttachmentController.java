@@ -46,7 +46,7 @@ public class AttachmentController {
     public ResponseEntity<?> getAttachment(@PathVariable("attachment_id") String attachmentId,
                                            HttpServletResponse response, Authentication authentication){
         try {
-            String username = authentication.getName();
+            String username = authentication.getName() + "@jaryn.com";
 
             AttachmentMetadata metadata = attachmentService.getAttachmentMetadata(attachmentId);
             InputStream inputStream = attachmentService.getAttachmentStream(attachmentId);
@@ -91,6 +91,7 @@ public class AttachmentController {
 
              AttachmentMetadata data;
              System.out.println(accessors);
+
              String [] accessorsArr = accessors.split("\\s*,\\s*");
              data = (id == null || id.trim().isEmpty())?
                      attachmentService.saveAttachment(mimeType, fileName, accessorsArr, request.getInputStream()):
