@@ -259,9 +259,29 @@ export class ContactList implements OnInit, OnDestroy {
   }
 
   saveEditContact() {
-    const validEmails = this.newContactEmails.map(e => e.trim()).filter(e => e.length > 0);
+    // const validEmails = this.newContactEmails.map(e => e.trim()).filter(e => e.length > 0);
 
-    if (this.editingContact && this.newContactName.trim() && validEmails.length > 0) {
+    if (!this.newContactEmails.length) {
+      this.errorMessage = 'At least one email is required';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const validEmails = this.emailService.ensureValidEmails(this.newContactEmails);
+    if (!validEmails) {
+      this.errorMessage = 'Invalid email format';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (!this.newContactName.trim()) {
+      this.errorMessage = 'Name is required';
+      this.cdr.detectChanges();
+      return;
+    }
+
+
+    if (this.editingContact && this.newContactName.trim()) {
       // Validate that contact has an ID
       if (!this.editingContact.id) {
         this.errorMessage = 'Cannot update contact: Invalid contact ID';
@@ -274,7 +294,7 @@ export class ContactList implements OnInit, OnDestroy {
       const updatedContact: Contact = {
         ...this.editingContact,
         name: this.newContactName.trim(),
-        email: validEmails
+        email: this.newContactEmails
       };
 
       this.contactService.updateContact(this.editingContact.id, updatedContact).subscribe({
