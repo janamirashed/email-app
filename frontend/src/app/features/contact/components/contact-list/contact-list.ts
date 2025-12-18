@@ -188,6 +188,14 @@ export class ContactList implements OnInit, OnDestroy {
     this.editingContact = { ...contact };
     this.newContactName = contact.name;
     this.newContactEmails = contact.email && contact.email.length > 0 ? [...contact.email] : [''];
+
+    const validEmails = this.emailService.ensureValidEmails(this.newContactEmails);
+    if (!validEmails) {
+      this.errorMessage = 'Invalid email format';
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.showEditDialog = true;
   }
 
