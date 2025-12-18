@@ -73,12 +73,20 @@ public class ContactController {
             response.put("contact", updatedContact);
             log.info("Contact {} updated by {}", updatedContact.getId(), username);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.error("Failed to update contact: {}", e.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
             error.put("error", "Failed to update contact");
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (IllegalArgumentException e) {
+            log.error("Invalid contact: {}", e.getMessage());
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
     }
 
